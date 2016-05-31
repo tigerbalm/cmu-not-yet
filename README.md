@@ -1,2 +1,2 @@
-# cmu-studio-project
-for studio project
+# cmu-not-yet
+studio project for team "Not Yet"
