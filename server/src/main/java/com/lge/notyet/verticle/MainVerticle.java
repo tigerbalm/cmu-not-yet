@@ -14,9 +14,7 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
-        System.out.println("begin of start");
-
+    public void start(final Future<Void> startFuture) throws Exception {
         try {
             mqttAsyncClient = new MqttAsyncClient("tcp://localhost", MqttAsyncClient.generateClientId());
             mqttAsyncClient.setCallback(new MqttCallback() {
