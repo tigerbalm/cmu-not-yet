@@ -11,8 +11,11 @@ public class MainDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonGateOPEN;
     private JButton buttonGateCLOSE;
+    private JTextArea textArea1;
     static int counter=0;
     private static String serverURI="tcp://192.168.43.24";//"tcp://localhost";
+    private static String uniqueClientID="ClientPrototypeModule";
+
 
     private MainDialog() {
         setContentPane(contentPane);
@@ -46,37 +49,26 @@ public class MainDialog extends JDialog {
     }
 
     private void onGateOPEN() {
-        sendMessageToBroker("1", "/facilities/1/gates/1");
+        NetworkCommunicator.sendMessageToBroker("1", "/facilities/1/gates/1");
 
     }
 
     private void onGateCLOSE() {
-        sendMessageToBroker("0", "/facilities/1/gates/1");
+        NetworkCommunicator.sendMessageToBroker("0", "/facilities/1/gates/1");
 
     }
+
 
     public static void main(String[] args) {
         MainDialog dialog = new MainDialog();
         dialog.pack();
+        NetworkCommunicator.startService(serverURI, uniqueClientID, dialog);
+
         dialog.setVisible(true);
         System.exit(0);
     }
 
-    private String sendMessageToBroker(String messageString, String topicId){
-        String returnMessage=null;
-        try {
-            MqttClient client;
-            client = new MqttClient(serverURI, "ClientPrototypeModule");
-            client.connect();
-            MqttMessage message = new MqttMessage();
-            message.setPayload(messageString.getBytes());
-            client.publish(topicId, message);
-            client.disconnect();
-        } catch (MqttException e2) {
-            e2.printStackTrace();
-        }
-        return returnMessage;
+    public void printToLog(String s) {
+        textArea1.append(s+ Character.LINE_SEPARATOR);
     }
-
-
 }
