@@ -9,57 +9,49 @@ import java.awt.event.*;
 
 public class MainDialog extends JDialog {
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
+    private JButton buttonGateOPEN;
+    private JButton buttonGateCLOSE;
     static int counter=0;
+    private static String serverURI="tcp://192.168.43.24";//"tcp://localhost";
 
-    public MainDialog() {
+    private MainDialog() {
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
+        getRootPane().setDefaultButton(buttonGateOPEN);
 
-        buttonOK.addActionListener(new ActionListener() {
+        buttonGateOPEN.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onOK();
+                onGateOPEN();
             }
         });
 
-        buttonCancel.addActionListener(new ActionListener() {
+        buttonGateCLOSE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onCancel();
+                onGateCLOSE();
             }
         });
 
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                onCancel();
+                onGateCLOSE();
             }
         });
 
         contentPane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onCancel();
+                onGateCLOSE();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
-    private void onOK() {
-        try {
-            MqttClient client;
-            client = new MqttClient("tcp://localhost", "ClientPrototypeModule");
-            client.connect();
-            MqttMessage message = new MqttMessage();
-            message.setPayload(("A single message"+(counter++)).getBytes());
-            client.publish("/home/1", message);
-            client.disconnect();
-        } catch (MqttException e2) {
-            e2.printStackTrace();
-        }
+    private void onGateOPEN() {
+        sendMessageToBroker("1", "/facilities/1/gates/1");
     }
 
-    private void onCancel() {
-        dispose();
+    private void onGateCLOSE() {
+        sendMessageToBroker("0", "/facilities/1/gates/1");
+
     }
 
     public static void main(String[] args) {
@@ -68,4 +60,22 @@ public class MainDialog extends JDialog {
         dialog.setVisible(true);
         System.exit(0);
     }
+
+    private String sendMessageToBroker(String messageString, String topicId){
+        String returnMessage=null;
+        try {
+            MqttClient client;
+            client = new MqttClient(serverURI, "ClientPrototypeModule");
+            client.connect();
+            MqttMessage message = new MqttMessage();
+            message.setPayload(messageString.getBytes());
+            client.publish(topicId, message);
+            client.disconnect();
+        } catch (MqttException e2) {
+            e2.printStackTrace();
+        }
+        return returnMessage;
+    }
+
+
 }
