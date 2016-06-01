@@ -14,7 +14,7 @@ public class MainDialog extends JDialog {
     static int counter=0;
     private static String serverURI="tcp://192.168.43.24";//"tcp://localhost";
 
-    private MainDialog() {
+    private MainDialog() { 
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonGateOPEN);
