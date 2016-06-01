@@ -1,16 +1,25 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <Servo.h> 
+#include <Servo.h>
 
 #define EntryGateServoPin 5
 #define ExitGateServoPin 6
 #define Open 90
 #define Close 0
+#define SlotCount 4
 
-int slotPins[] = {-1, 30, 31, 32, 33};
-int slotThresholds[] = {-1, 82, 126, 138, 84};
+char ssid[] = "reshout";
+
+struct slotStatus {
+  boolean parked;
+  int flipCount;
+};
+
+const int slotPins[SlotCount + 1] = {-1, 30, 31, 32, 33};
+const int slotThresholds[SlotCount + 1] = {-1, 80, 118, 131, 83};
 const char* const slotTopics[] = { NULL, "/facilities/1/slots/1", "/facilities/1/slots/2", "/facilities/1/slots/3", "/facilities/1/slots/4" };
+struct slotStatus slotStatus[SlotCount];
 
 Servo EntryGateServo;
 Servo ExitGateServo;
@@ -32,19 +41,20 @@ void setup()
 
   EntryGateServo.attach(EntryGateServoPin);
   ExitGateServo.attach(ExitGateServoPin);
-  
+
   initEntryExitLEDs();
   initEntryExitGates();
 
   Serial.println("Attempting to connect to WiFi network");
-  WiFi.begin("reshout");
+  WiFi.begin(ssid);
   while (WiFi.status() != WL_CONNECTED) delay(500);
-  Serial.println("Connected to WiFi network");  
+  Serial.println("Connected to WiFi network");
 
-  Serial.println("Attempting to connect to MQTT broker");  
+  Serial.println("Attempting to connect to MQTT broker");
   if (client.connect("ClientID"))
   {
     Serial.println("Connected to MQTT broker");
+    initSlotStatus();
 
     if (client.subscribe("/facilities/1/gates/+")) Serial.println("Subscribe ok");
     else Serial.println("Subscribe failed");
@@ -56,15 +66,9 @@ void setup()
   }
 }
 
-void loop() 
+void loop()
 {
-  int i;
-  boolean parked;
-  char* topic;
-  for (i = 1; i <= 4; i++) {
-    parked = isParked(i);
-    client.publish(slotTopics[i], parked ? "1" : "0");
-  }
+  checkSlotStatus();
   client.loop();
   delay(1000);
 }
@@ -82,18 +86,51 @@ void initEntryExitLEDs()
 void initEntryExitGates()
 {
   EntryGateServo.write(Close);
-  ExitGateServo.write(Close);  
+  ExitGateServo.write(Close);
+}
+
+void initSlotStatus() {
+  int i;
+
+  for (i = 1; i <= SlotCount; i++) {
+    slotStatus[i].parked = isParked(i);
+    slotStatus[i].flipCount = 0;
+
+    client.publish(slotTopics[i], slotStatus[i].parked ? "1" : "0");
+  }
+}
+
+void checkSlotStatus() {
+  int i;
+  boolean parked;
+
+  for (i = 1; i <= SlotCount; i++) {
+    parked = isParked(i);
+    if (parked != slotStatus[i].parked)
+    {
+      if (++slotStatus[i].flipCount > 1)
+      {
+        client.publish(slotTopics[i], parked ? "1" : "0");
+        slotStatus[i].parked = parked;
+        slotStatus[i].flipCount = 0;
+      }
+    } else {
+      slotStatus[i].flipCount = 0;
+    }
+  }
 }
 
 boolean isParked(int slotId)
 {
   int pin = slotPins[slotId];
   int threshold = slotThresholds[slotId];
-  if (threshold > ProximityVal(pin)) return true;
+  int proximityVal = getProximityVal(pin);
+
+  if (threshold >= proximityVal) return true;
   else return false;
 }
 
-long ProximityVal(int Pin)
+long getProximityVal(int Pin)
 {
     long duration = 0;
     pinMode(Pin, OUTPUT);         // Sets pin as OUTPUT
