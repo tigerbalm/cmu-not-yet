@@ -1,13 +1,16 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-
 #include <Servo.h> 
 
 #define EntryGateServoPin 5
 #define ExitGateServoPin 6
 #define Open 90
 #define Close 0
+
+int slotPins[] = {-1, 30, 31, 32, 33};
+int slotThresholds[] = {-1, 82, 126, 138, 84};
+const char* const slotTopics[] = { NULL, "/facilities/1/slots/1", "/facilities/1/slots/2", "/facilities/1/slots/3", "/facilities/1/slots/4" };
 
 Servo EntryGateServo;
 Servo ExitGateServo;
@@ -27,12 +30,12 @@ void setup()
 {
   Serial.begin(9600);
 
-  initEntryExitLEDs();
-  initEntryExitGates();
-
   EntryGateServo.attach(EntryGateServoPin);
   ExitGateServo.attach(ExitGateServoPin);
   
+  initEntryExitLEDs();
+  initEntryExitGates();
+
   Serial.println("Attempting to connect to WiFi network");
   WiFi.begin("reshout");
   while (WiFi.status() != WL_CONNECTED) delay(500);
@@ -55,6 +58,13 @@ void setup()
 
 void loop() 
 {
+  int i;
+  boolean parked;
+  char* topic;
+  for (i = 1; i <= 4; i++) {
+    parked = isParked(i);
+    client.publish(slotTopics[i], parked ? "1" : "0");
+  }
   client.loop();
   delay(1000);
 }
@@ -69,8 +79,32 @@ void initEntryExitLEDs()
   }
 }
 
-void initEntryExitGates() {
+void initEntryExitGates()
+{
   EntryGateServo.write(Close);
   ExitGateServo.write(Close);  
 }
 
+boolean isParked(int slotId)
+{
+  int pin = slotPins[slotId];
+  int threshold = slotThresholds[slotId];
+  if (threshold > ProximityVal(pin)) return true;
+  else return false;
+}
+
+long ProximityVal(int Pin)
+{
+    long duration = 0;
+    pinMode(Pin, OUTPUT);         // Sets pin as OUTPUT
+    digitalWrite(Pin, HIGH);      // Pin HIGH
+    delay(1);                     // Wait for the capacitor to stabilize
+
+    pinMode(Pin, INPUT);          // Sets pin as INPUT
+    digitalWrite(Pin, LOW);       // Pin LOW
+    while (digitalRead(Pin))       // Count until the pin goes
+    {                             // LOW (cap discharges)
+       duration++;
+    }
+    return duration;              // Returns the duration of the pulse
+}
