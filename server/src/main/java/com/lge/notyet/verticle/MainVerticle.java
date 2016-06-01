@@ -2,10 +2,16 @@ package com.lge.notyet.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Launcher;
 import org.eclipse.paho.client.mqttv3.*;
 
 public class MainVerticle extends AbstractVerticle {
     private MqttAsyncClient mqttAsyncClient;
+
+    // Convenience method so you can run it in your IDE
+    public static void main(String[] args) {
+        Launcher.executeCommand("run", MainVerticle.class.getCanonicalName());
+    }
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -50,9 +56,5 @@ public class MainVerticle extends AbstractVerticle {
         } catch (MqttException e) {
             startFuture.fail(e);
         }
-    }
-
-    @Override
-    public void stop() throws Exception {
     }
 }
