@@ -34,19 +34,20 @@ public class MainDialog extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                onGateCLOSE();
+                dispose();
             }
         });
 
         contentPane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onGateCLOSE();
+                dispose();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private void onGateOPEN() {
         sendMessageToBroker("1", "/facilities/1/gates/1");
+
     }
 
     private void onGateCLOSE() {
