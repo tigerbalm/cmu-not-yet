@@ -5,4 +5,6 @@ apply plugin: 'java'
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile 'org.lge.notyet.ui.MainDialog'
 }
+mainClassName  'org.lge.notyet.ui.MainDialog'

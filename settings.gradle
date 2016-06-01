@@ -6,5 +6,5 @@ if (!JavaVersion.current().java8Compatible) {
 }
 
 include ':server'
-include 'application'
+include ':application'
 
