@@ -51,7 +51,7 @@ class NetworkCommunicator implements Runnable{
                 }
 
                 private String slotPrefix= "/facilities/1/slots/";
-                private String slotOccupiedMessage= "1";
+                private String slotOccupiedMessage= "1"; 
                 private String slotEmptyMessage= "0";
 
                 public void messageArrived(String topic, MqttMessage message){
