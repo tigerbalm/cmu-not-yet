@@ -5,6 +5,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import javax.swing.*;
+import javax.swing.text.DefaultCaret;
+import java.awt.*;
 import java.awt.event.*;
 
 public class MainDialog extends JDialog {
@@ -12,9 +14,19 @@ public class MainDialog extends JDialog {
     private JButton buttonGateOPEN;
     private JButton buttonGateCLOSE;
     private JTextArea textArea1;
-    static int counter=0;
-    private static String serverURI="tcp://192.168.43.24";//"tcp://localhost";
-    private static String uniqueClientID="ClientPrototypeModule";
+
+    private JPanel slot1;
+    private JPanel slot2;
+    private JPanel slot3;
+    private JPanel slot4;
+
+    public static Color SLOT_OCCUPIED_COLOR= Color.DARK_GRAY;
+    public static Color SLOT_EMPTY_COLOR= Color.LIGHT_GRAY;
+    public static JPanel uiParkingSlot[];
+
+    //private static String serverURI="tcp://192.168.43.24";
+    private static String serverURI="tcp://localhost";
+    private static String uniqueClientID="ClientPrototypeModule2";
 
 
     private MainDialog() {
@@ -46,6 +58,12 @@ public class MainDialog extends JDialog {
                 dispose();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        uiParkingSlot= new JPanel[]{slot1, slot2, slot3, slot4};
+        for (JPanel uiParkingSlot_temp:uiParkingSlot) {
+            uiParkingSlot_temp.setBackground(SLOT_EMPTY_COLOR);
+        }
+
+        ((DefaultCaret)textArea1.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
     }
 
     private void onGateOPEN() {
@@ -62,6 +80,7 @@ public class MainDialog extends JDialog {
     public static void main(String[] args) {
         MainDialog dialog = new MainDialog();
         dialog.pack();
+        dialog.setSize(300, 200);
         NetworkCommunicator.startService(serverURI, uniqueClientID, dialog);
 
         dialog.setVisible(true);
@@ -69,6 +88,12 @@ public class MainDialog extends JDialog {
     }
 
     public void printToLog(String s) {
-        textArea1.append(s+ Character.LINE_SEPARATOR);
+        textArea1.append(s+ "\r\n");
+
+    }
+
+
+    private void createUIComponents() {
+        // HINT: place custom component creation code here
     }
 }

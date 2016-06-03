@@ -1,28 +1,29 @@
 package com.lge.notyet.ui;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.*;
 
-/**
- * Created by gladvin.durai on 01-Jun-2016.
- */
-public class NetworkCommunicator implements Runnable{
+import javax.swing.*;
+import java.awt.*;
+import java.util.Arrays;
+
+
+class NetworkCommunicator implements Runnable{
     private static String serverURI;
     private static String uniqueClientID;
     private static MainDialog dialog;
     private static Thread backGroundThread= null;
 
     private static MqttClient client;
+    private static MqttClient client2;
 
-    public NetworkCommunicator(){
+    private NetworkCommunicator(){
         print("Creating new thread...");
         backGroundThread= new Thread(this);
         backGroundThread.start();
     }
 
     //Singleton
-    public static void startService(String serverURI, String uniqueClientID, MainDialog dialog) {
+    static void startService(String serverURI, String uniqueClientID, MainDialog dialog) {
         if(backGroundThread==null){
             NetworkCommunicator.serverURI= serverURI;
             NetworkCommunicator.uniqueClientID= uniqueClientID;
@@ -33,16 +34,56 @@ public class NetworkCommunicator implements Runnable{
     @Override
     public void run() {
         try {
-            client = new MqttClient(serverURI, uniqueClientID);
+            client = new MqttClient(serverURI, uniqueClientID+System.currentTimeMillis());
+            client2 = new MqttClient(serverURI, uniqueClientID+"s"+System.currentTimeMillis());
+            client2.setCallback(new MqttCallback(){
+                public void connectionLost(Throwable cause){
+                    print("Connection lost!");
+                    print(Arrays.toString(cause.getStackTrace()));
+                }
+                public void deliveryComplete(IMqttDeliveryToken token){
+                    try {
+                        print("Pub complete" + new String(token.getMessage().getPayload()));
+                    } catch (MqttException me) {
+                        print(me);
+                    }
+                    print(token.toString());
+                }
+
+                private String slotPrefix= "/facilities/1/slot/";
+                private String slotOccupiedMessage= "0";
+                private String slotEmptyMessage= "1";
+
+                public void messageArrived(String topic, MqttMessage message){
+                    if(topic.toLowerCase().startsWith(slotPrefix.toLowerCase())){
+                        int slotNumber= Integer.parseInt(topic.toLowerCase().substring(slotPrefix.length())) -1;
+                        if(slotNumber>=0 && slotNumber<MainDialog.uiParkingSlot.length){
+                            if(slotOccupiedMessage.equalsIgnoreCase(new String(message.getPayload())))
+                                MainDialog.uiParkingSlot[slotNumber].setBackground(MainDialog.SLOT_OCCUPIED_COLOR);
+                            else
+                                MainDialog.uiParkingSlot[slotNumber].setBackground(MainDialog.SLOT_EMPTY_COLOR);
+
+                        }
+                    }
+                    print(message.toString());
+                    print(topic);
+                }
+            });
+            print("Connecting...");
             client.connect();
+
+            client2.connect();
+            print("Subscribing...");
+            client2.subscribe("#");
         } catch (MqttException me) {
             print(me);
         }
     }
 
-    public static String sendMessageToBroker(String messageString, String topicId){
+    static String sendMessageToBroker(String messageString, String topicId){
         String returnMessage=null;
         try {
+            print("Publishing...");
             client.publish(topicId, new MqttMessage(messageString.getBytes()));
         } catch (MqttException me) {
             print(me);
@@ -53,7 +94,9 @@ public class NetworkCommunicator implements Runnable{
 
     public static void disconnect(){
         try {
+            print("Disconnecting...");
             client.disconnect();
+            client2.disconnect();
         }catch(MqttException me) {
             print(me);
         }
@@ -67,7 +110,8 @@ public class NetworkCommunicator implements Runnable{
         print("cause "+me.getCause());
         print("excep "+me);
 
-        print(me.getStackTrace().toString());
+        print(Arrays.toString(me.getStackTrace()));
+
     }
     private static void print(String s) {
         dialog.printToLog(s);
