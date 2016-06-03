@@ -50,9 +50,9 @@ class NetworkCommunicator implements Runnable{
                     print(token.toString());
                 }
 
-                private String slotPrefix= "/facilities/1/slot/";
-                private String slotOccupiedMessage= "0";
-                private String slotEmptyMessage= "1";
+                private String slotPrefix= "/facilities/1/slots/";
+                private String slotOccupiedMessage= "1";
+                private String slotEmptyMessage= "0";
 
                 public void messageArrived(String topic, MqttMessage message){
                     if(topic.toLowerCase().startsWith(slotPrefix.toLowerCase())){
