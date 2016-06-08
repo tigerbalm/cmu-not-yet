@@ -1,29 +1,31 @@
 plugins {
-  id 'java'
-  id 'application'
-  id 'com.github.johnrengelman.shadow' version '1.2.2'
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.2'
 }
 
-version = '3.2.1'
 sourceCompatibility = '1.8'
 
 dependencies {
-  compile "io.vertx:vertx-core:$version"
-  compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.0'
+    compile 'io.vertx:vertx-core:3.2.1'
+    compile 'io.vertx:vertx-sql-common:3.2.1'
+    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile 'io.vertx:vertx-mysql-postgresql-client:3.2.1'
 }
 
 mainClassName = 'io.vertx.core.Launcher'
 
 shadowJar {
-  classifier = 'fat'
-  manifest {
-    attributes 'Main-Verticle': 'com.lge.notyet.verticle.MainVerticle'
-  }
-  mergeServiceFiles {
-    include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
-  }
+    classifier = 'fat'
+    manifest {
+        attributes 'Main-Verticle': 'com.lge.notyet.verticle.MainVerticle'
+    }
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.8'
+    gradleVersion = '2.8'
 }
