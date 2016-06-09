@@ -69,6 +69,13 @@ class NetworkCommunicator implements Runnable{
                     print(topic);
                 }
             });
+//            MqttConnectOptions mqttConnOption= new MqttConnectOptions();
+//            mqttConnOption.setUserName("writeonly");
+//            client.connect(mqttConnOption);
+//
+//            mqttConnOption= new MqttConnectOptions();
+//            mqttConnOption.setUserName("readonly");
+//            client2.connect(mqttConnOption);
             print("Connecting...");
             client.connect();
 
