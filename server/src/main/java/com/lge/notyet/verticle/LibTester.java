@@ -1,9 +1,6 @@
 package com.lge.notyet.verticle;
 
-/**
- * Created by beney.kim on 2016-06-09.
- */
-
+import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.util.Log;
 
@@ -12,69 +9,66 @@ import java.net.UnknownHostException;
 
 public class LibTester implements Runnable {
 
+    private static final String LOG_TAG = "LibTester";
+
     private MqttNetworkChannel mNc = null;
     private INetworkCallback mNetworkCallback = new INetworkCallback() {
 
         @Override
         public void onConnected() {
-            Log.logd("LibTester", "onConnected");
+            Log.logd(LOG_TAG, "onConnected");
             mNc.subscribe(new Uri("/fac/#"));
         }
 
         @Override
         public void onConnectFailed() {
-            Log.logd("LibTester", "onConnectFailed");
+            Log.logd(LOG_TAG, "onConnectFailed");
         }
 
         @Override
         public void onLost() {
-            Log.logd("LibTester", "onLost");
+            Log.logd(LOG_TAG, "onLost");
         }
     };
 
     private IMessageCallback mMessageCallback = new IMessageCallback() {
+
         @Override
-        public void onMessage(String topic, String msg/*JsonObject notification*/) {
+        public void onMessage(String topic, NetworkMessage msg) {
 
             // TODO: We need better way with Json
-            if (topic.contains("/request/")) {
+            if (msg.isRequest()) {
 
-                Log.logd("LibTester", "onRequested:" + msg);
-                String responseTopic = topic.replace("/request/", "/response/");
+                Log.logd(LOG_TAG, "onRequested:" + msg.getMessage());
 
-                // TODO: We need better way like sendReponse() or msg.responseTo();
-                mNc.send(new Uri(responseTopic), "RSP to - " + msg);
+                JsonObject resp_msg = new JsonObject();
+                resp_msg.add("RESPONSE: ", msg.getMessage());
+                msg.response(resp_msg);
 
             } else {
-                Log.logd("LibTester", "onMessage:" + msg);
+                Log.logd(LOG_TAG, "onMessage:" + msg.getMessage());
             }
         }
     };
 
     private IMessageCallback mResponseCallback = new IMessageCallback() {
+
         @Override
-        public void onMessage(String topic, String msg/*JsonObject notification*/) {
-            Log.logd("LibTester", "mResponseCallback:" + msg);
+        public void onMessage(String topic, NetworkMessage msg) {
+            Log.logd(LOG_TAG, "mResponseCallback:" + msg.getMessage());
         }
     };
 
     public LibTester() {
 
         mNc = new MqttNetworkChannel(mNetworkCallback, mMessageCallback);
-
-        try {
-            mNc.connect(InetAddress.getByName("1.2.3.4"));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
         mNc.connect(InetAddress.getLoopbackAddress());
     }
 
     // Convenience method so you can run it in your IDE
     public static void main(String[] args) {
 
-        new Thread(new LibTester()).start();
+        new Thread(new com.lge.notyet.lib.comm.test.MqttChannelTester()).start();
     }
 
     @Override
@@ -85,11 +79,15 @@ public class LibTester implements Runnable {
                 Thread.sleep(1000);
                 i++;
                 if (i % 5 == 0) {
-                    Log.logd("LibTester", "sendRequest: REQ_" + i);
-                    mNc.request(new Uri("/fac/req_res"), "REQ_" + i, mResponseCallback);
+                    Log.logd(LOG_TAG, "sendRequest: REQ_" + i);
+                    JsonObject req_msg = new JsonObject();
+                    req_msg.add("REQ_NUM", i);
+                    mNc.request(new Uri("/fac/req_res"), req_msg, mResponseCallback);
                 } else {
-                    Log.logd("LibTester", "sendMessage: TEST_" + i);
-                    mNc.send(new Uri("/fac/1"), "TEST_" + i);
+                    Log.logd(LOG_TAG, "sendMessage: TEST_" + i);
+                    JsonObject noti_msg = new JsonObject();
+                    noti_msg.add("NOTIFY", i);
+                    mNc.send(new Uri("/fac/1"), noti_msg);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

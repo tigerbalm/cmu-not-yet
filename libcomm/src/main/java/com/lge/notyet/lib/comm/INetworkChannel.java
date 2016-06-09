@@ -11,6 +11,6 @@ public interface INetworkChannel {
 
     void connect(InetAddress ipAddress);
     void subscribe(Uri uri);
-    void send(Uri uri, String msg/* JsonObject obj*/);
-    void request(Uri uri, String msg/* JsonObject obj*/, IMessageCallback responseCb);
+    void send(Uri uri, JsonObject message);
+    void request(Uri uri, JsonObject message, IMessageCallback responseCb);
 }
