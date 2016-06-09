@@ -13,10 +13,7 @@ subprojects {
         jcenter()
         maven { url 'https://repo.eclipse.org/content/repositories/paho-releases/' }
     }
-}
-
-project(':server') {
     dependencies {
-        compile project(':libcomm')
+        compile group: 'com.eclipsesource.minimal-json', name: 'minimal-json', version: '0.9.1'
     }
 }
