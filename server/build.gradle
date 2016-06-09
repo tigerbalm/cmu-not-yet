@@ -10,7 +10,6 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.0'
     compile 'io.vertx:vertx-core:3.2.1'
     compile 'io.vertx:vertx-sql-common:3.2.1'
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
     compile 'io.vertx:vertx-mysql-postgresql-client:3.2.1'
     compile project(':libcomm')
 }
