@@ -5,9 +5,16 @@ package com.lge.notyet.lib.comm;
  */
 public class Uri {
 
-    private String mTopic;
+    public final static String ALL = "#";
+    public final static String ROOT = "/";
 
-    public Uri(String topic) {
-        mTopic = topic;
+    private String mPath;
+
+    public Uri(String path) {
+        mPath = path;
+    }
+
+    public String getPath() {
+        return mPath;
     }
 }
