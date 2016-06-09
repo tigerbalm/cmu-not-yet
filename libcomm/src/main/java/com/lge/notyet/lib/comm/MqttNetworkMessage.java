@@ -1,6 +1,7 @@
 package com.lge.notyet.lib.comm;
 
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.lib.comm.util.Log;
 
 import org.eclipse.paho.client.mqttv3.*;
@@ -29,6 +30,10 @@ public class MqttNetworkMessage extends NetworkMessage {
         return new MqttNetworkMessage(MESSAGE_TYPE_RESPONSE, message);
     }
 
+    static MqttNetworkMessage build(int messageType, JsonObject message) {
+        return new MqttNetworkMessage(messageType, message);
+    }
+
     public void setResponseTopic(MqttAsyncClient nc, String responseTopic) {
         mResponseNetworkChannel = nc;
         mResponseTopic = responseTopic;
@@ -47,10 +52,24 @@ public class MqttNetworkMessage extends NetworkMessage {
         }
 
         MqttNetworkMessage mqttNetworkMessage = buildResponse(message);
+        mqttNetworkMessage.addMessageType(MESSAGE_TYPE_RESPONSE);
 
         try {
             mResponseNetworkChannel.publish(mResponseTopic, new MqttMessage(mqttNetworkMessage.getBytes()));
         } catch (MqttException e) {
         }
+    }
+
+    // Utility Function to support request-response message flow.
+    void addMessageType (int messageType) {
+        JsonObject messageObj = getMessage();
+        JsonValue typeValue = messageObj.get(MSG_TYPE);
+        if (typeValue == null) {
+            messageObj.add(MSG_TYPE, messageType);
+        }
+    }
+
+    void removeMessageType () {
+        getMessage().remove(MSG_TYPE);
     }
 }

@@ -39,8 +39,8 @@ public class MqttNetworkChannel implements INetworkChannel {
 
             JsonObject message = JsonObject.readFrom(new String(mqttMessage.getPayload()));
             int messageType = message.get(NetworkMessage.MSG_TYPE).asInt();
-
-            networkMsg = MqttNetworkMessage.buildRequest(message);
+            networkMsg = MqttNetworkMessage.build(messageType, message);
+            networkMsg.removeMessageType();
 
             //log("messageArrived: topic=" + topic + ", message=" + message);
             if (messageType == NetworkMessage.MESSAGE_TYPE_REQUEST) {
@@ -90,13 +90,15 @@ public class MqttNetworkChannel implements INetworkChannel {
     INetworkCallback mNetworkCallback = null;
     IMessageCallback mMessageCallback = null;
 
-    public MqttNetworkChannel(INetworkCallback networkCb, IMessageCallback msgCb) {
-        mNetworkCallback = networkCb;
+    public MqttNetworkChannel(IMessageCallback msgCb) {
         mMessageCallback = msgCb;
     }
 
     @Override
-    public void connect(InetAddress ipAddress) {
+    public void connect(InetAddress ipAddress, INetworkCallback networkCb) {
+
+        mNetworkCallback = networkCb;
+
         try {
             mMqttAsyncClient = new MqttAsyncClient("tcp://" + ipAddress.getHostAddress(), MqttAsyncClient.generateClientId());
 
@@ -121,6 +123,7 @@ public class MqttNetworkChannel implements INetworkChannel {
     public void send(Uri uri, JsonObject message) {
 
         MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.buildMessage(message);
+        mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
         try {
             mMqttAsyncClient.publish(uri.getPath(), new MqttMessage(mqttNetworkMessage.getBytes()));
@@ -136,6 +139,7 @@ public class MqttNetworkChannel implements INetworkChannel {
         mRequestCbMap.put(uri.getPath() + RESPONSE_TOPIC + sequnceNumer, responseCb);
 
         MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.buildRequest(message);
+        mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_REQUEST);
 
         try {
             mMqttAsyncClient.subscribe(uri.getPath() + RESPONSE_TOPIC + sequnceNumer, 2);

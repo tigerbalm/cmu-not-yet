@@ -2,6 +2,7 @@ package com.lge.notyet.verticle;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.lib.comm.test.MqttChannelTester;
 import com.lge.notyet.lib.comm.util.Log;
 
 import java.net.InetAddress;
@@ -11,7 +12,7 @@ public class LibTester implements Runnable {
 
     private static final String LOG_TAG = "LibTester";
 
-    private MqttNetworkChannel mNc = null;
+    private INetworkChannel mNc = null;
     private INetworkCallback mNetworkCallback = new INetworkCallback() {
 
         @Override
@@ -42,7 +43,8 @@ public class LibTester implements Runnable {
                 Log.logd(LOG_TAG, "onRequested:" + msg.getMessage());
 
                 JsonObject resp_msg = new JsonObject();
-                resp_msg.add("RESPONSE: ", msg.getMessage());
+                resp_msg.add("type", "response");
+                resp_msg.add("received message", msg.getMessage());
                 msg.response(resp_msg);
 
             } else {
@@ -61,14 +63,14 @@ public class LibTester implements Runnable {
 
     public LibTester() {
 
-        mNc = new MqttNetworkChannel(mNetworkCallback, mMessageCallback);
-        mNc.connect(InetAddress.getLoopbackAddress());
+        mNc = new MqttNetworkChannel(mMessageCallback);
+        mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 
     // Convenience method so you can run it in your IDE
     public static void main(String[] args) {
 
-        new Thread(new com.lge.notyet.lib.comm.test.MqttChannelTester()).start();
+        new Thread(new LibTester()).start();
     }
 
     @Override
@@ -81,12 +83,14 @@ public class LibTester implements Runnable {
                 if (i % 5 == 0) {
                     Log.logd(LOG_TAG, "sendRequest: REQ_" + i);
                     JsonObject req_msg = new JsonObject();
-                    req_msg.add("REQ_NUM", i);
+                    req_msg.add("type", "request");
+                    req_msg.add("number", i);
                     mNc.request(new Uri("/fac/req_res"), req_msg, mResponseCallback);
                 } else {
                     Log.logd(LOG_TAG, "sendMessage: TEST_" + i);
                     JsonObject noti_msg = new JsonObject();
-                    noti_msg.add("NOTIFY", i);
+                    noti_msg.add("type", "notify");
+                    noti_msg.add("number", i);
                     mNc.send(new Uri("/fac/1"), noti_msg);
                 }
             } catch (InterruptedException e) {

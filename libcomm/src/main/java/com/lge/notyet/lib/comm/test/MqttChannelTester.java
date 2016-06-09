@@ -15,7 +15,7 @@ public class MqttChannelTester implements Runnable {
 
     private static final String LOG_TAG = "MqttChannelTester";
 
-    private MqttNetworkChannel mNc = null;
+    private INetworkChannel mNc = null;
     private INetworkCallback mNetworkCallback = new INetworkCallback() {
 
         @Override
@@ -46,7 +46,8 @@ public class MqttChannelTester implements Runnable {
                 Log.logd(LOG_TAG, "onRequested:" + msg.getMessage());
 
                 JsonObject resp_msg = new JsonObject();
-                resp_msg.add("RESPONSE: ", msg.getMessage());
+                resp_msg.add("type", "response");
+                resp_msg.add("received message", msg.getMessage());
                 msg.response(resp_msg);
 
             } else {
@@ -65,8 +66,8 @@ public class MqttChannelTester implements Runnable {
 
     public MqttChannelTester() {
 
-        mNc = new MqttNetworkChannel(mNetworkCallback, mMessageCallback);
-        mNc.connect(InetAddress.getLoopbackAddress());
+        mNc = new MqttNetworkChannel(mMessageCallback);
+        mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 
     // Convenience method so you can run it in your IDE
@@ -85,12 +86,14 @@ public class MqttChannelTester implements Runnable {
                 if (i % 5 == 0) {
                     Log.logd(LOG_TAG, "sendRequest: REQ_" + i);
                     JsonObject req_msg = new JsonObject();
-                    req_msg.add("REQ_NUM", i);
+                    req_msg.add("type", "request");
+                    req_msg.add("number", i);
                     mNc.request(new Uri("/fac/req_res"), req_msg, mResponseCallback);
                 } else {
                     Log.logd(LOG_TAG, "sendMessage: TEST_" + i);
                     JsonObject noti_msg = new JsonObject();
-                    noti_msg.add("NOTIFY", i);
+                    noti_msg.add("type", "notify");
+                    noti_msg.add("number", i);
                     mNc.send(new Uri("/fac/1"), noti_msg);
                 }
             } catch (InterruptedException e) {

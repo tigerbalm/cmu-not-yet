@@ -8,45 +8,29 @@ import com.eclipsesource.json.JsonValue;
  */
 public abstract class NetworkMessage {
 
+    public static final int MESSAGE_TYPE_UNKNOWN = -1;
     public static final int MESSAGE_TYPE_NOTIFICATION = 0;
     public static final int MESSAGE_TYPE_REQUEST = 1;
     public static final int MESSAGE_TYPE_RESPONSE = 2;
 
-    static final String MSG_TYPE = "_msg_type_";
+    static final String MSG_TYPE = "_msg_type"; // Reserved
 
-    private JsonObject mMessage;
+    private JsonObject mMessage = null;
+    private int mMessageType = MESSAGE_TYPE_UNKNOWN;
 
     protected NetworkMessage(int messageType, JsonObject message) {
-
-        JsonValue jtype = message.get(MSG_TYPE);
-
-        if (jtype != null) {
-            mMessage = message;
-
-            /*
-            int type = jtype.asInt();
-            if (type != messageType) {
-                mMessage.set(MSG_TYPE, messageType);
-            }
-            */
-        } else {
-
-            mMessage = message;
-            mMessage.add(MSG_TYPE, messageType);
-        }
+        mMessageType = messageType;
+        mMessage = message;
     }
 
     public boolean isRequest() {
-        return mMessage.get(MSG_TYPE).asInt() == MESSAGE_TYPE_REQUEST;
+        return mMessageType == MESSAGE_TYPE_REQUEST;
     }
-
-
     public JsonObject getMessage() {
         return mMessage;
     }
 
     abstract protected void response_impl(JsonObject message);
-
     public void response(JsonObject message) {
         response_impl(message);
     }
