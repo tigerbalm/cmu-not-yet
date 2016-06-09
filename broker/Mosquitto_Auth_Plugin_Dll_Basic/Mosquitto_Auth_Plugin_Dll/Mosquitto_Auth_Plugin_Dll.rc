@@ -83,13 +83,13 @@ BEGIN
 	BEGIN
         BLOCK "040904e4"
 		BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
-            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "CompanyName", "LG Electronics"
+            VALUE "FileDescription", "MQTT broker to connect to mysql database and authenticate"
 			VALUE "FileVersion",     "1.0.0.1"
 			VALUE "InternalName",    "Mosquitto_Auth_Plugin_Dll.dll"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "LegalCopyright", "(c) LG Electronics.  All rights reserved."
 			VALUE "OriginalFilename","Mosquitto_Auth_Plugin_Dll.dll"
-            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductName", "Parking System"
 			VALUE "ProductVersion",  "1.0.0.1"
 		END
 	END
