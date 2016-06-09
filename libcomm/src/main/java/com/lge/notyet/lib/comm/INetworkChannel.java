@@ -1,7 +1,5 @@
 package com.lge.notyet.lib.comm;
 
-import io.vertx.core.json.JsonObject;
-
 import java.net.InetAddress;
 
 /**
