@@ -5,7 +5,8 @@ if (!JavaVersion.current().java8Compatible) {
                                     |  Refresh. Try again.'''.stripMargin())
 }
 
+include ':libcomm'
 include ':server'
 include ':application'
-include 'libcomm'
+
 

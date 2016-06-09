@@ -6,9 +6,17 @@ buildscript {
     }
 }
 
-allprojects {
+subprojects {
+    apply plugin: "java"
     repositories {
+        mavenCentral()
         jcenter()
         maven { url 'https://repo.eclipse.org/content/repositories/paho-releases/' }
+    }
+}
+
+project(':server') {
+    dependencies {
+        compile project(':libcomm')
     }
 }
