@@ -1,0 +1,14 @@
+; Mosquitto_Auth_Plugin_Dll.def : Declares the module parameters for the DLL.
+
+LIBRARY      "Mosquitto_Auth_Plugin_Dll"
+
+EXPORTS
+    ; Explicit exports can go here
+	mosquitto_auth_plugin_version
+	mosquitto_auth_plugin_init
+	mosquitto_auth_plugin_cleanup
+	mosquitto_auth_security_init
+	mosquitto_auth_security_cleanup
+	mosquitto_auth_acl_check
+	mosquitto_auth_unpwd_check
+	mosquitto_auth_psk_key_get
