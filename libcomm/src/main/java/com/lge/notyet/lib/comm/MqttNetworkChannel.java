@@ -5,12 +5,12 @@ package com.lge.notyet.lib.comm;
  */
 
 import com.lge.notyet.lib.comm.util.Log;
-import io.vertx.core.json.JsonObject;
 import org.eclipse.paho.client.mqttv3.*;
 
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import com.eclipsesource.json.JsonObject;
 
 public class MqttNetworkChannel implements INetworkChannel {
 
@@ -23,13 +23,11 @@ public class MqttNetworkChannel implements INetworkChannel {
     private MqttAsyncClient mMqttAsyncClient = null;
     private MqttCallback mMqttCallback = new MqttCallback() {
 
-        @Override
         public void connectionLost(Throwable throwable) {
             log("connectionLost");
             if (mNetworkCallback != null) mNetworkCallback.onLost();
         }
 
-        @Override
         public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
             IMessageCallback rspCb = null;
             String message = new String(mqttMessage.getPayload());
@@ -46,7 +44,6 @@ public class MqttNetworkChannel implements INetworkChannel {
             if (mMessageCallback != null && rspCb == null) mMessageCallback.onMessage(topic, message);
         }
 
-        @Override
         public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
             logv("deliveryComplete");
             //TODO: Do something later
@@ -54,13 +51,11 @@ public class MqttNetworkChannel implements INetworkChannel {
         }
     };
     private IMqttActionListener mMqttConnectListener = new IMqttActionListener() {
-        @Override
         public void onSuccess(IMqttToken iMqttToken) {
             log("connected to server");
             mNetworkCallback.onConnected();
         }
 
-        @Override
         public void onFailure(IMqttToken iMqttToken, Throwable throwable) {
             mNetworkCallback.onConnectFailed();
         }
@@ -75,7 +70,6 @@ public class MqttNetworkChannel implements INetworkChannel {
         mMessageCallback = msgCb;
     }
 
-    @Override
     public void connect(InetAddress ipAddress) {
         try {
             mMqttAsyncClient = new MqttAsyncClient("tcp://" + ipAddress.getHostAddress(), MqttAsyncClient.generateClientId());
@@ -88,7 +82,6 @@ public class MqttNetworkChannel implements INetworkChannel {
         }
     }
 
-    @Override
     public void subscribe(Uri uri) {
         try {
             mMqttAsyncClient.subscribe(uri.getPath(), 2);
@@ -97,7 +90,6 @@ public class MqttNetworkChannel implements INetworkChannel {
         }
     }
 
-    @Override
     public void send(Uri uri, String msg/* JsonObject obj*/) {
         try {
             mMqttAsyncClient.publish(uri.getPath(), new MqttMessage(msg.getBytes()));
@@ -105,7 +97,6 @@ public class MqttNetworkChannel implements INetworkChannel {
         }
     }
 
-    @Override
     public void request(Uri uri, String msg/* JsonObject obj*/, IMessageCallback responseCb) {
 
         // TODO: Will be fixed later, just for fast experimental.
