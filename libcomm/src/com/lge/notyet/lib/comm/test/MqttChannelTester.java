@@ -1,4 +1,4 @@
-package com.lge.noyet.lib.comm.test;
+package com.lge.notyet.lib.comm.test;
 
 /**
  * Created by beney.kim on 2016-06-09.
