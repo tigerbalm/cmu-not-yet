@@ -16,7 +16,10 @@ public class MainVerticle extends AbstractVerticle {
 
     private Future<Void> prepareNetwork() {
         final Future<Void> networkReady = Future.future();
-        networkChannel = new MqttNetworkChannel(new INetworkCallback() {
+        networkChannel = new MqttNetworkChannel((topic, msg) -> {
+            // TODO
+        });
+        networkChannel.connect(InetAddress.getLoopbackAddress(), new INetworkCallback() {
             @Override
             public void onConnected() {
                 System.out.println("network ready");
@@ -33,13 +36,7 @@ public class MainVerticle extends AbstractVerticle {
             public void onLost() {
                 // TODO
             }
-        }, new IMessageCallback() {
-            @Override
-            public void onMessage(String topic, NetworkMessage msg) {
-                // TODO
-            }
         });
-        networkChannel.connect(InetAddress.getLoopbackAddress());
         return networkReady;
     }
 
