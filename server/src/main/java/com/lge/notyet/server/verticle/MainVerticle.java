@@ -1,56 +1,40 @@
 package com.lge.notyet.server.verticle;
 
-import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.server.manager.CommunicationManager;
 import com.lge.notyet.server.manager.DatabaseManager;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Launcher;
-
-import java.net.InetAddress;
+import io.vertx.core.*;
 
 public class MainVerticle extends AbstractVerticle {
     private DatabaseManager databaseManager;
-    private INetworkChannel networkChannel;
-
-    private Future<Void> prepareNetwork() {
-        final Future<Void> networkReady = Future.future();
-        networkChannel = new MqttNetworkChannel((topic, msg) -> {
-            // TODO
-        });
-        networkChannel.connect(InetAddress.getLoopbackAddress(), new INetworkCallback() {
-            @Override
-            public void onConnected() {
-                System.out.println("network ready");
-                networkReady.complete();
-            }
-
-            @Override
-            public void onConnectFailed() {
-                System.out.println("failed to connect");
-                networkReady.fail("failed to connect");
-            }
-
-            @Override
-            public void onLost() {
-                // TODO
-            }
-        });
-        return networkReady;
-    }
-
-    private Future<Void> prepareDatabase() {
-        databaseManager = DatabaseManager.getInstance(vertx);
-        return databaseManager.start();
-    }
+    private CommunicationManager communicationManager;
 
     @Override
     public void start(final Future<Void> startFuture) throws Exception {
-        CompositeFuture.all(prepareNetwork(), prepareDatabase()).setHandler(ar -> {
+        communicationManager = CommunicationManager.getInstance(vertx);
+        Future<Void> communicationReady = communicationManager.start((topic, message) -> {
+            System.out.println("message received");
+            System.out.println(topic);
+            System.out.println(message);
+        });
+        databaseManager = DatabaseManager.getInstance(vertx);
+        Future<Void> databaseReady = databaseManager.start();
+
+        CompositeFuture.all(communicationReady, databaseReady).setHandler(ar -> {
             if (ar.succeeded()) {
                 startFuture.complete();
             } else {
                 startFuture.fail(ar.cause());
+            }
+        });
+    }
+
+    @Override
+    public void stop(Future<Void> stopFuture) throws Exception {
+        CompositeFuture.all(communicationManager.stop(), databaseManager.stop()).setHandler(ar -> {
+            if (ar.succeeded()) {
+                stopFuture.complete();
+            } else {
+                stopFuture.fail(ar.cause());
             }
         });
     }
