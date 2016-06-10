@@ -5,10 +5,7 @@ package com.lge.notyet.lib.comm;
  */
 public class Uri {
 
-    public final static String ALL = "#";
-    public final static String ROOT = "/";
-
-    private String mPath;
+    private String mPath = null;
 
     public Uri(String path) {
         mPath = path;

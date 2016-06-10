@@ -1,15 +1,17 @@
 package com.lge.notyet.lib.comm;
 
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
-import com.lge.notyet.lib.comm.util.Log;
-
-import org.eclipse.paho.client.mqttv3.*;
-
 /**
  * Created by beney.kim on 2016-06-10.
  */
+
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+import org.eclipse.paho.client.mqttv3.*;
+
 public class MqttNetworkMessage extends NetworkMessage {
+
+    static final String REQUEST_TOPIC = "/request/";
+    static final String RESPONSE_TOPIC = "/response/";
 
     private MqttAsyncClient mResponseNetworkChannel = null;
     private String mResponseTopic = null;
@@ -18,45 +20,45 @@ public class MqttNetworkMessage extends NetworkMessage {
         super(messageType, message);
     }
 
-    public static MqttNetworkMessage buildMessage(JsonObject message) {
-        return new MqttNetworkMessage(MESSAGE_TYPE_NOTIFICATION, message);
-    }
-
-    public static MqttNetworkMessage buildRequest(JsonObject message) {
-        return new MqttNetworkMessage(MESSAGE_TYPE_REQUEST, message);
-    }
-
-    protected MqttNetworkMessage buildResponse(JsonObject message) {
-        return new MqttNetworkMessage(MESSAGE_TYPE_RESPONSE, message);
-    }
-
     static MqttNetworkMessage build(int messageType, JsonObject message) {
         return new MqttNetworkMessage(messageType, message);
     }
 
-    public void setResponseTopic(MqttAsyncClient nc, String responseTopic) {
+    void makeResponseInfo(MqttAsyncClient nc, String topic) throws UnsupportedOperationException {
+
+        if (topic.contains(REQUEST_TOPIC) == false) {
+           throw new UnsupportedOperationException("this request type message has wrong topic, topic=" + topic);
+        }
+
+        String responseTopic = new String(topic);
+        responseTopic = responseTopic.replace(REQUEST_TOPIC, RESPONSE_TOPIC);
+
         mResponseNetworkChannel = nc;
         mResponseTopic = responseTopic;
     }
 
-    public byte[] getBytes() {
+    byte[] getBytes() {
         return getMessage().toString().getBytes();
     }
 
     @Override
-    protected void response_impl(JsonObject message) {
-
+    protected void response_impl(JsonObject message) throws ExceptionInInitializerError {
 
         if (mResponseNetworkChannel == null) {
-            // error
+            throw new ExceptionInInitializerError("response channel is null");
         }
 
-        MqttNetworkMessage mqttNetworkMessage = buildResponse(message);
+        if (mResponseTopic == null) {
+            throw new ExceptionInInitializerError("response topic channel is null");
+        }
+
+        MqttNetworkMessage mqttNetworkMessage = new MqttNetworkMessage(MESSAGE_TYPE_RESPONSE, message);
         mqttNetworkMessage.addMessageType(MESSAGE_TYPE_RESPONSE);
 
         try {
             mResponseNetworkChannel.publish(mResponseTopic, new MqttMessage(mqttNetworkMessage.getBytes()));
         } catch (MqttException e) {
+            // TODO: Add Exception Handler
         }
     }
 
@@ -66,10 +68,13 @@ public class MqttNetworkMessage extends NetworkMessage {
         JsonValue typeValue = messageObj.get(MSG_TYPE);
         if (typeValue == null) {
             messageObj.add(MSG_TYPE, messageType);
+        } else {
+            // TODO: Add Exception Handler
         }
     }
 
     void removeMessageType () {
-        getMessage().remove(MSG_TYPE);
+        JsonObject messageObj = getMessage();
+        messageObj.remove(MSG_TYPE);
     }
 }

@@ -2,7 +2,6 @@ package com.lge.notyet.verticle;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
-import com.lge.notyet.lib.comm.test.MqttChannelTester;
 import com.lge.notyet.lib.comm.util.Log;
 
 import java.net.InetAddress;
@@ -13,7 +12,7 @@ public class LibTester implements Runnable {
     private static final String LOG_TAG = "LibTester";
 
     private INetworkChannel mNc = null;
-    private INetworkCallback mNetworkCallback = new INetworkCallback() {
+    private final INetworkCallback mNetworkCallback = new INetworkCallback() {
 
         @Override
         public void onConnected() {
@@ -29,10 +28,11 @@ public class LibTester implements Runnable {
         @Override
         public void onLost() {
             Log.logd(LOG_TAG, "onLost");
+            mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
         }
     };
 
-    private IMessageCallback mMessageCallback = new IMessageCallback() {
+    final IMessageCallback mMessageCallback = new IMessageCallback() {
 
         @Override
         public void onMessage(String topic, NetworkMessage msg) {
@@ -53,7 +53,7 @@ public class LibTester implements Runnable {
         }
     };
 
-    private IMessageCallback mResponseCallback = new IMessageCallback() {
+    private final IMessageCallback mResponseCallback = new IMessageCallback() {
 
         @Override
         public void onMessage(String topic, NetworkMessage msg) {
@@ -63,7 +63,7 @@ public class LibTester implements Runnable {
 
     public LibTester() {
 
-        mNc = new MqttNetworkChannel(mMessageCallback);
+        mNc = new MqttNetworkChannel("beney", mMessageCallback);
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 
@@ -81,17 +81,25 @@ public class LibTester implements Runnable {
                 Thread.sleep(1000);
                 i++;
                 if (i % 5 == 0) {
-                    Log.logd(LOG_TAG, "sendRequest: REQ_" + i);
                     JsonObject req_msg = new JsonObject();
                     req_msg.add("type", "request");
                     req_msg.add("number", i);
-                    mNc.request(new Uri("/fac/req_res"), req_msg, mResponseCallback);
+                    if (mNc.isConnected())  {
+                        Log.logd(LOG_TAG, "sendRequest: REQ_" + i);
+                        mNc.request(new Uri("/fac/req_res"), req_msg, mResponseCallback);
+                    }
                 } else {
-                    Log.logd(LOG_TAG, "sendMessage: TEST_" + i);
                     JsonObject noti_msg = new JsonObject();
                     noti_msg.add("type", "notify");
                     noti_msg.add("number", i);
-                    mNc.send(new Uri("/fac/1"), noti_msg);
+                    if (mNc.isConnected()) {
+                        Log.logd(LOG_TAG, "sendMessage: TEST_" + i);
+                        mNc.send(new Uri("/fac/1"), noti_msg);
+                    }
+
+                    if (i % 8 == 0) {
+                        if (mNc.isConnected()) mNc.disconnect();
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -5,30 +5,27 @@ package com.lge.notyet.lib.comm;
  */
 
 import com.lge.notyet.lib.comm.util.Log;
-import org.eclipse.paho.client.mqttv3.*;
-
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import com.eclipsesource.json.JsonObject;
+import java.net.InetAddress;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashMap;
+import org.eclipse.paho.client.mqttv3.*;
 
 public class MqttNetworkChannel implements INetworkChannel {
 
     private static final String LOG_TAG = "MqttNetworkChannel";
 
-    private static final String REQUEST_TOPIC = "/request/";
-    private static final String RESPONSE_TOPIC = "/response/";
-
     private final HashMap<String, IMessageCallback> mRequestCbMap = new HashMap<String, IMessageCallback>();
-    private AtomicInteger mRequestSequnceNumber = new AtomicInteger(0);
+    private static final AtomicInteger sRequestSequenceNumber = new AtomicInteger(0);
 
     // MQTT Variables
+    private static final int DEFAULT_MQTT_QOS = 2;
     private MqttAsyncClient mMqttAsyncClient = null;
-    private MqttCallback mMqttCallback = new MqttCallback() {
+    private final MqttCallback mMqttCallback = new MqttCallback() {
 
         @Override
         public void connectionLost(Throwable throwable) {
-            log("connectionLost");
+            logv("connectionLost");
             if (mNetworkCallback != null) mNetworkCallback.onLost();
         }
 
@@ -37,28 +34,50 @@ public class MqttNetworkChannel implements INetworkChannel {
             IMessageCallback rspCb = null;
             MqttNetworkMessage networkMsg = null;
 
+            if (mqttMessage == null) {
+                throw new NullPointerException("received null message on topic=" + topic);
+            }
+
             JsonObject message = JsonObject.readFrom(new String(mqttMessage.getPayload()));
-            int messageType = message.get(NetworkMessage.MSG_TYPE).asInt();
+            if (message == null) {
+                throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage.toString() + " on topic=" + topic);
+            }
+
+            int messageType = NetworkMessage.MESSAGE_TYPE_UNKNOWN;
+
+            try {
+                messageType = message.get(NetworkMessage.MSG_TYPE).asInt();
+            } catch (UnsupportedOperationException uoe) {
+                // We will throw this exception, now, but can be added some handling later.
+                throw uoe;
+            }
+
             networkMsg = MqttNetworkMessage.build(messageType, message);
             networkMsg.removeMessageType();
 
-            //log("messageArrived: topic=" + topic + ", message=" + message);
-            if (messageType == NetworkMessage.MESSAGE_TYPE_REQUEST) {
+            if (topic == null) {
+                log("received message=" + message + " on null topic");
+            }
 
-                String responseTopic = new String(topic);
-                responseTopic = responseTopic.replace("/request/", "/response/");
-                networkMsg.setResponseTopic(mMqttAsyncClient, responseTopic);
+            logv("received message=" + message + " on topic=" + topic);
+
+            if (messageType == NetworkMessage.MESSAGE_TYPE_REQUEST) {
+                try {
+                    networkMsg.makeResponseInfo(mMqttAsyncClient, topic);
+                } catch (UnsupportedOperationException uoe) {
+                    log(uoe.toString());
+                    throw uoe;
+                }
             }
 
             if (messageType == NetworkMessage.MESSAGE_TYPE_RESPONSE) {
                 if (mRequestCbMap.containsKey(topic)) {
-
                     rspCb = mRequestCbMap.get(topic);
                     if (rspCb != null) {
                         rspCb.onMessage(topic, networkMsg);
                     }
-                    mMqttAsyncClient.unsubscribe(topic);
                     mRequestCbMap.remove(topic);
+                    mMqttAsyncClient.unsubscribe(topic);
                 }
             }
 
@@ -68,29 +87,37 @@ public class MqttNetworkChannel implements INetworkChannel {
         @Override
         public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
             logv("deliveryComplete");
-            //TODO: Do something later
-            if (mNetworkCallback != null) ;
+
+            // TODO: Should we add notification?
         }
     };
-    private IMqttActionListener mMqttConnectListener = new IMqttActionListener() {
+
+    private final IMqttActionListener mMqttConnectListener = new IMqttActionListener() {
 
         @Override
         public void onSuccess(IMqttToken iMqttToken) {
-            log("connected to server");
-            mNetworkCallback.onConnected();
+            logv("connected to server");
+            if (mNetworkCallback != null) mNetworkCallback.onConnected();
         }
 
         @Override
         public void onFailure(IMqttToken iMqttToken, Throwable throwable) {
-            mNetworkCallback.onConnectFailed();
+            logv("failed to connect to server");
+            if (mNetworkCallback != null) mNetworkCallback.onConnectFailed();
         }
     };
 
     // Internal Variables
-    INetworkCallback mNetworkCallback = null;
-    IMessageCallback mMessageCallback = null;
+    private String mName = null;
+    private INetworkCallback mNetworkCallback = null;
+    private IMessageCallback mMessageCallback = null;
 
     public MqttNetworkChannel(IMessageCallback msgCb) {
+        mMessageCallback = msgCb;
+    }
+
+    public MqttNetworkChannel(String name, IMessageCallback msgCb) {
+        mName = name;
         mMessageCallback = msgCb;
     }
 
@@ -106,15 +133,47 @@ public class MqttNetworkChannel implements INetworkChannel {
             mMqttAsyncClient.connect(null, mMqttConnectListener);
 
         } catch (MqttException e) {
-
+            // TODO: Add Exception Handler
+            e.printStackTrace();
         }
+    }
+
+    @Override
+    public void disconnect() {
+
+        try {
+            mMqttAsyncClient.disconnect();
+
+            // TODO: Should we call onLost() or make one more function like onDisconnected()?
+            if (mNetworkCallback != null) mNetworkCallback.onLost();
+
+        } catch (MqttException e) {
+            // TODO: Add Exception Handler
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean isConnected() {
+        return mMqttAsyncClient.isConnected();
     }
 
     @Override
     public void subscribe(Uri uri) {
         try {
-            mMqttAsyncClient.subscribe(uri.getPath(), 2);
+            mMqttAsyncClient.subscribe(uri.getPath(), DEFAULT_MQTT_QOS);
         } catch (MqttException e) {
+            // TODO: Add Exception Handler
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void unsubscribe(Uri uri) {
+        try {
+            mMqttAsyncClient.unsubscribe(uri.getPath());
+        } catch (MqttException e) {
+            // TODO: Add Exception Handler
             e.printStackTrace();
         }
     }
@@ -122,38 +181,46 @@ public class MqttNetworkChannel implements INetworkChannel {
     @Override
     public void send(Uri uri, JsonObject message) {
 
-        MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.buildMessage(message);
+        MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION, message);
         mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
         try {
             mMqttAsyncClient.publish(uri.getPath(), new MqttMessage(mqttNetworkMessage.getBytes()));
         } catch (MqttException e) {
+            // TODO: Add Exception Handler
+            e.printStackTrace();
         }
     }
 
     @Override
     public void request(Uri uri, JsonObject message, IMessageCallback responseCb) {
 
-        // TODO: Will be fixed later, just for fast experimental.
-        int sequnceNumer = mRequestSequnceNumber.addAndGet(1);
-        mRequestCbMap.put(uri.getPath() + RESPONSE_TOPIC + sequnceNumer, responseCb);
+        int sequenceNumber = sRequestSequenceNumber.addAndGet(1);
+        try {
+            mRequestCbMap.put(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, responseCb);
+            mMqttAsyncClient.subscribe(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, DEFAULT_MQTT_QOS);
+        } catch (MqttException e) {
+            // TODO: Add Exception Handler
+            e.printStackTrace();
+        }
 
-        MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.buildRequest(message);
+        MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_REQUEST, message);
         mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_REQUEST);
 
         try {
-            mMqttAsyncClient.subscribe(uri.getPath() + RESPONSE_TOPIC + sequnceNumer, 2);
-            mMqttAsyncClient.publish(uri.getPath() + REQUEST_TOPIC + sequnceNumer, new MqttMessage(mqttNetworkMessage.getBytes()));
-
+            mMqttAsyncClient.publish(uri.getPath() + MqttNetworkMessage.REQUEST_TOPIC + sequenceNumber, new MqttMessage(mqttNetworkMessage.getBytes()));
         } catch (MqttException e) {
+            // TODO: Add Exception Handler
+            e.printStackTrace();
         }
     }
 
-    public void log (String log) {
-        Log.logd(LOG_TAG, log);
+    // Log functions
+    private  void log (String log) {
+        Log.logd(LOG_TAG + "-" + mName, log);
     }
 
-    public void logv(String log) {
-        Log.logv(LOG_TAG, log);
+    private  void logv(String log) {
+        Log.logv(LOG_TAG + "-" + mName, log);
     }
 }
