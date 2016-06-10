@@ -1,11 +1,10 @@
-package com.lge.notyet.verticle;
+package com.lge.notyet.server.verticle;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.util.Log;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class LibTester implements Runnable {
 

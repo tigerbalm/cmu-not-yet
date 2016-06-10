@@ -1,17 +1,16 @@
-package com.lge.notyet.verticle;
+package com.lge.notyet.server.verticle;
 
 import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.server.manager.DatabaseManager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Launcher;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.asyncsql.AsyncSQLClient;
-import io.vertx.ext.asyncsql.MySQLClient;
 
 import java.net.InetAddress;
 
 public class MainVerticle extends AbstractVerticle {
+    private DatabaseManager databaseManager;
     private INetworkChannel networkChannel;
 
     private Future<Void> prepareNetwork() {
@@ -41,22 +40,8 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private Future<Void> prepareDatabase() {
-        final Future<Void> databaseReady = Future.future();
-        JsonObject mysqlConfig = new JsonObject().
-                put("host", "127.0.0.1").
-                put("username", "dba").
-                put("password", "dba").
-                put("database", "sure-park");
-        AsyncSQLClient mysqlClient = MySQLClient.createShared(vertx, mysqlConfig, "MySQLPool1");
-        mysqlClient.getConnection(res -> {
-            if (res.succeeded()) {
-                System.out.println("database ready");
-                databaseReady.complete();
-            } else {
-                databaseReady.fail(res.cause());
-            }
-        });
-        return databaseReady;
+        databaseManager = DatabaseManager.getInstance(vertx);
+        return databaseManager.start();
     }
 
     @Override
