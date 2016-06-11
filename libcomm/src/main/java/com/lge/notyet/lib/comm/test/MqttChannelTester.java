@@ -9,10 +9,11 @@ import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.util.Log;
 
 import java.net.InetAddress;
+import java.util.Random;
 
 public class MqttChannelTester implements Runnable {
 
-    private static final String LOG_TAG = "MqttChannelTester";
+    private static final String LOG_TAG = "MqttChannelTester-1";
 
     private INetworkChannel mNc = null;
     private final INetworkCallback mNetworkCallback = new INetworkCallback() {
@@ -20,7 +21,7 @@ public class MqttChannelTester implements Runnable {
         @Override
         public void onConnected() {
             Log.logd(LOG_TAG, "onConnected");
-            mNc.subscribe(new Uri("/fac/#"));
+            mNc.subscribe(new Uri("/fac/1/#"));
         }
 
         @Override
@@ -60,13 +61,21 @@ public class MqttChannelTester implements Runnable {
 
         @Override
         public void onMessage(String topic, NetworkMessage msg) {
-            Log.logd(LOG_TAG, "mResponseCallback:" + msg.getMessage());
+            Log.logd(LOG_TAG, "onResponse:" + msg.getMessage());
+        }
+    };
+
+    private final IMessageTimeoutCallback mRequestTimeoutCallback = new IMessageTimeoutCallback() {
+
+        @Override
+        public void onMessageTimeout(Uri uri) {
+            Log.logd(LOG_TAG, "onMessageTimeout on " + uri.getPath());
         }
     };
 
     public MqttChannelTester() {
 
-        mNc = new MqttNetworkChannel("beney", mMessageCallback);
+        mNc = new MqttPassiveRedundancyNetworkChannel("server", new MqttNetworkChannel("beney", mMessageCallback));
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 
@@ -89,7 +98,7 @@ public class MqttChannelTester implements Runnable {
                     req_msg.add("number", i);
                     if (mNc.isConnected())  {
                         Log.logd(LOG_TAG, "sendRequest: REQ_" + i);
-                        mNc.request(new Uri("/fac/req_res"), req_msg, mResponseCallback);
+                        mNc.request(new Uri("/fac/1/req_res"), req_msg, mResponseCallback, mRequestTimeoutCallback);
                     }
                 } else {
                     JsonObject noti_msg = new JsonObject();
@@ -97,11 +106,7 @@ public class MqttChannelTester implements Runnable {
                     noti_msg.add("number", i);
                     if (mNc.isConnected()) {
                         Log.logd(LOG_TAG, "sendMessage: TEST_" + i);
-                        mNc.send(new Uri("/fac/1"), noti_msg);
-                    }
-
-                    if (i % 8 == 0) {
-                        if (mNc.isConnected()) mNc.disconnect();
+                        mNc.send(new Uri("/fac/1/noti"), noti_msg);
                     }
                 }
             } catch (InterruptedException e) {

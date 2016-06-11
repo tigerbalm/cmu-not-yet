@@ -8,11 +8,15 @@ import com.eclipsesource.json.JsonObject;
 import java.net.InetAddress;
 
 public interface INetworkChannel {
-    void connect(InetAddress ipAddress, INetworkCallback networkCb);
+
+    void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException;
     void disconnect();
     boolean isConnected();
+
     void subscribe(Uri uri);
     void unsubscribe(Uri uri);
+
     void send(Uri uri, JsonObject message);
     void request(Uri uri, JsonObject message, IMessageCallback responseCb);
+    void request(Uri uri, JsonObject message, IMessageCallback responseCb, IMessageTimeoutCallback timeoutCallback);
 }

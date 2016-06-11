@@ -10,7 +10,6 @@ public class Uri {
     public Uri(String path) {
         mPath = path;
     }
-
     public String getPath() {
         return mPath;
     }

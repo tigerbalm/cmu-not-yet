@@ -2,20 +2,35 @@ package com.lge.notyet.lib.comm;
 
 /**
  * Created by beney.kim on 2016-06-09.
+ * This class provide INetworkChannel implementation based on  Mqtt.
  */
 
-import com.lge.notyet.lib.comm.util.Log;
+import org.eclipse.paho.client.mqttv3.*;
 import com.eclipsesource.json.JsonObject;
 import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.HashMap;
-import org.eclipse.paho.client.mqttv3.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
-public class MqttNetworkChannel implements INetworkChannel {
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+public class MqttNetworkChannel extends BaseNetworkChannel {
 
     private static final String LOG_TAG = "MqttNetworkChannel";
 
-    private final HashMap<String, IMessageCallback> mRequestCbMap = new HashMap<String, IMessageCallback>();
+    private class RequestMessageCallback {
+
+        RequestMessageCallback (IMessageCallback messageCallback, IMessageTimeoutCallback messageTimeoutCallback) {
+            mIMessageCallback = messageCallback;
+            mIMessageTimeoutCallback = messageTimeoutCallback;
+        }
+
+        IMessageCallback mIMessageCallback = null;
+        IMessageTimeoutCallback mIMessageTimeoutCallback = null;
+    }
+
+    private final ConcurrentHashMap<String, RequestMessageCallback> mRequestCbMap = new ConcurrentHashMap<>();
     private static final AtomicInteger sRequestSequenceNumber = new AtomicInteger(0);
 
     // MQTT Variables
@@ -31,28 +46,32 @@ public class MqttNetworkChannel implements INetworkChannel {
 
         @Override
         public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-            IMessageCallback rspCb = null;
-            MqttNetworkMessage networkMsg = null;
+            RequestMessageCallback rspCbs = null;
 
             if (mqttMessage == null) {
                 throw new NullPointerException("received null message on topic=" + topic);
             }
 
-            JsonObject message = JsonObject.readFrom(new String(mqttMessage.getPayload()));
-            if (message == null) {
-                throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage.toString() + " on topic=" + topic);
+            JsonObject message;
+            String payload = new String(mqttMessage.getPayload());
+            try {
+                message = JsonObject.readFrom(payload);
+                if (message == null) {
+                    throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage.toString() + " on topic=" + topic);
+                }
+            } catch (Exception ex) {
+                message = new JsonObject().add(NetworkMessage.MSG_TYPE, NetworkMessage.MESSAGE_TYPE_NOTIFICATION).add("data", payload);
             }
 
             int messageType = NetworkMessage.MESSAGE_TYPE_UNKNOWN;
 
             try {
                 messageType = message.get(NetworkMessage.MSG_TYPE).asInt();
-            } catch (UnsupportedOperationException uoe) {
+            } catch (Exception e) {
                 // We will throw this exception, now, but can be added some handling later.
-                throw uoe;
             }
 
-            networkMsg = MqttNetworkMessage.build(messageType, message);
+            MqttNetworkMessage networkMsg = MqttNetworkMessage.build(messageType, message);
             networkMsg.removeMessageType();
 
             if (topic == null) {
@@ -71,17 +90,17 @@ public class MqttNetworkChannel implements INetworkChannel {
             }
 
             if (messageType == NetworkMessage.MESSAGE_TYPE_RESPONSE) {
-                if (mRequestCbMap.containsKey(topic)) {
-                    rspCb = mRequestCbMap.get(topic);
-                    if (rspCb != null) {
-                        rspCb.onMessage(topic, networkMsg);
+                if (topic != null && mRequestCbMap.containsKey(topic)) {
+                    rspCbs = mRequestCbMap.get(topic);
+                    if (rspCbs != null && rspCbs.mIMessageCallback != null) {
+                        rspCbs.mIMessageCallback.onMessage(topic, networkMsg);
                     }
                     mRequestCbMap.remove(topic);
                     mMqttAsyncClient.unsubscribe(topic);
                 }
             }
 
-            if (mMessageCallback != null && rspCb == null) mMessageCallback.onMessage(topic, networkMsg);
+            if (mMessageCallback != null && (rspCbs == null || rspCbs.mIMessageCallback == null)) mMessageCallback.onMessage(topic, networkMsg);
         }
 
         @Override
@@ -107,22 +126,21 @@ public class MqttNetworkChannel implements INetworkChannel {
         }
     };
 
-    // Internal Variables
-    private String mName = null;
-    private INetworkCallback mNetworkCallback = null;
-    private IMessageCallback mMessageCallback = null;
-
-    public MqttNetworkChannel(IMessageCallback msgCb) {
-        mMessageCallback = msgCb;
-    }
-
     public MqttNetworkChannel(String name, IMessageCallback msgCb) {
-        mName = name;
+        super(name, msgCb);
         mMessageCallback = msgCb;
     }
 
     @Override
-    public void connect(InetAddress ipAddress, INetworkCallback networkCb) {
+    public void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException {
+        connect(ipAddress, networkCb, null);
+    }
+
+    void connect(InetAddress ipAddress, INetworkCallback networkCb, MqttConnectOptions connOptions) throws UnsupportedOperationException {
+
+        if (mMqttAsyncClient != null && mMqttAsyncClient.isConnected()) {
+            throw new UnsupportedOperationException();
+        }
 
         mNetworkCallback = networkCb;
 
@@ -130,7 +148,7 @@ public class MqttNetworkChannel implements INetworkChannel {
             mMqttAsyncClient = new MqttAsyncClient("tcp://" + ipAddress.getHostAddress(), MqttAsyncClient.generateClientId());
 
             mMqttAsyncClient.setCallback(mMqttCallback);
-            mMqttAsyncClient.connect(null, mMqttConnectListener);
+            mMqttAsyncClient.connect(connOptions, null, mMqttConnectListener);
 
         } catch (MqttException e) {
             // TODO: Add Exception Handler
@@ -155,7 +173,7 @@ public class MqttNetworkChannel implements INetworkChannel {
 
     @Override
     public boolean isConnected() {
-        return mMqttAsyncClient.isConnected();
+        return mMqttAsyncClient != null && mMqttAsyncClient.isConnected();
     }
 
     @Override
@@ -194,10 +212,15 @@ public class MqttNetworkChannel implements INetworkChannel {
 
     @Override
     public void request(Uri uri, JsonObject message, IMessageCallback responseCb) {
+        request(uri, message, responseCb, null);
+    }
+
+    @Override
+    public void request(Uri uri, JsonObject message, IMessageCallback responseCb, IMessageTimeoutCallback timeoutCallback) {
 
         int sequenceNumber = sRequestSequenceNumber.addAndGet(1);
         try {
-            mRequestCbMap.put(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, responseCb);
+            mRequestCbMap.put(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, new RequestMessageCallback(responseCb, timeoutCallback));
             mMqttAsyncClient.subscribe(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, DEFAULT_MQTT_QOS);
         } catch (MqttException e) {
             // TODO: Add Exception Handler
@@ -209,18 +232,56 @@ public class MqttNetworkChannel implements INetworkChannel {
 
         try {
             mMqttAsyncClient.publish(uri.getPath() + MqttNetworkMessage.REQUEST_TOPIC + sequenceNumber, new MqttMessage(mqttNetworkMessage.getBytes()));
+            scheduleNetworkTimeout(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, uri);
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
         }
     }
 
-    // Log functions
-    private  void log (String log) {
-        Log.logd(LOG_TAG + "-" + mName, log);
+
+    private static final int PENDED_REQUEST_MESSAGE_MAX = 50;
+    private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(PENDED_REQUEST_MESSAGE_MAX);
+
+    private class RequestTimeoutCheckThread implements Runnable {
+
+        private final Uri mRequestedUri;
+        private final String mResponseTopic;
+
+        RequestTimeoutCheckThread(String responseTopic, Uri uri) {
+            mRequestedUri = uri;
+            mResponseTopic = responseTopic;
+        }
+
+        public void run() {
+
+            if (mRequestCbMap.containsKey(mResponseTopic)) {
+                RequestMessageCallback rspCbs = mRequestCbMap.get(mResponseTopic);
+                if (rspCbs != null && rspCbs.mIMessageTimeoutCallback != null) {
+                    rspCbs.mIMessageTimeoutCallback.onMessageTimeout(mRequestedUri);
+                }
+                mRequestCbMap.remove(mResponseTopic);
+
+                try {
+                    mMqttAsyncClient.unsubscribe(mResponseTopic);
+                } catch (MqttException e) {
+                    // TODO: Add Exception Handler
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
+    private void scheduleNetworkTimeout(String topic, Uri requestedUri) {
+        // TODO: Need to check Maximum Pended Requests?
+        mScheduler.schedule(new RequestTimeoutCheckThread(topic, requestedUri), REQUEST_MESSAGE_PENDING_TIME, SECONDS);
+    }
+
+    // Log functions
+    private  void log (String log) {
+        com.lge.notyet.lib.comm.util.Log.logd(LOG_TAG + "-" + mName, log);
+    }
     private  void logv(String log) {
-        Log.logv(LOG_TAG + "-" + mName, log);
+        com.lge.notyet.lib.comm.util.Log.logv(LOG_TAG + "-" + mName, log);
     }
 }

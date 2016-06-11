@@ -8,10 +8,11 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.eclipse.paho.client.mqttv3.*;
 
-public class MqttNetworkMessage extends NetworkMessage {
+class MqttNetworkMessage extends NetworkMessage {
 
     static final String REQUEST_TOPIC = "/request/";
     static final String RESPONSE_TOPIC = "/response/";
+    static final String WILL_TOPIC = "/will";
 
     private MqttAsyncClient mResponseNetworkChannel = null;
     private String mResponseTopic = null;
