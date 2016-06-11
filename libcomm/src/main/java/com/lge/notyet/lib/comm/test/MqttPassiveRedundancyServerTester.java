@@ -17,7 +17,7 @@ public class MqttPassiveRedundancyServerTester {
 
     private static final String TEST_SERVER_TOPIC = "/server/#";
 
-    private INetworkChannel mNc = null;
+    private INetworkConnection mNc = null;
     private final INetworkCallback mNetworkCallback = new INetworkCallback() {
 
         @Override
@@ -52,7 +52,7 @@ public class MqttPassiveRedundancyServerTester {
 
     private MqttPassiveRedundancyServerTester() {
 
-        mNc = new MqttPassiveRedundancyNetworkChannel("server", new MqttNetworkChannel(null, mMessageCallback));
+        mNc = new MqttPassiveRedundancyNetworkConnection("server", new MqttNetworkConnection(null, mMessageCallback));
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 

@@ -7,7 +7,7 @@ package com.lge.notyet.lib.comm;
 import com.eclipsesource.json.JsonObject;
 import java.net.InetAddress;
 
-public interface INetworkChannel {
+public interface INetworkConnection {
 
     void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException;
     void disconnect();

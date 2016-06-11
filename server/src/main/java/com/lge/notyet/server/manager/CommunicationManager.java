@@ -14,7 +14,7 @@ public class CommunicationManager {
     private static final String HOST = "127.0.0.1";
 
     private Vertx vertx;
-    private INetworkChannel networkChannel;
+    private INetworkConnection networkChannel;
 
     private CommunicationManager(Vertx vertx) {
         this.vertx = vertx;
@@ -31,7 +31,7 @@ public class CommunicationManager {
 
     public Future<Void> start(IMessageCallback messageCallback) {
         final Future<Void> future = Future.future();
-        networkChannel = new MqttNetworkChannel(null, messageCallback);
+        networkChannel = new MqttNetworkConnection(null, messageCallback);
         try {
             networkChannel.connect(InetAddress.getByName(HOST), new INetworkCallback() {
                 @Override

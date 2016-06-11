@@ -15,7 +15,7 @@ public class MqttClientTester implements Runnable {
     private static final String TEST_SERVER_NOTIFICATION_TOPIC = "/server/notification";
     private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res";
 
-    private INetworkChannel mNc = null;
+    private INetworkConnection mNc = null;
     private final INetworkCallback mNetworkCallback = new INetworkCallback() {
 
         @Override
@@ -59,7 +59,7 @@ public class MqttClientTester implements Runnable {
 
     private MqttClientTester() {
 
-        mNc = new MqttNetworkChannel(null, mMessageCallback);
+        mNc = new MqttNetworkConnection(null, mMessageCallback);
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 

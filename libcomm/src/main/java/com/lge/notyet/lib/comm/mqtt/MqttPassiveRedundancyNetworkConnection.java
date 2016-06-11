@@ -10,15 +10,15 @@ import java.net.InetAddress;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.NetworkMessage;
-import com.lge.notyet.lib.comm.PassiveRedundancyNetworkChannel;
+import com.lge.notyet.lib.comm.PassiveRedundancyNetworkConnection;
 import com.lge.notyet.lib.comm.Uri;
 import org.eclipse.paho.client.mqttv3.*;
 
-public class MqttPassiveRedundancyNetworkChannel extends PassiveRedundancyNetworkChannel {
+public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNetworkConnection {
 
     private static final int WILL_MESSAGE_MQTT_QOS = 2;
 
-    public MqttPassiveRedundancyNetworkChannel(String channelName, MqttNetworkChannel networkChannel) {
+    public MqttPassiveRedundancyNetworkConnection(String channelName, MqttNetworkConnection networkChannel) {
 
         super(channelName, networkChannel);
     }
@@ -41,7 +41,7 @@ public class MqttPassiveRedundancyNetworkChannel extends PassiveRedundancyNetwor
 
             mOriginalNetworkCallback = networkCb;
             // Because the constructor accepts MqttNetworkChannel only.
-            ((MqttNetworkChannel) mBaseNetworkChannel).connect(ipAddress, mNetworkCallback, mqttOption);
+            ((MqttNetworkConnection) mBaseNetworkChannel).connect(ipAddress, mNetworkCallback, mqttOption);
         }
     }
 

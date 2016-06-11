@@ -16,9 +16,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-public class MqttNetworkChannel extends BaseNetworkChannel {
+public class MqttNetworkConnection extends BaseNetworkConnection {
 
-    private static final String LOG_TAG = "MqttNetworkChannel";
+    private static final String LOG_TAG = "MqttNetworkConnection";
 
     private class RequestMessageCallback {
 
@@ -126,7 +126,7 @@ public class MqttNetworkChannel extends BaseNetworkChannel {
         }
     };
 
-    public MqttNetworkChannel(String name, IMessageCallback msgCb) {
+    public MqttNetworkConnection(String name, IMessageCallback msgCb) {
         super(name, msgCb);
         mMessageCallback = msgCb;
     }
