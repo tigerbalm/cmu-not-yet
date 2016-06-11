@@ -2,7 +2,7 @@ package com.lge.notyet.lib.comm.mqtt;
 
 /**
  * Created by beney.kim on 2016-06-11.
- * This class provide Passive Redundancy for MqttBaseChannel
+ * This class provide Passive Redundancy with MqttConnection
  */
 
 import java.net.InetAddress;
@@ -18,14 +18,14 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
 
     private static final int WILL_MESSAGE_MQTT_QOS = 2;
 
-    public MqttPassiveRedundancyNetworkConnection(String channelName, MqttNetworkConnection networkChannel) {
+    public MqttPassiveRedundancyNetworkConnection(String connectionName, MqttNetworkConnection networkConnection) {
 
-        super(channelName, networkChannel);
+        super(connectionName, networkConnection);
     }
 
     public void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException {
 
-        if (mBaseNetworkChannel != null) {
+        if (mBaseNetworkConnection != null) {
 
             MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
                     new JsonObject()
@@ -34,30 +34,30 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
             mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
             MqttConnectOptions mqttOption = new MqttConnectOptions();
-            mqttOption.setWill(mChannelUri.getPath() + MqttNetworkMessage.WILL_TOPIC,
+            mqttOption.setWill(mConnectionUri.getPath() + MqttNetworkMessage.WILL_TOPIC,
                     mqttNetworkMessage.getBytes(),
                     WILL_MESSAGE_MQTT_QOS,
                     true);
 
             mOriginalNetworkCallback = networkCb;
-            // Because the constructor accepts MqttNetworkChannel only.
-            ((MqttNetworkConnection) mBaseNetworkChannel).connect(ipAddress, mNetworkCallback, mqttOption);
+            // Because the constructor accepts MqttNetworkConnection only.
+            ((MqttNetworkConnection) mBaseNetworkConnection).connect(ipAddress, mNetworkCallback, mqttOption);
         }
     }
 
     public void subscribeSelfConfigurationChannel(Uri channelUri) {
-        subscribe(new MqttUri(mChannelUri.getPath() + "/#"));
+        subscribe(new MqttUri(mConnectionUri.getPath() + "/#"));
     }
 
     public void unsubscribeSelfConfigurationChannel(Uri channelUri) {
-        unsubscribe(new MqttUri(mChannelUri.getPath() + "/#"));
+        unsubscribe(new MqttUri(mConnectionUri.getPath() + "/#"));
     }
 
     protected boolean preHandleMessage(Uri uri, NetworkMessage msg) {
 
         boolean ret = false;
 
-        if (uri != null && uri.getPath().equals(mChannelUri.getPath() + MqttNetworkMessage.WILL_TOPIC)) {
+        if (uri != null && uri.getPath().equals(mConnectionUri.getPath() + MqttNetworkMessage.WILL_TOPIC)) {
             if (mIsMaster == false) doSelfConfiguration();
             ret = true;
         }

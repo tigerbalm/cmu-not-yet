@@ -15,7 +15,7 @@ class MqttNetworkMessage extends NetworkMessage {
     static final String RESPONSE_TOPIC = "/response/";
     static final String WILL_TOPIC = "/will";
 
-    private MqttAsyncClient mResponseNetworkChannel = null;
+    private MqttAsyncClient mResponseNetworkConnection = null;
     private String mResponseTopic = null;
 
     private MqttNetworkMessage(int messageType, JsonObject message) {
@@ -35,7 +35,7 @@ class MqttNetworkMessage extends NetworkMessage {
         String responseTopic = new String(topic);
         responseTopic = responseTopic.replace(REQUEST_TOPIC, RESPONSE_TOPIC);
 
-        mResponseNetworkChannel = nc;
+        mResponseNetworkConnection = nc;
         mResponseTopic = responseTopic;
     }
 
@@ -46,19 +46,19 @@ class MqttNetworkMessage extends NetworkMessage {
     @Override
     protected void response_impl(JsonObject message) throws ExceptionInInitializerError {
 
-        if (mResponseNetworkChannel == null) {
-            throw new ExceptionInInitializerError("response channel is null");
+        if (mResponseNetworkConnection == null) {
+            throw new ExceptionInInitializerError("response connection is null");
         }
 
         if (mResponseTopic == null) {
-            throw new ExceptionInInitializerError("response topic channel is null");
+            throw new ExceptionInInitializerError("response topic connection is null");
         }
 
         MqttNetworkMessage mqttNetworkMessage = new MqttNetworkMessage(MESSAGE_TYPE_RESPONSE, message);
         mqttNetworkMessage.addMessageType(MESSAGE_TYPE_RESPONSE);
 
         try {
-            mResponseNetworkChannel.publish(mResponseTopic, new MqttMessage(mqttNetworkMessage.getBytes()));
+            mResponseNetworkConnection.publish(mResponseTopic, new MqttMessage(mqttNetworkMessage.getBytes()));
         } catch (MqttException e) {
             // TODO: Add Exception Handler
         }

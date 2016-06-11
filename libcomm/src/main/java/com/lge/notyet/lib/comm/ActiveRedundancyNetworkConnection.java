@@ -2,7 +2,7 @@ package com.lge.notyet.lib.comm;
 
 /**
  * Created by beney.kim on 2016-06-11.
- * This class provide Active Redundancy for BaseChannel
+ * This class provide Active Redundancy for BaseConnection
  */
 
 import com.eclipsesource.json.JsonObject;
@@ -15,9 +15,9 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
     String LOG_TAG;
 
     protected boolean mIsMaster = false;
-    protected Uri mChannelUri = null;
+    protected Uri mConnectionUri = null;
 
-    protected BaseNetworkConnection mBaseNetworkChannel = null;
+    protected BaseNetworkConnection mBaseNetworkConnection = null;
 
     static Random mRandom = null;
     protected long mServerId = 0L;
@@ -50,7 +50,7 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
         return false;
     }
 
-    ActiveRedundancyNetworkConnection(String channelName, BaseNetworkConnection networkChannel) {
+    ActiveRedundancyNetworkConnection(String connectionName, BaseNetworkConnection networkConnection) {
 
         mIsMaster = true;
 
@@ -58,8 +58,8 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
         mRandom.setSeed(System.currentTimeMillis());
 
         mServerId = Math.abs(mRandom.nextLong());
-        mChannelUri = new Uri("/_master_slave_/" + channelName );
-        mBaseNetworkChannel = networkChannel;
+        mConnectionUri = new Uri("/_master_slave_/" + connectionName );
+        mBaseNetworkConnection = networkConnection;
 
         LOG_TAG = "ARNC-" + mServerId;
 
@@ -70,12 +70,12 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
             postHandleMessage(uri, msg);
         };
 
-        INetworkCallback netCb = networkChannel.getNetworkCallback();
+        INetworkCallback netCb = networkConnection.getNetworkCallback();
         if (netCb != null) {
-            mOriginalNetworkCallback = networkChannel.hookNetworkCallback(mNetworkCallback);
+            mOriginalNetworkCallback = networkConnection.hookNetworkCallback(mNetworkCallback);
         }
 
-        mOriginalMessageCallback = networkChannel.hookMessageCallback(intermediateMsgCallback);
+        mOriginalMessageCallback = networkConnection.hookMessageCallback(intermediateMsgCallback);
     }
 
     protected final INetworkCallback mNetworkCallback = new INetworkCallback() {
@@ -104,30 +104,30 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
 
     public void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException {
 
-        if (mBaseNetworkChannel != null) {
+        if (mBaseNetworkConnection != null) {
             mOriginalNetworkCallback = networkCb;
-            mBaseNetworkChannel.connect(ipAddress, mNetworkCallback);
+            mBaseNetworkConnection.connect(ipAddress, mNetworkCallback);
         }
     }
 
     public void disconnect() {
-        if (mBaseNetworkChannel != null) mBaseNetworkChannel.disconnect();
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.disconnect();
     }
 
     public boolean isConnected() {
-        return mBaseNetworkChannel != null && mBaseNetworkChannel.isConnected();
+        return mBaseNetworkConnection != null && mBaseNetworkConnection.isConnected();
     }
 
     public void subscribe(Uri uri) {
-        if (mBaseNetworkChannel != null) mBaseNetworkChannel.subscribe(uri);
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.subscribe(uri);
     }
 
     public void unsubscribe(Uri uri) {
-        if (mBaseNetworkChannel != null) mBaseNetworkChannel.unsubscribe(uri);
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.unsubscribe(uri);
     }
 
     public void send(Uri uri, JsonObject message) {
-        if (mBaseNetworkChannel != null) mBaseNetworkChannel.send(uri, message);
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.send(uri, message);
     }
 
     public void request(Uri uri, JsonObject message, IMessageCallback responseCb) {
@@ -135,7 +135,7 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
     }
 
     public void request(Uri uri, JsonObject message, IMessageCallback responseCb, IMessageTimeoutCallback timeoutCallback) {
-        if (mBaseNetworkChannel != null) mBaseNetworkChannel.request(uri, message, responseCb, timeoutCallback);
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.request(uri, message, responseCb, timeoutCallback);
     }
 
     void log (String log) {

@@ -2,7 +2,7 @@ package com.lge.notyet.lib.comm;
 
 /**
  * Created by beney.kim on 2016-06-11.
- * This class provide Passive Redundancy for BaseChannel
+ * This class provide Passive Redundancy for BaseConnection
  */
 
 import com.eclipsesource.json.JsonObject;
@@ -33,7 +33,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     abstract public void unsubscribeSelfConfigurationChannel(Uri channelUri);
 
     protected boolean preHandleConnected() {
-        subscribeSelfConfigurationChannel(mChannelUri);
+        subscribeSelfConfigurationChannel(mConnectionUri);
         doSelfConfiguration();
         return false;
     }
@@ -41,16 +41,16 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     protected boolean preHandleLost() {
         log("S3 E. Oops ConnectionLost, mServerId=" + mServerId);
         mIsMaster = false;
-        // unsubscribeSelfConfigurationChannel(mChannelUri);
+        // unsubscribeSelfConfigurationChannel(mConnectionUri);
         mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
         if (mContentionWindowDelayTask != null) mContentionWindowDelayTask.cancel(true);
         doSelfConfiguration();
         return false;
     }
 
-    protected PassiveRedundancyNetworkConnection(String channelName, BaseNetworkConnection networkChannel) {
+    protected PassiveRedundancyNetworkConnection(String connectionName, BaseNetworkConnection networkConnection) {
 
-        super(channelName, networkChannel);
+        super(connectionName, networkConnection);
 
         mIsMaster = false;
         LOG_TAG = "PRNC-" + mServerId;
@@ -62,7 +62,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     public void disconnect() {
         log("S3 E. I am dying, mServerId=" + mServerId);
         mIsMaster = false;
-        unsubscribeSelfConfigurationChannel(mChannelUri);
+        unsubscribeSelfConfigurationChannel(mConnectionUri);
         mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
         if (mContentionWindowDelayTask != null) mContentionWindowDelayTask.cancel(true);
         super.disconnect();
@@ -77,7 +77,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
             if (mState == MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE) {
                 mState = MASTER_SELF_CONFIGURATION_STATE_MASTER;
                 mIsMaster = true;
-                send(mChannelUri, new JsonObject()
+                send(mConnectionUri, new JsonObject()
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
                 log("S3 S. I am new Master Node, mServerId=" + mServerId);
@@ -99,7 +99,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
                 log("S2 S. Broadcast Probe from mServerId=" + mServerId);
                 mState = MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE;
-                send(mChannelUri, new JsonObject()
+                send(mConnectionUri, new JsonObject()
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST));
 
@@ -115,7 +115,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     protected boolean preHandleMessage(Uri uri, NetworkMessage msg) {
 
-        if (uri != null && uri.getPath().equals(mChannelUri.getPath())) {
+        if (uri != null && uri.getPath().equals(mConnectionUri.getPath())) {
 
             long rSrvId = 0L;
             String rMsgType = "";
@@ -141,7 +141,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
                     case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
                         break;
                     case MASTER_SELF_CONFIGURATION_STATE_MASTER:
-                        send(mChannelUri, new JsonObject()
+                        send(mConnectionUri, new JsonObject()
                                 .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
                                 .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
                         break;
