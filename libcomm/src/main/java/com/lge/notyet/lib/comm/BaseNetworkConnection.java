@@ -2,7 +2,7 @@ package com.lge.notyet.lib.comm;
 
 /**
  * Created by beney.kim on 2016-06-11.
- * This class made for RedundancyChannel, because I want to make limitation that RedundancyChannel can receive only this type as parameter of Constructor (Not all INetworkChannel).
+ * This class made for RedundancyConnection, because I want to make limitation that RedundancyConnection can receive only this type as parameter of Constructor (Not all INetworkConnection).
  * Also, to support decorated pattern, it needs to hook listener.
  */
 

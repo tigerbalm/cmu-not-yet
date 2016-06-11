@@ -2,7 +2,7 @@ package com.lge.notyet.lib.comm.mqtt;
 
 /**
  * Created by beney.kim on 2016-06-09.
- * This class provide INetworkChannel implementation based on  Mqtt.
+ * This class provide INetworkConnection implementation based on  Mqtt.
  */
 
 import com.lge.notyet.lib.comm.*;

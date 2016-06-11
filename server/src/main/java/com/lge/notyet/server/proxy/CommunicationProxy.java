@@ -14,7 +14,7 @@ public class CommunicationProxy {
     private static final String HOST = "127.0.0.1";
 
     private Vertx vertx;
-    private INetworkConnection networkChannel;
+    private INetworkConnection networkConnection;
 
     private CommunicationProxy(Vertx vertx) {
         this.vertx = vertx;
@@ -31,9 +31,9 @@ public class CommunicationProxy {
 
     public Future<Void> start(IMessageCallback messageCallback) {
         final Future<Void> future = Future.future();
-        networkChannel = new MqttNetworkConnection(null, messageCallback);
+        networkConnection = new MqttNetworkConnection(null, messageCallback);
         try {
-            networkChannel.connect(InetAddress.getByName(HOST), new INetworkCallback() {
+            networkConnection.connect(InetAddress.getByName(HOST), new INetworkCallback() {
                 @Override
                 public void onConnected() {
                     future.complete();
@@ -57,7 +57,7 @@ public class CommunicationProxy {
 
     public Future<Void> stop() {
         final Future<Void> future = Future.future();
-        networkChannel.disconnect();
+        networkConnection.disconnect();
         future.complete();
         return future;
     }
