@@ -30,7 +30,7 @@ public class CommunicationManager {
 
     public Future<Void> start(IMessageCallback messageCallback) {
         final Future<Void> future = Future.future();
-        networkChannel = new MqttNetworkChannel(messageCallback);
+        networkChannel = new MqttNetworkChannel(null, messageCallback);
         try {
             networkChannel.connect(InetAddress.getByName(HOST), new INetworkCallback() {
                 @Override
