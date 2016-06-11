@@ -93,14 +93,14 @@ public class MqttNetworkChannel extends BaseNetworkChannel {
                 if (topic != null && mRequestCbMap.containsKey(topic)) {
                     rspCbs = mRequestCbMap.get(topic);
                     if (rspCbs != null && rspCbs.mIMessageCallback != null) {
-                        rspCbs.mIMessageCallback.onMessage(topic, networkMsg);
+                        rspCbs.mIMessageCallback.onMessage(new Uri(topic), networkMsg);
                     }
                     mRequestCbMap.remove(topic);
                     mMqttAsyncClient.unsubscribe(topic);
                 }
             }
 
-            if (mMessageCallback != null && (rspCbs == null || rspCbs.mIMessageCallback == null)) mMessageCallback.onMessage(topic, networkMsg);
+            if (mMessageCallback != null && (rspCbs == null || rspCbs.mIMessageCallback == null)) mMessageCallback.onMessage(new Uri(topic), networkMsg);
         }
 
         @Override
@@ -148,7 +148,11 @@ public class MqttNetworkChannel extends BaseNetworkChannel {
             mMqttAsyncClient = new MqttAsyncClient("tcp://" + ipAddress.getHostAddress(), MqttAsyncClient.generateClientId());
 
             mMqttAsyncClient.setCallback(mMqttCallback);
-            mMqttAsyncClient.connect(connOptions, null, mMqttConnectListener);
+            if (connOptions == null) {
+                mMqttAsyncClient.connect(null, mMqttConnectListener);
+            } else {
+                mMqttAsyncClient.connect(connOptions, null, mMqttConnectListener);
+            }
 
         } catch (MqttException e) {
             // TODO: Add Exception Handler

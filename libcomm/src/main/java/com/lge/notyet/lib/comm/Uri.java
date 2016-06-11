@@ -13,4 +13,8 @@ public class Uri {
     public String getPath() {
         return mPath;
     }
+
+    public String toString() {
+        return mPath;
+    }
 }

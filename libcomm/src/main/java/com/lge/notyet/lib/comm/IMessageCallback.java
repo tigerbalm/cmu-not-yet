@@ -5,5 +5,5 @@ package com.lge.notyet.lib.comm;
  */
 
 public interface IMessageCallback {
-    void onMessage(String topic, NetworkMessage msg);
+    void onMessage(Uri topic, NetworkMessage msg);
 }
