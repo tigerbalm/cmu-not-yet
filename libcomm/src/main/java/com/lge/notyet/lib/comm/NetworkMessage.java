@@ -13,12 +13,12 @@ public abstract class NetworkMessage {
     public static final int MESSAGE_TYPE_REQUEST = 1;
     public static final int MESSAGE_TYPE_RESPONSE = 2;
 
-    static final String MSG_TYPE = "_msg_type_"; // Reserved
+    public static final String MSG_TYPE = "_msg_type_"; // Reserved
 
     private JsonObject mMessage = null;
     private int mMessageType = MESSAGE_TYPE_UNKNOWN;
 
-    NetworkMessage(int messageType, JsonObject message) {
+    protected NetworkMessage(int messageType, JsonObject message) {
         mMessageType = messageType;
         mMessage = message;
     }

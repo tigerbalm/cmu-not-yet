@@ -1,10 +1,11 @@
-package com.lge.notyet.lib.comm;
+package com.lge.notyet.lib.comm.mqtt;
 
 /**
  * Created by beney.kim on 2016-06-09.
  * This class provide INetworkChannel implementation based on  Mqtt.
  */
 
+import com.lge.notyet.lib.comm.*;
 import org.eclipse.paho.client.mqttv3.*;
 import com.eclipsesource.json.JsonObject;
 import java.net.InetAddress;
@@ -93,14 +94,13 @@ public class MqttNetworkChannel extends BaseNetworkChannel {
                 if (topic != null && mRequestCbMap.containsKey(topic)) {
                     rspCbs = mRequestCbMap.get(topic);
                     if (rspCbs != null && rspCbs.mIMessageCallback != null) {
-                        rspCbs.mIMessageCallback.onMessage(new Uri(topic), networkMsg);
+                        rspCbs.mIMessageCallback.onMessage(new MqttUri(topic), networkMsg);
                     }
                     mRequestCbMap.remove(topic);
                     mMqttAsyncClient.unsubscribe(topic);
                 }
             }
-
-            if (mMessageCallback != null && (rspCbs == null || rspCbs.mIMessageCallback == null)) mMessageCallback.onMessage(new Uri(topic), networkMsg);
+            else if (mMessageCallback != null && (rspCbs == null || rspCbs.mIMessageCallback == null)) mMessageCallback.onMessage(new MqttUri(topic), networkMsg);
         }
 
         @Override

@@ -1,4 +1,4 @@
-package com.lge.notyet.lib.comm;
+package com.lge.notyet.lib.comm.mqtt;
 
 /**
  * Created by beney.kim on 2016-06-10.
@@ -6,6 +6,7 @@ package com.lge.notyet.lib.comm;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
+import com.lge.notyet.lib.comm.NetworkMessage;
 import org.eclipse.paho.client.mqttv3.*;
 
 class MqttNetworkMessage extends NetworkMessage {

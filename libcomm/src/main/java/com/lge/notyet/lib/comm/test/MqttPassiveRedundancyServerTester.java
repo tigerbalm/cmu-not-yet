@@ -6,14 +6,14 @@ package com.lge.notyet.lib.comm.test;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.lib.comm.mqtt.*;
 import com.lge.notyet.lib.comm.util.Log;
 
 import java.net.InetAddress;
-import java.util.Random;
 
-public class MqttPassiveRedundancyTester {
+public class MqttPassiveRedundancyServerTester {
 
-    private static final String LOG_TAG = "MqttPassiveRedundancyTester";
+    private static final String LOG_TAG = "MqttPassiveRedundancyServerTester";
 
     private static final String TEST_SERVER_TOPIC = "/server/#";
 
@@ -23,7 +23,7 @@ public class MqttPassiveRedundancyTester {
         @Override
         public void onConnected() {
             Log.logd(LOG_TAG, "onConnected");
-            mNc.subscribe(new Uri(TEST_SERVER_TOPIC));
+            mNc.subscribe(new MqttUri(TEST_SERVER_TOPIC));
         }
 
         @Override
@@ -38,23 +38,19 @@ public class MqttPassiveRedundancyTester {
         }
     };
 
-    final IMessageCallback mMessageCallback = new IMessageCallback() {
+    private final IMessageCallback mMessageCallback = (uri, msg) -> {
 
-        @Override
-        public void onMessage(Uri uri, NetworkMessage msg) {
-
-            // TODO: We need better way with Json
-            if (msg.isRequest()) {
-                Log.logd(LOG_TAG, "onRequested:" + msg.getMessage() + " on topic=" + uri);
-                JsonObject resp_msg = new JsonObject().add("type", "response").add("received message", msg.getMessage());
-                msg.response(resp_msg);
-            } else {
-                Log.logd(LOG_TAG, "onNotified:" + msg.getMessage() + " on topic=" + uri);
-            }
+        // TODO: We need better way with Json
+        if (msg.isRequest()) {
+            Log.logd(LOG_TAG, "onRequested:" + msg.getMessage() + " on topic=" + uri);
+            JsonObject resp_msg = new JsonObject().add("type", "response").add("received message", msg.getMessage());
+            msg.response(resp_msg);
+        } else {
+            Log.logd(LOG_TAG, "onNotified:" + msg.getMessage() + " on topic=" + uri);
         }
     };
 
-    public MqttPassiveRedundancyTester() {
+    private MqttPassiveRedundancyServerTester() {
 
         mNc = new MqttPassiveRedundancyNetworkChannel("server", new MqttNetworkChannel(null, mMessageCallback));
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
@@ -62,6 +58,6 @@ public class MqttPassiveRedundancyTester {
 
     // Convenience method so you can run it in your IDE
     public static void main(String[] args) {
-        new MqttPassiveRedundancyTester();
+        new MqttPassiveRedundancyServerTester();
     }
 }
