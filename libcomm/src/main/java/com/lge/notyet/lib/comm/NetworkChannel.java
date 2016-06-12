@@ -3,7 +3,7 @@ package com.lge.notyet.lib.comm;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-abstract public class NetworkChannel {
+abstract public class NetworkChannel implements IOnNotified, IOnRequested, IOnResponse, IOnTimeout {
 
     private final UUID mUuid;
     private INetworkConnection mNetworkConnection = null;
@@ -38,9 +38,4 @@ abstract public class NetworkChannel {
     }
 
     abstract public Uri getChannelDescription();
-
-    abstract public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message);
-    abstract public void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message);
-    abstract public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message);
-    abstract public void onTimeout(NetworkChannel networkChannel, NetworkMessage message);
 }

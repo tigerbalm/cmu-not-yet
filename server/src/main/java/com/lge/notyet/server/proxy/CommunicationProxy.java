@@ -29,9 +29,9 @@ public class CommunicationProxy {
         }
     }
 
-    public Future<Void> start(IMessageCallback messageCallback) {
+    public Future<Void> start(IOnRequested messageCallback) {
         final Future<Void> future = Future.future();
-        networkConnection = new MqttNetworkConnection(null, messageCallback);
+        networkConnection = new MqttNetworkConnection(null);
         try {
             networkConnection.connect(InetAddress.getByName(HOST), new INetworkCallback() {
                 @Override

@@ -12,9 +12,9 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(final Future<Void> startFuture) throws Exception {
         communicationProxy = CommunicationProxy.getInstance(vertx);
-        Future<Void> communicationReady = communicationProxy.start((topic, message) -> {
-            System.out.println("message received");
-            System.out.println(topic);
+        Future<Void> communicationReady = communicationProxy.start((networkChannel, uri, message) -> {
+            System.out.println("onRequested");
+            System.out.println(uri);
             System.out.println(message);
         });
         databaseProxy = DatabaseProxy.getInstance(vertx);
