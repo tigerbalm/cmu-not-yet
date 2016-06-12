@@ -15,7 +15,7 @@ public class MqttClientChannelTester implements Runnable {
 
         private static final String TEST_LISTEN_TOPIC = "/test";
 
-        protected TestLoopbackNotificationChannel(INetworkConnection networkConnection) {
+        TestLoopbackNotificationChannel(INetworkConnection networkConnection) {
             super(networkConnection);
         }
 
@@ -34,7 +34,7 @@ public class MqttClientChannelTester implements Runnable {
 
         private static final String TEST_SERVER_NOTIFICATION_TOPIC = "/server/notification";
 
-        protected TestNotificationChannel(INetworkConnection networkConnection) {
+        TestNotificationChannel(INetworkConnection networkConnection) {
             super(networkConnection);
         }
 
@@ -48,7 +48,7 @@ public class MqttClientChannelTester implements Runnable {
 
         private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res";
 
-        protected TestRequestChannel(INetworkConnection networkConnection) {
+        TestRequestChannel(INetworkConnection networkConnection) {
             super(networkConnection);
         }
 
@@ -89,9 +89,9 @@ public class MqttClientChannelTester implements Runnable {
         }
     };
 
-    TestNotificationChannel mTestNotificationChannel = null;
-    TestLoopbackNotificationChannel mTestLoopbackNotificationChannel = null;
-    TestRequestChannel mTestRequestChannel = null;
+    private TestNotificationChannel mTestNotificationChannel = null;
+    private TestLoopbackNotificationChannel mTestLoopbackNotificationChannel = null;
+    private TestRequestChannel mTestRequestChannel = null;
 
     private MqttClientChannelTester() {
 
@@ -112,7 +112,7 @@ public class MqttClientChannelTester implements Runnable {
     @Override
     public void run() {
         int i = 0;
-        while(true) {
+        while (true) {
             try {
                 Thread.sleep(1000);
                 if(!mNc.isConnected()) continue;
@@ -137,9 +137,14 @@ public class MqttClientChannelTester implements Runnable {
                     MqttNetworkMessage msg = MqttNetworkMessage.build(loopback_msg);
                     mTestLoopbackNotificationChannel.notify(msg);
                 }
+
+                if (i> 100) break;
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
+        mNc.disconnect();
     }
 }

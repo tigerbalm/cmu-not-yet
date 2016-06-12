@@ -123,7 +123,4 @@ class ActiveRedundancyNetworkConnection extends INetworkConnection {
     void log (String log) {
         com.lge.notyet.lib.comm.util.Log.logd(LOG_TAG, log);
     }
-    void logv(String log) {
-        com.lge.notyet.lib.comm.util.Log.logv(LOG_TAG, log);
-    }
 }

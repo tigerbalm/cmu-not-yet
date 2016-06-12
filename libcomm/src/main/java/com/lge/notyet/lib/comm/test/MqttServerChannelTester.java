@@ -15,7 +15,7 @@ public class MqttServerChannelTester {
 
         private static final String TEST_SERVER_NOTIFICATION_TOPIC = "/server/notification";
 
-        protected TestSubscribeChannel(INetworkConnection networkConnection) {
+        TestSubscribeChannel(INetworkConnection networkConnection) {
             super(networkConnection);
         }
 
@@ -34,7 +34,7 @@ public class MqttServerChannelTester {
 
         private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res/#";
 
-        protected TestResponseChannel(INetworkConnection networkConnection) {
+        TestResponseChannel(INetworkConnection networkConnection) {
             super(networkConnection);
         }
 
@@ -76,8 +76,8 @@ public class MqttServerChannelTester {
         }
     };
 
-    TestSubscribeChannel mTestSubscribeChannel = null;
-    TestResponseChannel mTestResponseChannel = null;
+    private TestSubscribeChannel mTestSubscribeChannel = null;
+    private TestResponseChannel mTestResponseChannel = null;
 
     private MqttServerChannelTester() {
 

@@ -74,9 +74,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
             if (messageType == MqttNetworkMessage.MESSAGE_TYPE_REQUEST) {
                 try {
                     networkMsg.makeResponseInfo(mMqttAsyncClient, topic);
-                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> {
-                        channel.onRequested(channel, new MqttUri(topic), networkMsg);
-                    });
+                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onRequested(channel, new MqttUri(topic), networkMsg));
                 } catch (UnsupportedOperationException uoe) {
                     log(uoe.toString());
                     throw uoe;
@@ -97,9 +95,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
             else if (messageType == MqttNetworkMessage.MESSAGE_TYPE_NOTIFICATION) {
                 try {
 
-                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> {
-                        channel.onNotified(channel, new MqttUri(topic), networkMsg);
-                    });
+                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onNotified(channel, new MqttUri(topic), networkMsg));
                 } catch (UnsupportedOperationException uoe) {
                     log(uoe.toString());
                     throw uoe;
@@ -239,7 +235,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
 
         try {
             mMqttAsyncClient.publish(netChannel.getChannelDescription().getPath() + MqttNetworkMessage.REQUEST_TOPIC + sequenceNumber, new MqttMessage(mqttNetworkMessage.getBytes()));
-            scheduleNetworkTimeout(netChannel, message, netChannel.getChannelDescription().getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber);
+            scheduleNetworkTimeout(message, netChannel.getChannelDescription().getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber);
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
@@ -252,12 +248,10 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
 
     private class RequestTimeoutCheckThread implements Runnable {
 
-        private final NetworkChannel mNetChannel;
         private final NetworkMessage mMessage;
         private final String mResponseTopic;
 
-        RequestTimeoutCheckThread(NetworkChannel netChannel, NetworkMessage message, String responseTopic) {
-            mNetChannel = netChannel;
+        RequestTimeoutCheckThread(NetworkMessage message, String responseTopic) {
             mMessage = message;
             mResponseTopic = responseTopic;
         }
@@ -281,9 +275,9 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         }
     }
 
-    private void scheduleNetworkTimeout(NetworkChannel netChannel, NetworkMessage message, String responseTopic) {
+    private void scheduleNetworkTimeout(NetworkMessage message, String responseTopic) {
         // TODO: Need to check Maximum Pended Requests?
-        mScheduler.schedule(new RequestTimeoutCheckThread(netChannel, message, responseTopic), REQUEST_MESSAGE_PENDING_TIME, SECONDS);
+        mScheduler.schedule(new RequestTimeoutCheckThread(message, responseTopic), REQUEST_MESSAGE_PENDING_TIME, SECONDS);
     }
 
     // Log functions

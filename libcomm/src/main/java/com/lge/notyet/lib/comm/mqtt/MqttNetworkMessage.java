@@ -1,9 +1,5 @@
 package com.lge.notyet.lib.comm.mqtt;
 
-/**
- * Created by beney.kim on 2016-06-10.
- */
-
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.lib.comm.NetworkMessage;
@@ -38,7 +34,7 @@ public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
 
     void makeResponseInfo(MqttAsyncClient nc, String topic) throws UnsupportedOperationException {
 
-        if (topic.contains(REQUEST_TOPIC) == false) {
+        if (!topic.contains(REQUEST_TOPIC)) {
            throw new UnsupportedOperationException("this request type message has wrong topic, topic=" + topic);
         }
 
@@ -79,8 +75,6 @@ public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
         JsonValue typeValue = mMessage.get(MSG_TYPE);
         if (typeValue == null) {
             mMessage.add(MSG_TYPE, messageType);
-        } else {
-            // TODO: Add Exception Handler
         }
     }
 

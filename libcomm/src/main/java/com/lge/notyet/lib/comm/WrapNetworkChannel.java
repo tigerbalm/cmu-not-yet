@@ -1,12 +1,8 @@
 package com.lge.notyet.lib.comm;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 public class WrapNetworkChannel extends NetworkChannel {
 
-    protected NetworkChannel mHookedChannel = null;
+    NetworkChannel mHookedChannel = null;
 
     protected WrapNetworkChannel(NetworkChannel networkChannel) {
         super(networkChannel.getNetworkConnection());

@@ -5,8 +5,6 @@ package com.lge.notyet.lib.comm;
  * This class provide Passive Redundancy for BaseConnection
  */
 
-import com.eclipsesource.json.JsonObject;
-
 import java.util.concurrent.*;
 import static java.util.concurrent.TimeUnit.*;
 
@@ -29,7 +27,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(3);
 
-    SelfConfigurationChannel mSelfConfigurationChannel = null;
+    private SelfConfigurationChannel mSelfConfigurationChannel = null;
     protected String mChannelName = null;
 
     protected boolean preHandleConnected() {
@@ -118,7 +116,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     public class PassiveRedundancyNetworkChannel extends WrapNetworkChannel {
 
-        protected PassiveRedundancyNetworkChannel(NetworkChannel networkChannel) {
+        PassiveRedundancyNetworkChannel(NetworkChannel networkChannel) {
             super(networkChannel);
         }
 
@@ -180,62 +178,9 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         super.request(nc, message);
     }
 
-    public boolean handleSelfConfigurationMessage(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-
-        boolean ret = false;
-
-        if (uri != null && uri.getPath().equals(getSelfConfigurationUri().getPath())) {
-
-            boolean isSolicitationMessage = false;
-
-            try {
-                isSolicitationMessage = isSolicitationMessage(message);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            if (isLoopbackMessage(message)) return false;
-
-            log("Received self-configuration message, solicitation=" + isSolicitationMessage + " from server " + "____" + ", current state=" + mState);
-
-            if (isSolicitationMessage) {
-                switch (mState) {
-                    case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
-                        mContentionWindowDelayTask.cancel(true);
-                        break;
-                    case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
-                        break;
-                    case MASTER_SELF_CONFIGURATION_STATE_MASTER:
-                        ret = true;
-                        break;
-                    default:
-                        log("preHandleMessage - It should not be reached");
-                        break;
-                }
-            }
-            // It should be response message
-            else {
-                switch (mState) {
-                    case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
-                        mContentionWindowDelayTask.cancel(true);
-                        break;
-                    case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
-                        mDuplicateDetectionWindowDelayTask.cancel(true);
-                        mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
-                        break;
-                    default:
-                        log("preHandleMessage - It should not be reached");
-                        mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
-                        break;
-                }
-            }
-        }
-        return ret;
-    }
-
     public class SelfConfigurationChannel extends NotificationChannel {
 
-        protected SelfConfigurationChannel(INetworkConnection networkConnection) {
+        SelfConfigurationChannel(INetworkConnection networkConnection) {
             super(networkConnection);
         }
 
@@ -247,15 +192,59 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         @Override
         public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            if (handleSelfConfigurationMessage(networkChannel, uri, message)) notify(getMasterAdvertisementMessage());
+            if (uri != null && uri.getPath().equals(getSelfConfigurationUri().getPath())) {
 
+                boolean isSolicitationMessage = false;
+
+                try {
+                    isSolicitationMessage = isSolicitationMessage(message);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if (isLoopbackMessage(message)) return;
+
+                log("Received self-configuration message, solicitation=" + isSolicitationMessage + ", current state=" + mState);
+
+                if (isSolicitationMessage) {
+                    switch (mState) {
+                        case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
+                            mContentionWindowDelayTask.cancel(true);
+                            break;
+                        case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
+                            break;
+                        case MASTER_SELF_CONFIGURATION_STATE_MASTER:
+                            notify(getMasterAdvertisementMessage());
+                            break;
+                        default:
+                            log("preHandleMessage - It should not be reached");
+                            break;
+                    }
+                }
+                // It should be response message
+                else {
+                    switch (mState) {
+                        case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
+                            mContentionWindowDelayTask.cancel(true);
+                            break;
+                        case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
+                            mDuplicateDetectionWindowDelayTask.cancel(true);
+                            mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
+                            break;
+                        default:
+                            log("preHandleMessage - It should not be reached");
+                            mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
+                            break;
+                    }
+                }
+            }
         }
     }
 
     protected synchronized void doSelfConfiguration() {
 
-        if (isConnected() == false) return;
-        if (mContentionWindowDelayTask != null && mContentionWindowDelayTask.isDone() == false) return;
+        if (!isConnected()) return;
+        if (mContentionWindowDelayTask != null && !mContentionWindowDelayTask.isDone()) return;
 
         log("S1 S. Contention Window Random Delay Started, state=" + mState);
 

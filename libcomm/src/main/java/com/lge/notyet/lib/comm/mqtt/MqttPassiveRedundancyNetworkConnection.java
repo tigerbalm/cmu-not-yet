@@ -32,7 +32,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         if (mBaseNetworkConnection != null) {
 
             MqttNetworkMessage mqttNetworkMessage = getWillMessage();
-            mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
+            mqttNetworkMessage.addMessageType(MqttNetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
             MqttConnectOptions mqttOption = new MqttConnectOptions();
             mqttOption.setWill(getSelfConfigurationUri().getPath() + MqttNetworkMessage.WILL_TOPIC,
@@ -46,10 +46,10 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         }
     }
 
-    private WillSubscribeChannel mWillSubscribeChannel;
+    private final WillSubscribeChannel mWillSubscribeChannel;
     private final class WillSubscribeChannel extends SubscribeChannel {
 
-        protected WillSubscribeChannel(INetworkConnection networkConnection) {
+        WillSubscribeChannel(INetworkConnection networkConnection) {
             super(networkConnection);
         }
 
@@ -61,7 +61,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         @Override
         public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
             Log.logd("WillSubscribeChannel", "onNotified:" + message.getMessage() + " on channel=" + getChannelDescription());
-            if (mIsMaster == false) doSelfConfiguration();
+            if (!mIsMaster) doSelfConfiguration();
         }
     }
 

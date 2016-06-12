@@ -1,22 +1,15 @@
 package com.lge.notyet.lib.comm;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 abstract public class NotificationChannel extends NetworkChannel {
-
-    private static final String LOG_TAG = "N-Channel";
 
     protected NotificationChannel (INetworkConnection networkConnection) {
         super(networkConnection);
     }
 
-    public boolean notify(NetworkMessage message) {
+    public void notify(NetworkMessage message) {
 
-        if (!getNetworkConnection().isConnected()) return false;
+        if (!getNetworkConnection().isConnected()) return;
         getNetworkConnection().send(this, message);
-        return true;
     }
 
     @Override

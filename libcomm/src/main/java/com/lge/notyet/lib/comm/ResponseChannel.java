@@ -1,9 +1,5 @@
 package com.lge.notyet.lib.comm;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 abstract public class ResponseChannel extends RequestResponseChannel  {
 
     protected ResponseChannel(INetworkConnection networkConnection) {
@@ -11,8 +7,8 @@ abstract public class ResponseChannel extends RequestResponseChannel  {
     }
 
     @Override
-    public final boolean request(NetworkMessage message) {
-        return false;
+    public final void request(NetworkMessage message) {
+
     }
 
     @Override

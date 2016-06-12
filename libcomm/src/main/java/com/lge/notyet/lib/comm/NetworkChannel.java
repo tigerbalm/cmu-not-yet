@@ -1,15 +1,11 @@
 package com.lge.notyet.lib.comm;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 abstract public class NetworkChannel {
 
-    private UUID mUuid;
+    private final UUID mUuid;
     private INetworkConnection mNetworkConnection = null;
     private AtomicBoolean mOpen = null;
 
@@ -31,10 +27,6 @@ abstract public class NetworkChannel {
             mNetworkConnection.unsubscribe(this);
             mOpen.set(false);
         }
-    }
-
-    public boolean isOpen() {
-        return mNetworkConnection.isConnected() && mOpen.get();
     }
 
     protected INetworkConnection getNetworkConnection() {
