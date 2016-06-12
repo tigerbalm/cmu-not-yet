@@ -10,7 +10,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
 
@@ -86,55 +85,75 @@ public class DatabaseProxy {
         sqlConnection.rollback(resultHandler);
     }
 
-    private Future<JsonObject> singleItemReturnQuery(String sql) {
-        Future<JsonObject> future = Future.future();
+    private void singleItemReturnQuery(String sql, Handler<AsyncResult<JsonObject>> resultHandler) {
         sqlConnection.query(sql, ar -> {
-            if (ar.succeeded()) {
-                ResultSet resultSet = ar.result();
-                JsonObject result = resultSet.getRows().get(0);
-                logger.info("singleItemReturnQuery(): sql=" + sql + "result=" + result);
-                future.complete(result);
-            } else {
-                logger.error("singleItemReturnQuery(): sql=" + sql, ar.cause());
-                future.fail(ar.cause());
-            }
+            resultHandler.handle(new AsyncResult<JsonObject>() {
+                @Override
+                public JsonObject result() {
+                    return ar.result().getRows().get(0);
+                }
+
+                @Override
+                public Throwable cause() {
+                    return ar.cause();
+                }
+
+                @Override
+                public boolean succeeded() {
+                    return ar.succeeded();
+                }
+
+                @Override
+                public boolean failed() {
+                    return ar.failed();
+                }
+            });
         });
-        return future;
     }
 
-    private Future<List<JsonObject>> multipleItemReturnQuery(String sql) {
-        Future<List<JsonObject>> future = Future.future();
+    private void multipleItemReturnQuery(String sql, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         sqlConnection.query(sql, ar -> {
-            if (ar.succeeded()) {
-                ResultSet resultSet = ar.result();
-                List<JsonObject> result = resultSet.getRows();
-                logger.info("multipleItemReturnQuery(): sql=" + sql + "result=" + result);
-                future.complete(resultSet.getRows());
-            } else {
-                logger.error("multipleItemReturnQuery(): sql=" + sql, ar.cause());
-                future.fail(ar.cause());
-            }
+            resultHandler.handle(new AsyncResult<List<JsonObject>>() {
+                @Override
+                public List<JsonObject> result() {
+                    return ar.result().getRows();
+                }
+
+                @Override
+                public Throwable cause() {
+                    return ar.cause();
+                }
+
+                @Override
+                public boolean succeeded() {
+                    return ar.succeeded();
+                }
+
+                @Override
+                public boolean failed() {
+                    return ar.failed();
+                }
+            });
         });
-        return future;
     }
 
     private void updateSingleItem(String sql, JsonArray parameters, Handler<AsyncResult<UpdateResult>> resultHandler) {
         sqlConnection.updateWithParams(sql, parameters, resultHandler);
     }
 
-    public Future<JsonObject> getUser(int userId) {
-        return singleItemReturnQuery("select * from user where id = " + userId);
+    public void getUser(int userId, Handler<AsyncResult<JsonObject>> resultHandler) {
+        singleItemReturnQuery("select * from user where id = " + userId, resultHandler);
     }
 
-    public Future<JsonObject> getUser(String email, String password) {
-        return singleItemReturnQuery("select * from user where email=\'" + email + "\' and password=\'" + password + "\'");
+    public void getUser(String email, String password, Handler<AsyncResult<JsonObject>> resultHandler) {
+        singleItemReturnQuery("select * from user where email=\'" + email + "\' and password=\'" + password + "\'", resultHandler);
     }
 
-    public Future<JsonObject> getUser(String sessionKey) {
-        return singleItemReturnQuery("select * from user, session where session_key=\'" + sessionKey + "\'");
+    public void getUser(String sessionKey, Handler<AsyncResult<JsonObject>> resultHandler) {
+        singleItemReturnQuery("select * from user, session where session_key=\'" + sessionKey + "\'", resultHandler);
     }
 
-    public Future<List<JsonObject>> getReservableFacilities() {
+    public void getReservableFacilities(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select id, name " +
                 "from facility " +
                 "where id in ( " +
@@ -143,17 +162,17 @@ public class DatabaseProxy {
                 "where controller.available = 1 " +
                 "and slot.occupied = 0 " +
                 "and slot.reserved = 0)";
-        return multipleItemReturnQuery(sql);
+        multipleItemReturnQuery(sql, resultHandler);
     }
 
-    public Future<List<JsonObject>> getReservableSlots(int facilityId) {
+    public void getReservableSlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select slot.id as id, controller.facility_id, slot.controller_id" +
                 " from controller inner join slot on controller.id = slot.controller_id" +
                 " where controller.facility_id = " + facilityId +
                 " and controller.available = 1" +
                 " and slot.occupied = 0" +
                 " and slot.reserved = 0";
-        return multipleItemReturnQuery(sql);
+        multipleItemReturnQuery(sql, resultHandler);
     }
 
     public void updateSlotOccupied(int slotId, boolean occupied, Handler<AsyncResult<UpdateResult>> resultHandler) {
