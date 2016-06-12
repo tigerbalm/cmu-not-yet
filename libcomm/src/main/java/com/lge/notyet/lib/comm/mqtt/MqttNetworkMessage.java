@@ -9,20 +9,25 @@ import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.lib.comm.NetworkMessage;
 import org.eclipse.paho.client.mqttv3.*;
 
-class MqttNetworkMessage extends NetworkMessage {
+public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
 
     static final String REQUEST_TOPIC = "/request/";
     static final String RESPONSE_TOPIC = "/response/";
     static final String WILL_TOPIC = "/will";
 
+    public static final String MSG_TYPE = "_msg_type_"; // Reserved
+
     private MqttAsyncClient mResponseNetworkConnection = null;
     private String mResponseTopic = null;
 
+    private JsonObject mMessage = null;
+
     private MqttNetworkMessage(int messageType, JsonObject message) {
-        super(messageType, message);
+        super(messageType);
+        mMessage = message;
     }
 
-    static MqttNetworkMessage build(int messageType, JsonObject message) {
+    public static MqttNetworkMessage build(int messageType, JsonObject message) {
         return new MqttNetworkMessage(messageType, message);
     }
 
@@ -39,12 +44,12 @@ class MqttNetworkMessage extends NetworkMessage {
         mResponseTopic = responseTopic;
     }
 
-    byte[] getBytes() {
-        return getMessage().toString().getBytes();
+    public byte[] getBytes() {
+        return mMessage.toString().getBytes();
     }
 
     @Override
-    protected void response_impl(JsonObject message) throws ExceptionInInitializerError {
+    protected void response_impl(NetworkMessage message) throws ExceptionInInitializerError {
 
         if (mResponseNetworkConnection == null) {
             throw new ExceptionInInitializerError("response connection is null");
@@ -54,7 +59,7 @@ class MqttNetworkMessage extends NetworkMessage {
             throw new ExceptionInInitializerError("response topic connection is null");
         }
 
-        MqttNetworkMessage mqttNetworkMessage = new MqttNetworkMessage(MESSAGE_TYPE_RESPONSE, message);
+        MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
         mqttNetworkMessage.addMessageType(MESSAGE_TYPE_RESPONSE);
 
         try {
@@ -66,17 +71,19 @@ class MqttNetworkMessage extends NetworkMessage {
 
     // Utility Function to support request-response message flow.
     void addMessageType (int messageType) {
-        JsonObject messageObj = getMessage();
-        JsonValue typeValue = messageObj.get(MSG_TYPE);
+        JsonValue typeValue = mMessage.get(MSG_TYPE);
         if (typeValue == null) {
-            messageObj.add(MSG_TYPE, messageType);
+            mMessage.add(MSG_TYPE, messageType);
         } else {
             // TODO: Add Exception Handler
         }
     }
 
     void removeMessageType () {
-        JsonObject messageObj = getMessage();
-        messageObj.remove(MSG_TYPE);
+        mMessage.remove(MSG_TYPE);
+    }
+
+    public JsonObject getMessage() {
+        return mMessage;
     }
 }

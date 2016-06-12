@@ -29,11 +29,11 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(3);
 
-    abstract public void subscribeSelfConfigurationChannel(Uri channelUri);
-    abstract public void unsubscribeSelfConfigurationChannel(Uri channelUri);
+    SelfConfigurationChannel mSelfConfigurationChannel = null;
+    protected String mChannelName = null;
 
     protected boolean preHandleConnected() {
-        subscribeSelfConfigurationChannel(mConnectionUri);
+        mSelfConfigurationChannel.listen();
         doSelfConfiguration();
         return false;
     }
@@ -41,7 +41,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     protected boolean preHandleLost() {
         log("S3 E. Oops ConnectionLost, mServerId=" + mServerId);
         mIsMaster = false;
-        // unsubscribeSelfConfigurationChannel(mConnectionUri);
+
         mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
         if (mContentionWindowDelayTask != null) mContentionWindowDelayTask.cancel(true);
         doSelfConfiguration();
@@ -50,19 +50,26 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     protected PassiveRedundancyNetworkConnection(String connectionName, BaseNetworkConnection networkConnection) {
 
-        super(connectionName, networkConnection);
+        super(networkConnection);
 
         mIsMaster = false;
         LOG_TAG = "PRNC-" + mServerId;
 
+        mChannelName = connectionName;
+
         log("Created, mServerId=" + mServerId);
-        if (isConnected()) preHandleConnected();
+
+        mSelfConfigurationChannel = new SelfConfigurationChannel(networkConnection);
+
+        if (isConnected()) {
+            preHandleConnected();
+        }
     }
 
     public void disconnect() {
         log("S3 E. I am dying, mServerId=" + mServerId);
         mIsMaster = false;
-        unsubscribeSelfConfigurationChannel(mConnectionUri);
+        mSelfConfigurationChannel.unlisten();
         mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
         if (mContentionWindowDelayTask != null) mContentionWindowDelayTask.cancel(true);
         super.disconnect();
@@ -77,9 +84,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
             if (mState == MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE) {
                 mState = MASTER_SELF_CONFIGURATION_STATE_MASTER;
                 mIsMaster = true;
-                send(mConnectionUri, new JsonObject()
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
+                mSelfConfigurationChannel.notify(getMasterAdvertisementMessage());
                 log("S3 S. I am new Master Node, mServerId=" + mServerId);
             } else {
                 // TODO: It should be not.
@@ -99,9 +104,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
                 log("S2 S. Broadcast Probe from mServerId=" + mServerId);
                 mState = MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE;
-                send(mConnectionUri, new JsonObject()
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST));
+                mSelfConfigurationChannel.notify(getMasterSolicitationMessage());
 
                 mDuplicateDetectionWindowDelayTask = mScheduler.schedule(new DuplicateDetectionWindowDelayTask(),
                         MASTER_SELF_CONFIGURATION_DDW + mRandom.nextInt(MASTER_SELF_CONFIGURATION_DDW_RANDOM), MILLISECONDS);
@@ -113,27 +116,89 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     }
     private ScheduledFuture<?> mContentionWindowDelayTask = null;
 
-    protected boolean preHandleMessage(Uri uri, NetworkMessage msg) {
+    public class PassiveRedundancyNetworkChannel extends WrapNetworkChannel {
 
-        if (uri != null && uri.getPath().equals(mConnectionUri.getPath())) {
+        protected PassiveRedundancyNetworkChannel(NetworkChannel networkChannel) {
+            super(networkChannel);
+        }
 
-            long rSrvId = 0L;
-            String rMsgType = "";
+        @Override
+        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onNotified(networkChannel, uri, message);
+        }
+
+        @Override
+        public void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onRequested(networkChannel, uri, message);
+        }
+
+        @Override
+        public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            NetworkChannel nc =  mPassiveRedundancyNetworkChannels.get(mHookedChannel.getHashKey());
+            if (nc != null) {
+                mPassiveRedundancyNetworkChannels.remove(mHookedChannel.getHashKey());
+            }
+
+            if (mIsMaster) super.onResponse(networkChannel, uri, message);
+        }
+
+        @Override
+        public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
+
+            NetworkChannel nc =  mPassiveRedundancyNetworkChannels.get(mHookedChannel.getHashKey());
+            if (nc != null) {
+                mPassiveRedundancyNetworkChannels.remove(mHookedChannel.getHashKey());
+            }
+
+            if (mIsMaster) super.onTimeout(networkChannel, message);
+        }
+    }
+
+    private final ConcurrentHashMap<String, NetworkChannel> mPassiveRedundancyNetworkChannels = new ConcurrentHashMap<>();
+
+    @Override
+    protected void subscribe(NetworkChannel networkChannel) {
+        NetworkChannel nc = new PassiveRedundancyNetworkChannel(networkChannel);
+        mPassiveRedundancyNetworkChannels.put(networkChannel.getHashKey(), nc);
+        super.subscribe(nc);
+    }
+
+    @Override
+    protected void unsubscribe(NetworkChannel networkChannel) {
+        NetworkChannel nc =  mPassiveRedundancyNetworkChannels.get(networkChannel.getHashKey());
+        if (nc != null) {
+            super.unsubscribe(new PassiveRedundancyNetworkChannel(nc));
+            mPassiveRedundancyNetworkChannels.remove(networkChannel.getHashKey());
+        }
+    }
+
+    @Override
+    protected void request(NetworkChannel networkChannel, NetworkMessage message) {
+        NetworkChannel nc = new PassiveRedundancyNetworkChannel(networkChannel);
+        mPassiveRedundancyNetworkChannels.put(networkChannel.getHashKey(), nc);
+        super.request(nc, message);
+    }
+
+    public boolean handleSelfConfigurationMessage(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+        boolean ret = false;
+
+        if (uri != null && uri.getPath().equals(getSelfConfigurationUri().getPath())) {
+
+            boolean isSolicitationMessage = false;
 
             try {
-                rSrvId = msg.getMessage().get(MASTER_SELF_CONFIGURATION_MESSAGE_ID).asLong();
-                rMsgType = msg.getMessage().get(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE).asString();
+                isSolicitationMessage = isSolicitationMessage(message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            if (rSrvId == mServerId) return true;
+            if (isLoopbackMessage(message)) return false;
 
-            log("Received self-configuration message, type=" + rMsgType + " from server " + rSrvId + ", current state=" + mState);
+            log("Received self-configuration message, solicitation=" + isSolicitationMessage + " from server " + "____" + ", current state=" + mState);
 
-            boolean isRequestMessage = MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST.equals(rMsgType);
-
-            if (isRequestMessage) {
+            if (isSolicitationMessage) {
                 switch (mState) {
                     case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
                         mContentionWindowDelayTask.cancel(true);
@@ -141,9 +206,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
                     case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
                         break;
                     case MASTER_SELF_CONFIGURATION_STATE_MASTER:
-                        send(mConnectionUri, new JsonObject()
-                                .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
-                                .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
+                        ret = true;
                         break;
                     default:
                         log("preHandleMessage - It should not be reached");
@@ -166,9 +229,27 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
                         break;
                 }
             }
-            return true;
         }
-        return false;
+        return ret;
+    }
+
+    public class SelfConfigurationChannel extends NotificationChannel {
+
+        protected SelfConfigurationChannel(INetworkConnection networkConnection) {
+            super(networkConnection);
+        }
+
+        @Override
+        public Uri getChannelDescription() {
+            return getSelfConfigurationUri();
+        }
+
+        @Override
+        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            if (handleSelfConfigurationMessage(networkChannel, uri, message)) notify(getMasterAdvertisementMessage());
+
+        }
     }
 
     protected synchronized void doSelfConfiguration() {
@@ -183,4 +264,12 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         mContentionWindowDelayTask = mScheduler.schedule(new ContentionWindowDelayTask(),
                 mRandom.nextInt(MASTER_SELF_CONFIGURATION_CONTENTION_WINDOW), MILLISECONDS);
     }
+
+    abstract protected Uri getSelfConfigurationUri();
+    abstract protected NetworkMessage getMasterSolicitationMessage();
+    abstract protected NetworkMessage getMasterAdvertisementMessage();
+
+    abstract protected boolean isLoopbackMessage(NetworkMessage message);
+    abstract protected boolean isSolicitationMessage(NetworkMessage message);
+
 }

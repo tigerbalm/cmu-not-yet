@@ -4,19 +4,17 @@ package com.lge.notyet.lib.comm;
  * Created by beney.kim on 2016-06-09.
  */
 
-import com.eclipsesource.json.JsonObject;
 import java.net.InetAddress;
 
-public interface INetworkConnection {
+abstract public class INetworkConnection {
 
-    void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException;
-    void disconnect();
-    boolean isConnected();
+    abstract public void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException;
+    abstract public void disconnect();
+    abstract public boolean isConnected();
 
-    void subscribe(Uri uri);
-    void unsubscribe(Uri uri);
+    abstract protected void subscribe(NetworkChannel networkChannel);
+    abstract protected void unsubscribe(NetworkChannel networkChannel);
 
-    void send(Uri uri, JsonObject message);
-    void request(Uri uri, JsonObject message, IMessageCallback responseCb);
-    void request(Uri uri, JsonObject message, IMessageCallback responseCb, IMessageTimeoutCallback timeoutCallback);
+    abstract protected void send(NetworkChannel networkChannel, NetworkMessage message);
+    abstract protected void request(NetworkChannel networkChannel, NetworkMessage message);
 }

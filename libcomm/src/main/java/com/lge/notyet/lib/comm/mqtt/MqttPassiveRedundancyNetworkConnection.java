@@ -2,66 +2,103 @@ package com.lge.notyet.lib.comm.mqtt;
 
 /**
  * Created by beney.kim on 2016-06-11.
- * This class provide Passive Redundancy with MqttConnection
+ * This class provide Passive Redundancy for MqttBaseChannel
  */
 
 import java.net.InetAddress;
 
 import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.lib.comm.INetworkCallback;
-import com.lge.notyet.lib.comm.NetworkMessage;
-import com.lge.notyet.lib.comm.PassiveRedundancyNetworkConnection;
-import com.lge.notyet.lib.comm.Uri;
+import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.lib.comm.util.Log;
 import org.eclipse.paho.client.mqttv3.*;
 
 public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNetworkConnection {
 
     private static final int WILL_MESSAGE_MQTT_QOS = 2;
 
-    public MqttPassiveRedundancyNetworkConnection(String connectionName, MqttNetworkConnection networkConnection) {
-
-        super(connectionName, networkConnection);
+    protected boolean preHandleConnected() {
+        mWillSubscribeChannel.listen();
+        return super.preHandleConnected();
     }
+
+    public MqttPassiveRedundancyNetworkConnection(String channelName, MqttNetworkConnection networkConnection) {
+
+        super(channelName, networkConnection);
+        mWillSubscribeChannel = new WillSubscribeChannel(networkConnection);
+    }
+
+    WillSubscribeChannel mWillSubscribeChannel;
 
     public void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException {
 
         if (mBaseNetworkConnection != null) {
 
-            MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
-                    new JsonObject()
-                            .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
-                            .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_WILL));
+            MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) getWillMessage();
             mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
             MqttConnectOptions mqttOption = new MqttConnectOptions();
-            mqttOption.setWill(mConnectionUri.getPath() + MqttNetworkMessage.WILL_TOPIC,
+            mqttOption.setWill(getSelfConfigurationUri().getPath() + MqttNetworkMessage.WILL_TOPIC,
                     mqttNetworkMessage.getBytes(),
                     WILL_MESSAGE_MQTT_QOS,
                     true);
 
             mOriginalNetworkCallback = networkCb;
-            // Because the constructor accepts MqttNetworkConnection only.
+            // Because the constructor accepts MqttNetworkChannel only.
             ((MqttNetworkConnection) mBaseNetworkConnection).connect(ipAddress, mNetworkCallback, mqttOption);
         }
     }
 
-    public void subscribeSelfConfigurationChannel(Uri channelUri) {
-        subscribe(new MqttUri(mConnectionUri.getPath() + "/#"));
-    }
+    private final class WillSubscribeChannel extends SubscribeChannel {
 
-    public void unsubscribeSelfConfigurationChannel(Uri channelUri) {
-        unsubscribe(new MqttUri(mConnectionUri.getPath() + "/#"));
-    }
-
-    protected boolean preHandleMessage(Uri uri, NetworkMessage msg) {
-
-        boolean ret = false;
-
-        if (uri != null && uri.getPath().equals(mConnectionUri.getPath() + MqttNetworkMessage.WILL_TOPIC)) {
-            if (mIsMaster == false) doSelfConfiguration();
-            ret = true;
+        protected WillSubscribeChannel(INetworkConnection networkConnection) {
+            super(networkConnection);
         }
 
-        return ret || super.preHandleMessage(uri, msg);
+        @Override
+        public Uri getChannelDescription() {
+            return new MqttUri(getSelfConfigurationUri().getPath() + MqttNetworkMessage.WILL_TOPIC);
+        }
+
+        @Override
+        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            Log.logd("WillSubscribeChannel", "onNotified:" + message.getMessage() + " on channel=" + getChannelDescription());
+            if (mIsMaster == false) doSelfConfiguration();
+        }
+    }
+
+    protected Uri getSelfConfigurationUri() {
+        return new MqttUri("/master_slave/" + mChannelName);
+    }
+
+    protected NetworkMessage getMasterSolicitationMessage() {
+
+         return MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
+                 new JsonObject()
+                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
+                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST));
+    }
+
+    protected NetworkMessage getMasterAdvertisementMessage() {
+        return MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
+                new JsonObject()
+                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
+                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
+    }
+
+    protected NetworkMessage getWillMessage() {
+        return MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
+                new JsonObject()
+                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
+                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_WILL));
+    }
+
+    protected boolean isLoopbackMessage(NetworkMessage message) {
+        JsonObject msg = (JsonObject) message.getMessage();
+        return mServerId == msg.get(MASTER_SELF_CONFIGURATION_MESSAGE_ID).asLong();
+    }
+
+    protected boolean isSolicitationMessage(NetworkMessage message) {
+        JsonObject msg = (JsonObject) message.getMessage();
+        return MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST.equals(msg.get(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE).asString());
     }
 }

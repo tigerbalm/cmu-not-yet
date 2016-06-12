@@ -5,30 +5,19 @@ package com.lge.notyet.lib.comm;
  * This class provide Active Redundancy for BaseConnection
  */
 
-import com.eclipsesource.json.JsonObject;
-
 import java.net.InetAddress;
 import java.util.Random;
 
-class ActiveRedundancyNetworkConnection implements INetworkConnection {
+class ActiveRedundancyNetworkConnection extends INetworkConnection {
 
     String LOG_TAG;
 
     protected boolean mIsMaster = false;
-    protected Uri mConnectionUri = null;
 
     protected BaseNetworkConnection mBaseNetworkConnection = null;
 
     static Random mRandom = null;
     protected long mServerId = 0L;
-
-    private IMessageCallback mOriginalMessageCallback = null;
-    boolean preHandleMessage(Uri topic, NetworkMessage msg) {
-        return false;
-    }
-    protected boolean postHandleMessage(Uri uri, NetworkMessage msg) {
-        return false;
-    }
 
     protected INetworkCallback mOriginalNetworkCallback = null;
     protected boolean preHandleConnected() {
@@ -50,7 +39,7 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
         return false;
     }
 
-    ActiveRedundancyNetworkConnection(String connectionName, BaseNetworkConnection networkConnection) {
+    ActiveRedundancyNetworkConnection(BaseNetworkConnection networkConnection) {
 
         mIsMaster = true;
 
@@ -58,24 +47,14 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
         mRandom.setSeed(System.currentTimeMillis());
 
         mServerId = Math.abs(mRandom.nextLong());
-        mConnectionUri = new Uri("/_master_slave_/" + connectionName );
         mBaseNetworkConnection = networkConnection;
 
         LOG_TAG = "ARNC-" + mServerId;
-
-        IMessageCallback intermediateMsgCallback = (uri, msg) -> {
-
-            if (preHandleMessage(uri, msg)) return;
-            if (mIsMaster && mOriginalMessageCallback != null) mOriginalMessageCallback.onMessage(uri, msg);
-            postHandleMessage(uri, msg);
-        };
 
         INetworkCallback netCb = networkConnection.getNetworkCallback();
         if (netCb != null) {
             mOriginalNetworkCallback = networkConnection.hookNetworkCallback(mNetworkCallback);
         }
-
-        mOriginalMessageCallback = networkConnection.hookMessageCallback(intermediateMsgCallback);
     }
 
     protected final INetworkCallback mNetworkCallback = new INetworkCallback() {
@@ -110,32 +89,35 @@ class ActiveRedundancyNetworkConnection implements INetworkConnection {
         }
     }
 
+    @Override
     public void disconnect() {
         if (mBaseNetworkConnection != null) mBaseNetworkConnection.disconnect();
     }
 
+    @Override
     public boolean isConnected() {
         return mBaseNetworkConnection != null && mBaseNetworkConnection.isConnected();
     }
 
-    public void subscribe(Uri uri) {
-        if (mBaseNetworkConnection != null) mBaseNetworkConnection.subscribe(uri);
+    @Override
+    protected void subscribe(NetworkChannel networkChannel) {
+
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.subscribe(networkChannel);
     }
 
-    public void unsubscribe(Uri uri) {
-        if (mBaseNetworkConnection != null) mBaseNetworkConnection.unsubscribe(uri);
+    @Override
+    protected void unsubscribe(NetworkChannel networkChannel) {
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.unsubscribe(networkChannel);
     }
 
-    public void send(Uri uri, JsonObject message) {
-        if (mBaseNetworkConnection != null) mBaseNetworkConnection.send(uri, message);
+    @Override
+    protected void send(NetworkChannel networkChannel, NetworkMessage message) {
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.send(networkChannel, message);
     }
 
-    public void request(Uri uri, JsonObject message, IMessageCallback responseCb) {
-        request(uri, message, responseCb, null);
-    }
-
-    public void request(Uri uri, JsonObject message, IMessageCallback responseCb, IMessageTimeoutCallback timeoutCallback) {
-        if (mBaseNetworkConnection != null) mBaseNetworkConnection.request(uri, message, responseCb, timeoutCallback);
+    @Override
+    protected void request(NetworkChannel networkChannel, NetworkMessage message) {
+        if (mBaseNetworkConnection != null) mBaseNetworkConnection.request(networkChannel, message);
     }
 
     void log (String log) {

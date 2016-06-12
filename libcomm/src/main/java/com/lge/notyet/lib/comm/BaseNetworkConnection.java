@@ -6,19 +6,16 @@ package com.lge.notyet.lib.comm;
  * Also, to support decorated pattern, it needs to hook listener.
  */
 
-abstract public class BaseNetworkConnection implements INetworkConnection {
+abstract public class BaseNetworkConnection extends INetworkConnection {
 
     // Internal Variables
     protected String mName = null;
     protected INetworkCallback mNetworkCallback = null;
-    protected IMessageCallback mMessageCallback = null;
 
     protected static final int REQUEST_MESSAGE_PENDING_TIME = 5;
 
-    protected BaseNetworkConnection(String name, IMessageCallback msgCb) {
+    protected BaseNetworkConnection(String name) {
         mName = name;
-        mMessageCallback = msgCb;
-
     }
 
     synchronized INetworkCallback getNetworkCallback() {
@@ -28,17 +25,6 @@ abstract public class BaseNetworkConnection implements INetworkConnection {
     synchronized INetworkCallback hookNetworkCallback(INetworkCallback networkCallback) {
         INetworkCallback ret = mNetworkCallback;
         mNetworkCallback = networkCallback;
-        return ret;
-    }
-
-    synchronized IMessageCallback getMessageCallback() {
-        return mMessageCallback;
-    }
-
-    synchronized IMessageCallback hookMessageCallback(IMessageCallback messageCallback) {
-
-        IMessageCallback ret = mMessageCallback;
-        mMessageCallback = messageCallback;
         return ret;
     }
 }
