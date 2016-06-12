@@ -40,7 +40,7 @@ abstract public class ClientChannelRegistry extends ClientChannel {
         }
     }
 
-    public void removeTimeObserver(IOnTimeout observer) {
+    public void removeTimeoutObserver(IOnTimeout observer) {
         synchronized (ClientChannelRegistry.class) {
             mIOnTimeoutList.remove(observer);
         }
