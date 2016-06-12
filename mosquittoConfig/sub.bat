@@ -1,2 +1,1 @@
-cd "c:\Program Files\mosquittoWin"\
-mosquitto_sub.exe -h localhost -t "#" -u "readonly" -v
+"c:\Program Files\mosquittoWin\mosquitto_sub.exe" -h localhost -t "/$SYS/broker/bytes/#"  -d --cafile "D:\programs\JavaProg\IdeaProjects\cmu-not-yet\mosquittoConfig\certificates\ca.crt" -p 8883 -u "server" --pw "server"
