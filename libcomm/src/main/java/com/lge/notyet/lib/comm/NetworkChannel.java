@@ -6,24 +6,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 abstract public class NetworkChannel implements IOnNotify, IOnRequest, IOnResponse, IOnTimeout {
 
     private final UUID mUuid;
-    private INetworkConnection mNetworkConnection = null;
-    private AtomicBoolean mOpen = null;
+    private final INetworkConnection mNetworkConnection;
+    private final AtomicBoolean mOpen;
 
     protected NetworkChannel (INetworkConnection networkConnection) {
+        mUuid = UUID.randomUUID();
         mNetworkConnection = networkConnection;
         mOpen = new AtomicBoolean(false);
-        mUuid = UUID.randomUUID();
     }
 
     public void listen() {
-        if (mNetworkConnection.isConnected()) {
+        if (mNetworkConnection.isConnected() && !mOpen.get()) {
             mNetworkConnection.subscribe(this);
             mOpen.set(true);
         }
     }
 
     public void unlisten() {
-        if (mNetworkConnection.isConnected()) {
+        if (mNetworkConnection.isConnected() && mOpen.get()) {
             mNetworkConnection.unsubscribe(this);
             mOpen.set(false);
         }

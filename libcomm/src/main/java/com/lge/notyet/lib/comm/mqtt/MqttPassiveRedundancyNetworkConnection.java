@@ -14,8 +14,6 @@ import org.eclipse.paho.client.mqttv3.*;
 
 public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNetworkConnection {
 
-    private static final int WILL_MESSAGE_MQTT_QOS = 2;
-
     protected boolean preHandleConnected() {
         mWillSubscribeChannel.listen();
         return super.preHandleConnected();
@@ -32,12 +30,12 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         if (mBaseNetworkConnection != null) {
 
             MqttNetworkMessage mqttNetworkMessage = getWillMessage();
-            mqttNetworkMessage.addMessageType(MqttNetworkMessage.MESSAGE_TYPE_NOTIFICATION);
+            mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
             MqttConnectOptions mqttOption = new MqttConnectOptions();
-            mqttOption.setWill(getSelfConfigurationUri().getPath() + MqttNetworkMessage.WILL_TOPIC,
+            mqttOption.setWill(getSelfConfigurationUri().getPath() + MqttConstants.WILL_MESSAGE_TOPIC,
                     mqttNetworkMessage.getBytes(),
-                    WILL_MESSAGE_MQTT_QOS,
+                    MqttConstants.WILL_MESSAGE_QOS,
                     true);
 
             mOriginalNetworkCallback = networkCb;
@@ -55,7 +53,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
 
         @Override
         public Uri getChannelDescription() {
-            return new MqttUri(getSelfConfigurationUri().getPath() + MqttNetworkMessage.WILL_TOPIC);
+            return new MqttUri(getSelfConfigurationUri().getPath() + MqttConstants.WILL_MESSAGE_TOPIC);
         }
 
         @Override

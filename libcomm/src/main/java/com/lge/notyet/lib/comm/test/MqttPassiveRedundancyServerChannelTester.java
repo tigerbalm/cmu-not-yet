@@ -26,14 +26,14 @@ public class MqttPassiveRedundancyServerChannelTester {
 
         @Override
         public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            Log.logd(LOG_TAG, "TestSubscribeChannel.onNotify:" + message.getMessage() + " on channel=" + getChannelDescription());
+            Log.logd(LOG_TAG, "TestSubscribeChannel.onNotify():" + message.getMessage() + " on channel=" + getChannelDescription());
         }
     }
 
     private final class TestResponseChannel extends ResponseChannel {
 
-        //private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res/#";
-        private static final String TEST_SERVER_REQUEST_TOPIC = "/facility/+/reservation/#";
+        private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res/#";
+        //private static final String TEST_SERVER_REQUEST_TOPIC = "/facility/+/reservation/#";
 
         TestResponseChannel(INetworkConnection networkConnection) {
             super(networkConnection);
@@ -50,7 +50,7 @@ public class MqttPassiveRedundancyServerChannelTester {
 
             JsonObject resp_msg = new JsonObject().add("type", "response").add("received message", message.getMessage().toString());
             MqttNetworkMessage msg = MqttNetworkMessage.build(resp_msg);
-            message.response(msg);
+            message.responseFor(msg);
         }
     }
 

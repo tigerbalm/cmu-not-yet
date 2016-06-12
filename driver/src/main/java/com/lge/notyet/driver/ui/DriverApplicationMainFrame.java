@@ -6,8 +6,6 @@ import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import com.lge.notyet.lib.comm.test.MqttClientChannelTester;
-import com.lge.notyet.lib.comm.util.Log;
 
 import javax.swing.*;
 import java.awt.event.*;
