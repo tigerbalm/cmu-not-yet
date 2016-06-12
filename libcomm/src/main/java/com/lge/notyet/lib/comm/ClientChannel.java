@@ -1,8 +1,8 @@
 package com.lge.notyet.lib.comm;
 
-abstract public class RequestChannel extends RequestResponseChannel {
+abstract public class ClientChannel extends RequestResponseChannel {
 
-    protected RequestChannel(INetworkConnection networkConnection) {
+    protected ClientChannel(INetworkConnection networkConnection) {
         super(networkConnection);
     }
 

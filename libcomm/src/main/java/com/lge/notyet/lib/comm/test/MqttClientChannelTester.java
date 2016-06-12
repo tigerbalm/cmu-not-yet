@@ -44,7 +44,7 @@ public class MqttClientChannelTester implements Runnable {
         }
     }
 
-    private final class TestRequestChannel extends RequestChannel {
+    private final class TestRequestChannel extends ClientChannel {
 
         private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res";
 

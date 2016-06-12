@@ -4,7 +4,7 @@ import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
-public class ReservationRequestChannel extends RequestChannel {
+public class ReservationRequestChannel extends ClientChannelRegistry {
 
     private final static String mTopic = "/facility/%d/reservation";
 
@@ -26,15 +26,5 @@ public class ReservationRequestChannel extends RequestChannel {
     @Override
     public Uri getChannelDescription() {
         return new MqttUri(StringFormatter.format(mTopic, mFacilityId).getValue());
-    }
-
-    @Override
-    public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-        System.out.println(message.getMessage());
-    }
-
-    @Override
-    public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
-
     }
 }
