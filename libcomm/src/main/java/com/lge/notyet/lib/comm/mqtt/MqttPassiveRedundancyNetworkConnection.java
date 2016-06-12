@@ -44,7 +44,6 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         }
     }
 
-    private final WillSubscribeChannel mWillSubscribeChannel;
     private final class WillSubscribeChannel extends SubscribeChannel {
 
         WillSubscribeChannel(INetworkConnection networkConnection) {
@@ -62,6 +61,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
             if (!mIsMaster) doSelfConfiguration();
         }
     }
+    private final WillSubscribeChannel mWillSubscribeChannel;
 
     protected Uri getSelfConfigurationUri() {
         return new MqttUri("/master_slave/" + mChannelName);
