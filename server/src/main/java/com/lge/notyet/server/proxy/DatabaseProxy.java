@@ -1,7 +1,10 @@
 package com.lge.notyet.server.proxy;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -9,6 +12,7 @@ import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import io.vertx.ext.sql.UpdateResult;
 
 import java.util.List;
 
@@ -47,13 +51,20 @@ public class DatabaseProxy {
                 put("password", PASSWORD).
                 put("database", DATABASE);
         sqlClient = MySQLClient.createShared(vertx, mysqlConfig);
-        sqlClient.getConnection(res -> {
-            if (res.succeeded()) {
-                sqlConnection = res.result();
+        sqlClient.getConnection(ar -> {
+            if (ar.succeeded()) {
+                sqlConnection = ar.result();
                 logger.info("database connected");
-                future.complete();
+                sqlConnection.setAutoCommit(false, ar2 -> {
+                    if (ar2.succeeded()) {
+                        logger.info("set auto commit false");
+                        future.complete();
+                    } else {
+                        future.fail(ar2.cause());
+                    }
+                });
             } else {
-                future.fail(res.cause());
+                future.fail(ar.cause());
             }
         });
         return future;
@@ -65,6 +76,14 @@ public class DatabaseProxy {
             future.complete();
         });
         return future;
+    }
+
+    public void commit(Handler<AsyncResult<Void>> resultHandler) {
+        sqlConnection.commit(resultHandler);
+    }
+
+    public void rollback(Handler<AsyncResult<Void>> resultHandler) {
+        sqlConnection.rollback(resultHandler);
     }
 
     private Future<JsonObject> singleItemReturnQuery(String sql) {
@@ -99,8 +118,12 @@ public class DatabaseProxy {
         return future;
     }
 
-    public Future<JsonObject> getUser(int id) {
-        return singleItemReturnQuery("select * from user where id = " + id);
+    private void updateSingleItem(String sql, JsonArray parameters, Handler<AsyncResult<UpdateResult>> resultHandler) {
+        sqlConnection.updateWithParams(sql, parameters, resultHandler);
+    }
+
+    public Future<JsonObject> getUser(int userId) {
+        return singleItemReturnQuery("select * from user where id = " + userId);
     }
 
     public Future<JsonObject> getUser(String email, String password) {
@@ -131,5 +154,21 @@ public class DatabaseProxy {
                 " and slot.occupied = 0" +
                 " and slot.reserved = 0";
         return multipleItemReturnQuery(sql);
+    }
+
+    public void updateSlotOccupied(int slotId, boolean occupied, Handler<AsyncResult<UpdateResult>> resultHandler) {
+        String sql = "update slot set occupied = ? where id = ?";
+        JsonArray parameters = new JsonArray();
+        parameters.add(occupied ? 1 : 0);
+        parameters.add(slotId);
+        updateSingleItem(sql, parameters, resultHandler);
+    }
+
+    public void updateSlotReserved(int slotId, boolean reserved, Handler<AsyncResult<UpdateResult>> resultHandler) {
+        String sql = "update slot set reserved = ? where id = ?";
+        JsonArray parameters = new JsonArray();
+        parameters.add(reserved ? 1 : 0);
+        parameters.add(slotId);
+        updateSingleItem(sql, parameters, resultHandler);
     }
 }
