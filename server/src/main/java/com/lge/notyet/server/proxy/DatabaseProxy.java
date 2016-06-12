@@ -100,12 +100,12 @@ public class DatabaseProxy {
 
                 @Override
                 public boolean succeeded() {
-                    return ar.succeeded();
+                    return ar.succeeded() && ar.result().getRows().size() == 1;
                 }
 
                 @Override
                 public boolean failed() {
-                    return ar.failed();
+                    return !succeeded();
                 }
             });
         });
