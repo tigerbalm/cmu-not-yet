@@ -85,12 +85,14 @@ public class DatabaseProxy {
 
     private Future<List<JsonObject>> multipleItemReturnQuery(String sql) {
         Future<List<JsonObject>> future = Future.future();
-        System.out.println(sql);
         sqlConnection.query(sql, ar -> {
             if (ar.succeeded()) {
                 ResultSet resultSet = ar.result();
+                List<JsonObject> result = resultSet.getRows();
+                logger.info("multipleItemReturnQuery(): sql=" + sql + "result=" + result);
                 future.complete(resultSet.getRows());
             } else {
+                logger.error("multipleItemReturnQuery(): sql=" + sql, ar.cause());
                 future.fail(ar.cause());
             }
         });
@@ -107,5 +109,27 @@ public class DatabaseProxy {
 
     public Future<JsonObject> getUser(String sessionKey) {
         return singleItemReturnQuery("select * from user, session where session_key=\'" + sessionKey + "\'");
+    }
+
+    public Future<List<JsonObject>> getReservableFacilities() {
+        String sql = "select id, name " +
+                "from facility " +
+                "where id in ( " +
+                "select controller.facility_id " +
+                "from controller inner join slot on controller.id = slot.controller_id " +
+                "where controller.available = 1 " +
+                "and slot.occupied = 0 " +
+                "and slot.reserved = 0)";
+        return multipleItemReturnQuery(sql);
+    }
+
+    public Future<List<JsonObject>> getReservableSlots(int facilityId) {
+        String sql = "select slot.id as id, controller.facility_id, slot.controller_id" +
+                " from controller inner join slot on controller.id = slot.controller_id" +
+                " where controller.facility_id = " + facilityId +
+                " and controller.available = 1" +
+                " and slot.occupied = 0" +
+                " and slot.reserved = 0";
+        return multipleItemReturnQuery(sql);
     }
 }
