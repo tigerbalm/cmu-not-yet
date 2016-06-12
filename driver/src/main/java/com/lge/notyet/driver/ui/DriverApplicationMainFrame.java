@@ -1,7 +1,17 @@
 package com.lge.notyet.driver.ui;
 
+import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.channels.ReservationRequestChannel;
+import com.lge.notyet.lib.comm.INetworkCallback;
+import com.lge.notyet.lib.comm.INetworkConnection;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import com.lge.notyet.lib.comm.test.MqttClientChannelTester;
+import com.lge.notyet.lib.comm.util.Log;
+
 import javax.swing.*;
 import java.awt.event.*;
+import java.net.InetAddress;
 
 public class DriverApplicationMainFrame extends JDialog {
     private JPanel contentPane;
@@ -39,11 +49,33 @@ public class DriverApplicationMainFrame extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        mNc = new MqttNetworkConnection(null);
+        mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 
+    private INetworkConnection mNc = null;
+    private final INetworkCallback mNetworkCallback = new INetworkCallback() {
+
+        @Override
+        public void onConnected() {
+        }
+
+        @Override
+        public void onConnectFailed() {
+        }
+
+        @Override
+        public void onLost() {
+            mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
+        }
+    };
     private void onOK() {
 // add your code here
-        dispose();
+        ReservationRequestChannel mReservationRequestChannel = ReservationRequestChannel.build(mNc, 1);
+        MqttNetworkMessage data = new MqttNetworkMessage(new JsonObject().add("RESERVATION", "Beney"));
+        mReservationRequestChannel.request(data);
+        //dispose();
     }
 
     private void onCancel() {

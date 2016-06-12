@@ -30,7 +30,7 @@ public class ReservationRequestChannel extends RequestChannel {
 
     @Override
     public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-
+        System.out.println(message.getMessage());
     }
 
     @Override

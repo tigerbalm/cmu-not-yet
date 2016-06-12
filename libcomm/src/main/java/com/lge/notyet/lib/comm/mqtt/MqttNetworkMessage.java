@@ -23,7 +23,7 @@ public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
 
     private JsonObject mMessage = null;
 
-    private MqttNetworkMessage(JsonObject message) {
+    public MqttNetworkMessage(JsonObject message) {
         super();
         mMessage = message;
     }

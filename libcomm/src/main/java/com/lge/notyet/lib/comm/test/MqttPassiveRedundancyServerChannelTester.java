@@ -32,7 +32,8 @@ public class MqttPassiveRedundancyServerChannelTester {
 
     private final class TestResponseChannel extends ResponseChannel {
 
-        private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res/#";
+        //private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res/#";
+        private static final String TEST_SERVER_REQUEST_TOPIC = "/facility/+/reservation/#";
 
         TestResponseChannel(INetworkConnection networkConnection) {
             super(networkConnection);
