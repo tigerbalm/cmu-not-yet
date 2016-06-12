@@ -32,7 +32,8 @@ public class MqttServerChannelTester {
 
     private final class TestResponseChannel extends ServerChannel {
 
-        private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res/#";
+        //private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res/#";
+        private static final String TEST_SERVER_REQUEST_TOPIC = "#";
 
         TestResponseChannel(INetworkConnection networkConnection) {
             super(networkConnection);
