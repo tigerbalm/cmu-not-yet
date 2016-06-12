@@ -10,17 +10,13 @@ public class ReservationRequestChannel extends ClientChannelRegistry {
 
     private int mFacilityId = 0;
 
-    private ReservationRequestChannel(INetworkConnection networkConnection) {
+    private ReservationRequestChannel(INetworkConnection networkConnection, int facilityId) {
         super(networkConnection);
-    }
-
-    public ReservationRequestChannel setFacilityId(int facilityId) {
         mFacilityId = facilityId;
-        return this;
     }
 
     public static ReservationRequestChannel build(INetworkConnection networkConnection, int facilityId) {
-        return new ReservationRequestChannel(networkConnection).setFacilityId(facilityId);
+        return new ReservationRequestChannel(networkConnection, facilityId);
     }
 
     @Override
