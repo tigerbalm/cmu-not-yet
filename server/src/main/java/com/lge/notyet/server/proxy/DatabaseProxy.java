@@ -190,4 +190,12 @@ public class DatabaseProxy {
         parameters.add(slotId);
         updateSingleItem(sql, parameters, resultHandler);
     }
+
+    public void updateControllerAvailable(int controllerId, boolean available, Handler<AsyncResult<UpdateResult>> resultHandler) {
+        String sql = "update controller set available = ? where id = ?";
+        JsonArray parameters = new JsonArray();
+        parameters.add(available ? 1 : 0);
+        parameters.add(controllerId);
+        updateSingleItem(sql, parameters, resultHandler);
+    }
 }
