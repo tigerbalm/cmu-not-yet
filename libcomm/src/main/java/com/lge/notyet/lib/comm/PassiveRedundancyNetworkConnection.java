@@ -192,7 +192,8 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         @Override
         public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            if (uri != null && uri.getPath().equals(getSelfConfigurationUri().getPath())) {
+
+            if (uri != null && uri.getLocation().equals(getSelfConfigurationUri().getLocation())) {
 
                 boolean isSolicitationMessage = false;
 

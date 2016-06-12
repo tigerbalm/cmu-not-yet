@@ -4,20 +4,21 @@ import com.lge.notyet.lib.comm.*;
 
 import java.util.StringTokenizer;
 
-public class MqttUri extends Uri {
+public class MqttUri extends Uri <String> {
 
-    public MqttUri(String path) {
-        super(path);
+    public MqttUri(String topic) {
+        super(topic);
     }
 
-    public boolean isSuperOf(Uri arg) {
+    @Override
+    public final boolean isSuperOf(Uri arg) {
 
         if (arg == null) return false;
 
         if (arg instanceof MqttUri) {
 
-            String topic1 = getPath();
-            String topic2 = arg.getPath();
+            String topic1 = getLocation();
+            String topic2 = (String) arg.getLocation();
 
             if (topic1 == null || topic2 == null) return false;
 

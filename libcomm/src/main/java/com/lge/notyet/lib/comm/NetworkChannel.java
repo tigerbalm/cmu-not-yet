@@ -34,7 +34,7 @@ abstract public class NetworkChannel implements IOnNotify, IOnRequest, IOnRespon
     }
 
     public String getHashKey() {
-        return getChannelDescription().toString() + "-" + mUuid.toString();
+        return getChannelDescription().getLocation() + "-" + mUuid.toString();
     }
 
     abstract public Uri getChannelDescription();

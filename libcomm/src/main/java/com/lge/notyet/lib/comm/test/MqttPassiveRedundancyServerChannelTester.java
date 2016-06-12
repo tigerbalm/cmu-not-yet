@@ -46,7 +46,7 @@ public class MqttPassiveRedundancyServerChannelTester {
 
         @Override
         public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            Log.logd(LOG_TAG, "TestRequestChannel.onRequest():" + message.getMessage() + " on channel=" + uri.getPath());
+            Log.logd(LOG_TAG, "TestRequestChannel.onRequest():" + message.getMessage() + " on channel=" + uri.getLocation());
 
             JsonObject resp_msg = new JsonObject().add("type", "response").add("received message", message.getMessage().toString());
             MqttNetworkMessage msg = MqttNetworkMessage.build(resp_msg);

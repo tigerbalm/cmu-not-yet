@@ -33,7 +33,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
             mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
             MqttConnectOptions mqttOption = new MqttConnectOptions();
-            mqttOption.setWill(getSelfConfigurationUri().getPath() + MqttConstants.WILL_MESSAGE_TOPIC,
+            mqttOption.setWill(getSelfConfigurationUri().getLocation() + MqttConstants.WILL_MESSAGE_TOPIC,
                     mqttNetworkMessage.getBytes(),
                     MqttConstants.WILL_MESSAGE_QOS,
                     true);
@@ -53,7 +53,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
 
         @Override
         public Uri getChannelDescription() {
-            return new MqttUri(getSelfConfigurationUri().getPath() + MqttConstants.WILL_MESSAGE_TOPIC);
+            return new MqttUri(getSelfConfigurationUri().getLocation() + MqttConstants.WILL_MESSAGE_TOPIC);
         }
 
         @Override
