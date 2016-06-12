@@ -11,6 +11,11 @@ import org.eclipse.paho.client.mqttv3.*;
 
 public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
 
+    public static final int MESSAGE_TYPE_UNKNOWN = -1;
+    public static final int MESSAGE_TYPE_NOTIFICATION = 0;
+    public static final int MESSAGE_TYPE_REQUEST = 1;
+    public static final int MESSAGE_TYPE_RESPONSE = 2;
+
     static final String REQUEST_TOPIC = "/request/";
     static final String RESPONSE_TOPIC = "/response/";
     static final String WILL_TOPIC = "/will";
@@ -22,13 +27,13 @@ public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
 
     private JsonObject mMessage = null;
 
-    private MqttNetworkMessage(int messageType, JsonObject message) {
-        super(messageType);
+    private MqttNetworkMessage(JsonObject message) {
+        super();
         mMessage = message;
     }
 
-    public static MqttNetworkMessage build(int messageType, JsonObject message) {
-        return new MqttNetworkMessage(messageType, message);
+    public static MqttNetworkMessage build(JsonObject message) {
+        return new MqttNetworkMessage(message);
     }
 
     void makeResponseInfo(MqttAsyncClient nc, String topic) throws UnsupportedOperationException {

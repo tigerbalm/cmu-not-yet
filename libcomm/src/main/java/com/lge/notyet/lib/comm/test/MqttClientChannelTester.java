@@ -121,20 +121,20 @@ public class MqttClientChannelTester implements Runnable {
 
                     JsonObject req_msg = new JsonObject().add("type", "request").add("number", i);
                     Log.logd(LOG_TAG, "client send request msg=" + req_msg);
-                    MqttNetworkMessage msg = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_REQUEST, req_msg);
+                    MqttNetworkMessage msg = MqttNetworkMessage.build(req_msg);
                     mTestRequestChannel.request(msg);
 
                 } else if (i % 3 == 1) {
 
                     JsonObject notification_msg = new JsonObject().add("type", "notify").add("number", i);
                     Log.logd(LOG_TAG, "client send notification msg=" + notification_msg);
-                    MqttNetworkMessage msg = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION, notification_msg);
+                    MqttNetworkMessage msg = MqttNetworkMessage.build(notification_msg);
                     mTestNotificationChannel.notify(msg);
 
                 } else {
                     JsonObject loopback_msg = new JsonObject().add("type", "loopback").add("number", i);
                     Log.logd(LOG_TAG, "client send loopback notification msg=" + loopback_msg);
-                    MqttNetworkMessage msg = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION, loopback_msg);
+                    MqttNetworkMessage msg = MqttNetworkMessage.build(loopback_msg);
                     mTestLoopbackNotificationChannel.notify(msg);
                 }
             } catch (InterruptedException e) {

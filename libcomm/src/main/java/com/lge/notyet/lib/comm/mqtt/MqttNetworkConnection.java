@@ -51,10 +51,10 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
                     throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage.toString() + " on topic=" + topic);
                 }
             } catch (Exception ex) {
-                message = new JsonObject().add(MqttNetworkMessage.MSG_TYPE, NetworkMessage.MESSAGE_TYPE_NOTIFICATION).add("data", payload);
+                message = new JsonObject().add(MqttNetworkMessage.MSG_TYPE, MqttNetworkMessage.MESSAGE_TYPE_NOTIFICATION).add("data", payload);
             }
 
-            int messageType = NetworkMessage.MESSAGE_TYPE_UNKNOWN;
+            int messageType = MqttNetworkMessage.MESSAGE_TYPE_UNKNOWN;
 
             try {
                 messageType = message.get(MqttNetworkMessage.MSG_TYPE).asInt();
@@ -66,12 +66,12 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
                 logv("received message=" + message + " on null topic");
             }
 
-            MqttNetworkMessage networkMsg = MqttNetworkMessage.build(messageType, message);
+            MqttNetworkMessage networkMsg = MqttNetworkMessage.build( message);
             networkMsg.removeMessageType();
 
             logv("received message=" + message + " on topic=" + topic + ", messageType=" + messageType);
 
-            if (messageType == NetworkMessage.MESSAGE_TYPE_REQUEST) {
+            if (messageType == MqttNetworkMessage.MESSAGE_TYPE_REQUEST) {
                 try {
                     networkMsg.makeResponseInfo(mMqttAsyncClient, topic);
                     mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> {
@@ -82,7 +82,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
                     throw uoe;
                 }
             }
-            else if (messageType == NetworkMessage.MESSAGE_TYPE_RESPONSE) {
+            else if (messageType == MqttNetworkMessage.MESSAGE_TYPE_RESPONSE) {
                 if (topic != null && mRequestChannelMap.containsKey(topic)) {
                     NetworkChannel requestedNc = mRequestChannelMap.get(topic);
 
@@ -94,7 +94,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
                     mMqttAsyncClient.unsubscribe(topic);
                 }
             }
-            else if (messageType == NetworkMessage.MESSAGE_TYPE_NOTIFICATION) {
+            else if (messageType == MqttNetworkMessage.MESSAGE_TYPE_NOTIFICATION) {
                 try {
 
                     mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> {
@@ -212,7 +212,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     public void send(NetworkChannel netChannel, NetworkMessage message) {
 
         MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
-        mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
+        mqttNetworkMessage.addMessageType(MqttNetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
         try {
             mMqttAsyncClient.publish(netChannel.getChannelDescription().getPath(), new MqttMessage(mqttNetworkMessage.getBytes()));
@@ -235,7 +235,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         }
 
         MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
-        mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_REQUEST);
+        mqttNetworkMessage.addMessageType(MqttNetworkMessage.MESSAGE_TYPE_REQUEST);
 
         try {
             mMqttAsyncClient.publish(netChannel.getChannelDescription().getPath() + MqttNetworkMessage.REQUEST_TOPIC + sequenceNumber, new MqttMessage(mqttNetworkMessage.getBytes()));

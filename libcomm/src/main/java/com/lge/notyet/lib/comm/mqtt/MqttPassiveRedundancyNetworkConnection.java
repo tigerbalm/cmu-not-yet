@@ -27,13 +27,11 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         mWillSubscribeChannel = new WillSubscribeChannel(networkConnection);
     }
 
-    WillSubscribeChannel mWillSubscribeChannel;
-
     public void connect(InetAddress ipAddress, INetworkCallback networkCb) throws UnsupportedOperationException {
 
         if (mBaseNetworkConnection != null) {
 
-            MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) getWillMessage();
+            MqttNetworkMessage mqttNetworkMessage = getWillMessage();
             mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
             MqttConnectOptions mqttOption = new MqttConnectOptions();
@@ -48,6 +46,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         }
     }
 
+    private WillSubscribeChannel mWillSubscribeChannel;
     private final class WillSubscribeChannel extends SubscribeChannel {
 
         protected WillSubscribeChannel(INetworkConnection networkConnection) {
@@ -72,22 +71,19 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
 
     protected NetworkMessage getMasterSolicitationMessage() {
 
-         return MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
-                 new JsonObject()
+         return MqttNetworkMessage.build(new JsonObject()
                          .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
                          .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST));
     }
 
     protected NetworkMessage getMasterAdvertisementMessage() {
-        return MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
-                new JsonObject()
+        return MqttNetworkMessage.build(new JsonObject()
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
     }
 
-    protected NetworkMessage getWillMessage() {
-        return MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION,
-                new JsonObject()
+    private MqttNetworkMessage getWillMessage() {
+        return MqttNetworkMessage.build(new JsonObject()
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
                         .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_WILL));
     }

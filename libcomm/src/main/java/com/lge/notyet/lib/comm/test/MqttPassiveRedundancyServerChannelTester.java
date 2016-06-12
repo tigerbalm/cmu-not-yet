@@ -48,7 +48,7 @@ public class MqttPassiveRedundancyServerChannelTester {
             Log.logd(LOG_TAG, "TestRequestChannel.onRequested():" + message.getMessage() + " on channel=" + uri.getPath());
 
             JsonObject resp_msg = new JsonObject().add("type", "response").add("received message", message.getMessage().toString());
-            MqttNetworkMessage msg = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION, resp_msg);
+            MqttNetworkMessage msg = MqttNetworkMessage.build(resp_msg);
             message.response(msg);
         }
     }
