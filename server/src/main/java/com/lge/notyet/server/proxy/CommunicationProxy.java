@@ -1,4 +1,4 @@
-package com.lge.notyet.server.manager;
+package com.lge.notyet.server.proxy;
 
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
@@ -8,22 +8,22 @@ import io.vertx.core.Vertx;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class CommunicationManager {
-    private static CommunicationManager instance = null;
+public class CommunicationProxy {
+    private static CommunicationProxy instance = null;
 
     private static final String HOST = "127.0.0.1";
 
     private Vertx vertx;
     private INetworkConnection networkConnection;
 
-    private CommunicationManager(Vertx vertx) {
+    private CommunicationProxy(Vertx vertx) {
         this.vertx = vertx;
     }
 
-    public static CommunicationManager getInstance(Vertx vertx) {
-        synchronized (CommunicationManager.class) {
+    public static CommunicationProxy getInstance(Vertx vertx) {
+        synchronized (CommunicationProxy.class) {
             if (instance == null) {
-                instance = new CommunicationManager(vertx);
+                instance = new CommunicationProxy(vertx);
             }
             return instance;
         }
