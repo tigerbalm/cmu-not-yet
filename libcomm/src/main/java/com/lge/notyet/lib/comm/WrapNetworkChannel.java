@@ -15,13 +15,13 @@ public class WrapNetworkChannel extends NetworkChannel {
     }
 
     @Override
-    public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-        if (mHookedChannel != null) mHookedChannel.onNotified(networkChannel, uri, message);
+    public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        if (mHookedChannel != null) mHookedChannel.onNotify(networkChannel, uri, message);
     }
 
     @Override
-    public void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-        if (mHookedChannel != null) mHookedChannel.onRequested(networkChannel, uri, message);
+    public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        if (mHookedChannel != null) mHookedChannel.onRequest(networkChannel, uri, message);
     }
 
     @Override

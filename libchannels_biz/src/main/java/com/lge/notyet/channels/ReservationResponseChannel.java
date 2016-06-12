@@ -14,7 +14,7 @@ public class ReservationResponseChannel extends ResponseChannel {
     }
 
     @Override
-    public void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+    public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
     }
 }

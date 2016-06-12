@@ -74,7 +74,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
             if (messageType == MqttNetworkMessage.MESSAGE_TYPE_REQUEST) {
                 try {
                     networkMsg.makeResponseInfo(mMqttAsyncClient, topic);
-                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onRequested(channel, new MqttUri(topic), networkMsg));
+                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onRequest(channel, new MqttUri(topic), networkMsg));
                 } catch (UnsupportedOperationException uoe) {
                     log(uoe.toString());
                     throw uoe;
@@ -95,7 +95,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
             else if (messageType == MqttNetworkMessage.MESSAGE_TYPE_NOTIFICATION) {
                 try {
 
-                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onNotified(channel, new MqttUri(topic), networkMsg));
+                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onNotify(channel, new MqttUri(topic), networkMsg));
                 } catch (UnsupportedOperationException uoe) {
                     log(uoe.toString());
                     throw uoe;

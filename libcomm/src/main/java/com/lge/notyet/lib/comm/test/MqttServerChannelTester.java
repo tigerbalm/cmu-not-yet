@@ -25,7 +25,7 @@ public class MqttServerChannelTester {
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
             Log.logd(LOG_TAG, "TestSubscribeChannel.onMessage:" + message.getMessage() + " on channel=" + getChannelDescription());
         }
     }
@@ -44,8 +44,8 @@ public class MqttServerChannelTester {
         }
 
         @Override
-        public void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            Log.logd(LOG_TAG, "TestRequestChannel.onRequested():" + message.getMessage() + " on channel=" + uri.getPath());
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            Log.logd(LOG_TAG, "TestRequestChannel.onRequest():" + message.getMessage() + " on channel=" + uri.getPath());
 
             JsonObject resp_msg = new JsonObject().add("type", "response").add("received message", message.getMessage().toString());
             MqttNetworkMessage msg = MqttNetworkMessage.build(resp_msg);

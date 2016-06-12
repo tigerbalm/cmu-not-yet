@@ -7,7 +7,7 @@ abstract public class RequestChannel extends RequestResponseChannel {
     }
 
     @Override
-    public final void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+    public final void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
     }
 }

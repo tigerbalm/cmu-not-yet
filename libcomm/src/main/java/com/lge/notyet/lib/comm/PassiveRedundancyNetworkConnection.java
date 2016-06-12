@@ -121,13 +121,13 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            if (mIsMaster) super.onNotified(networkChannel, uri, message);
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onNotify(networkChannel, uri, message);
         }
 
         @Override
-        public void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            if (mIsMaster) super.onRequested(networkChannel, uri, message);
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onRequest(networkChannel, uri, message);
         }
 
         @Override
@@ -190,7 +190,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             if (uri != null && uri.getPath().equals(getSelfConfigurationUri().getPath())) {
 

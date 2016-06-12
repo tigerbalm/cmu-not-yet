@@ -15,7 +15,7 @@ abstract public class PublishChannel extends NotificationChannel {
     }
 
     @Override
-    public final void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+    public final void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
     }
 }

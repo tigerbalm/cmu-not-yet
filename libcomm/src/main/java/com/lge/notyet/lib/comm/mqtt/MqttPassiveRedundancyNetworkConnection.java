@@ -59,7 +59,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
             Log.logd("WillSubscribeChannel", "onNotified:" + message.getMessage() + " on channel=" + getChannelDescription());
             if (!mIsMaster) doSelfConfiguration();
         }

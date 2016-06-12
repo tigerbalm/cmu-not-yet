@@ -13,7 +13,7 @@ abstract public class RequestResponseChannel extends NetworkChannel {
     }
 
     @Override
-    public final void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+    public final void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
     }
 }

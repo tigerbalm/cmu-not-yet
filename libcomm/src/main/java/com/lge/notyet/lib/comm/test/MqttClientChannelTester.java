@@ -25,7 +25,7 @@ public class MqttClientChannelTester implements Runnable {
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
             Log.logd(LOG_TAG, "TestLoopbackNotificationChannel.onNotified():" + message.getMessage() + " on channel=" + uri.getPath());
         }
     }
