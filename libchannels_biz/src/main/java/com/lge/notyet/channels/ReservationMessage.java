@@ -6,7 +6,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 public class ReservationMessage extends MqttNetworkMessage {
 
-    private static final String USER_ID = "user_id";
+    private static final String SESSION_ID = "session_id";
     private static final String DATE = "date";
     private static final String TIME = "time";
     private static final String CREDIT_CARD_NUMBER = "credit_card_number";
@@ -15,8 +15,8 @@ public class ReservationMessage extends MqttNetworkMessage {
         super(new JsonObject());
     }
 
-    public ReservationMessage setUserId(String userId) {
-        mMessage.add(USER_ID, userId);
+    public ReservationMessage setSessionId(String sessionId) {
+        mMessage.add(SESSION_ID, sessionId);
         return this;
     }
 
@@ -35,8 +35,8 @@ public class ReservationMessage extends MqttNetworkMessage {
         return this;
     }
 
-    public String getUserId() {
-        return mMessage.get(USER_ID).asString();
+    public String getSessionId() {
+        return mMessage.get(SESSION_ID).asString();
     }
 
     public String getDate(String date) {
@@ -52,7 +52,7 @@ public class ReservationMessage extends MqttNetworkMessage {
     }
 
     public boolean validate() {
-        return (mMessage.get(USER_ID) != null) &&
+        return (mMessage.get(SESSION_ID) != null) &&
                 (mMessage.get(DATE) != null) &&
                 (mMessage.get(TIME) != null) &&
                 (mMessage.get(CREDIT_CARD_NUMBER) != null);

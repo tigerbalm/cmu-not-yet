@@ -35,7 +35,7 @@ public class ReservationTask implements Callable<Void> {
         ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
         rc.addObserver(mReservationResult);
         rc.addTimeoutObserver(mReservationTimeout);
-        ReservationMessage message = new ReservationMessage().setUserId("beney").setDate("6/1").setDate("11").setCreditCardNumber("1111-2222-3333-4444");
+        ReservationMessage message = new ReservationMessage().setSessionId("beney").setDate("6/1").setDate("11").setCreditCardNumber("1111-2222-3333-4444");
         rc.request(message);
         return null;
     }
