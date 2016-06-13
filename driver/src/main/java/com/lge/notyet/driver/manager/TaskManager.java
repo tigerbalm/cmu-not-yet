@@ -4,7 +4,7 @@ import java.util.concurrent.*;
 
 public class TaskManager implements Runnable {
 
-    private static final int TASK_QUEUE_MAX = 10;
+    private static final int TASK_QUEUE_MAX = 20;
     private static final int TASK_THREAD_MAX = 10;
 
     private final BlockingQueue<FutureTask> mTaskQueue;
@@ -13,7 +13,7 @@ public class TaskManager implements Runnable {
     private static TaskManager sTaskManager = null;
 
     private TaskManager () {
-        mTaskQueue = new ArrayBlockingQueue<FutureTask>(TASK_QUEUE_MAX);
+        mTaskQueue = new ArrayBlockingQueue<>(TASK_QUEUE_MAX);
         mTaskExecutor = Executors.newFixedThreadPool(TASK_THREAD_MAX);
 
         new Thread(this).start();
