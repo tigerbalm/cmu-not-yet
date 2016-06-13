@@ -10,16 +10,18 @@ abstract public class ServerChannelRegistry extends ServerChannel {
 
     ArrayList<IOnRequest> mIOnRequestList = new ArrayList <IOnRequest>();
 
-    public void addObserver(IOnRequest observer) {
+    public ServerChannelRegistry addObserver(IOnRequest observer) {
         synchronized (ServerChannelRegistry.class) {
             mIOnRequestList.add(observer);
         }
+        return this;
     }
 
-    public void removeObserver(IOnRequest observer) {
+    public ServerChannelRegistry removeObserver(IOnRequest observer) {
         synchronized (ServerChannelRegistry.class) {
             mIOnRequestList.remove(observer);
         }
+        return this;
     }
 
     @Override
