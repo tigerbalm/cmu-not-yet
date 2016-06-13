@@ -46,7 +46,8 @@ public class DriverApplicationMainFrame extends JDialog {
 
     private void onOK() {
 // add your code here
-        TaskManager.getInstance().runTask(ReservationTask.getTask(0));
+        TaskManager.getInstance().runTask(ReservationTask.getTask(0), null/*ITaskDoneCallback*/);
+        System.out.println("a");
         //dispose();
     }
 

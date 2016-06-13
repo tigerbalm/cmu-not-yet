@@ -7,11 +7,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 
-public class TaskManager {
+public class TaskManager implements Runnable {
 
     ExecutorService executor = Executors.newFixedThreadPool(10);
 
     public static TaskManager sTaskManager = null;
+
 
     private TaskManager () {
 
@@ -24,8 +25,12 @@ public class TaskManager {
         return sTaskManager;
     }
 
-    public void runTask (FutureTask task) {
+    public void runTask (FutureTask task, ITaskDoneCallback doneCallback) {
         System.out.println("RunTask");
         executor.execute(task);
+    }
+
+    @Override
+    public void run() {
     }
 }

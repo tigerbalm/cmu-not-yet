@@ -20,18 +20,14 @@ public class ReservationTask implements Callable<Void> {
     @Override
     public Void call() throws Exception {
 
-        System.out.println("Start Task!!");
-
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
         ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
         rc.addObserver(mReservationResult);
         rc.addTimeoutObserver(mReservationTimeout);
-        System.out.println("Start Task2222222!!");
         ReservationMessage message = new ReservationMessage().setUserId("beney").setDate("6/1").setDate("11").setCreditCardNumber("1111-2222-3333-4444");
         rc.request(message);
-
-        Thread.sleep(1000);
+        //return null;
         return null;
     }
 
@@ -44,7 +40,9 @@ public class ReservationTask implements Callable<Void> {
 
             // Need to parse
             // ReservationResponseMessage result = (ReservationResponseMessage) message;
-            System.out.println("Reservation Result=" + message);
+            System.out.println("Reservation Result=" + message.getMessage());
+
+
         }
     };
 
