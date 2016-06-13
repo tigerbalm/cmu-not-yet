@@ -40,8 +40,8 @@
 #
 #	IPLIST="172.13.14.15 192.168.1.1"
 #	HOSTLIST="a.example.com b.example.com"
-	IPLIST="10.252.138.34 192.168.1.1 127.0.0.1"
-	HOSTLIST="si-gladvinc1.lge.com"
+	IPLIST="128.237.182.134"
+	HOSTLIST="si-gladvinc1"
 
 set -e
 
@@ -93,7 +93,7 @@ function maxdays() {
 }
 
 function getipaddresses() {
-	/sbin/ifconfig |
+	/sbin/ifconfig.sh |
 		grep -v tunnel |
 		sed -En '/inet6? /p' |
 		sed -Ee 's/inet6? (addr:)?//' |
@@ -159,7 +159,7 @@ if [ $kind == 'server' ]; then
 	#                                  
 
 	if [ ! -f $SERVER.key ]; then
-		echo "--- Creating server key and signing request"
+		echo "--- Creating server key and signing request "
 		$openssl genrsa -out $SERVER.key $keybits
 		$openssl req -new $defaultmd \
 			-out $SERVER.csr \
@@ -204,7 +204,7 @@ if [ $kind == 'server' ]; then
 		SUBJALTNAME="$(addresslist)"
 		export SUBJALTNAME		# Use environment. Because I can. ;-)
 
-		echo "--- Creating and signing server certificate"
+		echo "--- Creating and signing server certificate $SUBJALTNAME"
 		$openssl x509 -req $defaultmd \
 			-in $SERVER.csr \
 			-CA $CACERT.crt \
