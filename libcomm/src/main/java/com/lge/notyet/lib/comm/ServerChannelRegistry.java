@@ -26,10 +26,13 @@ abstract public class ServerChannelRegistry extends ServerChannel {
 
     @Override
     public final void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-
         synchronized (ServerChannelRegistry.class) {
             for (IOnRequest observer : mIOnRequestList) {
-                observer.onRequest(networkChannel, uri, message);
+                try {
+                    observer.onRequest(networkChannel, uri, message);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
