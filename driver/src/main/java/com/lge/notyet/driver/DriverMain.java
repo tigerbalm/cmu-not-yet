@@ -7,7 +7,7 @@ package com.lge.notyet.driver;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.ui.*;
 
-public class Initiator {
+public class DriverMain {
 
     public static void main(String[] args) {
         DriverApplicationMainFrame dialog = new DriverApplicationMainFrame();

@@ -2,5 +2,8 @@ package com.lge.notyet.driver.manager;
 
 public interface ITaskDoneCallback <T> {
 
-    public void onDone(T response);
+    int SUCCESS = 0;
+    int FAIL = 1;
+
+    void onDone(int result, T response);
 }
