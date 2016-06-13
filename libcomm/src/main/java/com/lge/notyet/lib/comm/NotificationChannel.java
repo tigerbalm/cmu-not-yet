@@ -13,7 +13,7 @@ abstract public class NotificationChannel extends NetworkChannel {
     }
 
     @Override
-    public final void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+    public final void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
     }
 
     @Override

@@ -29,7 +29,7 @@ public class CommunicationProxy {
         }
     }
 
-    public Future<Void> start(IOnRequested messageCallback) {
+    public Future<Void> start(IOnRequest messageCallback) {
         final Future<Void> future = Future.future();
         networkConnection = new MqttNetworkConnection(null);
         try {

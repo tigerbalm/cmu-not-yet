@@ -27,7 +27,6 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(3);
 
-    private SelfConfigurationChannel mSelfConfigurationChannel = null;
     protected String mChannelName = null;
 
     protected boolean preHandleConnected() {
@@ -85,7 +84,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
                 mSelfConfigurationChannel.notify(getMasterAdvertisementMessage());
                 log("S3 S. I am new Master Node, mServerId=" + mServerId);
             } else {
-                // TODO: It should be not.
+                // TODO: It should be not reached.
                 log("DuplicateDetectionWindowDelayTask - It should not be reached, mState=" + mState);
             }
         }
@@ -121,13 +120,13 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            if (mIsMaster) super.onNotified(networkChannel, uri, message);
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onNotify(networkChannel, uri, message);
         }
 
         @Override
-        public void onRequested(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            if (mIsMaster) super.onRequested(networkChannel, uri, message);
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onRequest(networkChannel, uri, message);
         }
 
         @Override
@@ -152,7 +151,6 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
             if (mIsMaster) super.onTimeout(networkChannel, message);
         }
     }
-
     private final ConcurrentHashMap<String, NetworkChannel> mPassiveRedundancyNetworkChannels = new ConcurrentHashMap<>();
 
     @Override
@@ -190,9 +188,10 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            if (uri != null && uri.getPath().equals(getSelfConfigurationUri().getPath())) {
+
+            if (uri != null && uri.getLocation().equals(getSelfConfigurationUri().getLocation())) {
 
                 boolean isSolicitationMessage = false;
 
@@ -240,6 +239,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
             }
         }
     }
+    private SelfConfigurationChannel mSelfConfigurationChannel = null;
 
     protected synchronized void doSelfConfiguration() {
 

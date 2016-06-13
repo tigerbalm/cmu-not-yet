@@ -25,8 +25,8 @@ public class MqttClientChannelTester implements Runnable {
         }
 
         @Override
-        public void onNotified(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            Log.logd(LOG_TAG, "TestLoopbackNotificationChannel.onNotified():" + message.getMessage() + " on channel=" + uri.getPath());
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            Log.logd(LOG_TAG, "TestLoopbackNotificationChannel.onNotify():" + message.getMessage() + " on channel=" + uri.getLocation());
         }
     }
 
@@ -44,7 +44,7 @@ public class MqttClientChannelTester implements Runnable {
         }
     }
 
-    private final class TestRequestChannel extends RequestChannel {
+    private final class TestRequestChannel extends ClientChannel {
 
         private static final String TEST_SERVER_REQUEST_TOPIC = "/server/req-res";
 
@@ -59,7 +59,7 @@ public class MqttClientChannelTester implements Runnable {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-            Log.logd(LOG_TAG, "TestRequestChannel.onResponse():" + message.getMessage() + " on channel=" + uri.getPath());
+            Log.logd(LOG_TAG, "TestRequestChannel.onResponse():" + message.getMessage() + " on channel=" + uri.getLocation());
         }
 
         @Override
