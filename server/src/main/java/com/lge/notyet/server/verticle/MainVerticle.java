@@ -4,7 +4,6 @@ import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.UpdateResult;
 
 import java.util.List;
 
@@ -35,18 +34,18 @@ public class MainVerticle extends AbstractVerticle {
                 failedFuture.setHandler(far -> {
                     System.out.println("failed");
                 });
-                databaseProxy.getUser(0, future1.completer());
+                databaseProxy.selectUser(0, future1.completer());
                 future1.compose(userObject -> {
                     System.out.println(userObject);
-                    databaseProxy.getUser("kkkkkk", future2.completer());
+                    databaseProxy.selectUser("kkkkkk", future2.completer());
                 }, failedFuture);
                 future2.compose(userObject -> {
                     System.out.println(userObject);
-                    databaseProxy.getReservableFacilities(future3.completer());
+                    databaseProxy.selectReservableFacilities(future3.completer());
                 }, failedFuture);
                 future3.compose(facilityObjects -> {
                     System.out.println(facilityObjects);
-                    databaseProxy.getReservableSlots(0, future4.completer());
+                    databaseProxy.selectReservableSlots(0, future4.completer());
                 }, failedFuture);
                 future4.compose(slotObjects -> {
                     System.out.println(slotObjects);
