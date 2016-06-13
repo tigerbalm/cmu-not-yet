@@ -1,7 +1,9 @@
 package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ReservationTask;
+import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.TaskManager;
+import com.lge.notyet.lib.comm.NetworkMessage;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -44,9 +46,17 @@ public class DriverApplicationMainFrame extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
+    ITaskDoneCallback mReservationDoneCallback = new ITaskDoneCallback() {
+
+        @Override
+        public void onDone(int result, Object response) {
+            System.out.println("result=" + result + ", message=" + ((NetworkMessage)response).getMessage());
+        }
+    };
+
     private void onOK() {
 // add your code here
-        TaskManager.getInstance().runTask(ReservationTask.getTask(0));
+        TaskManager.getInstance().runTask(ReservationTask.getTask(0, mReservationDoneCallback));
         //dispose();
     }
 

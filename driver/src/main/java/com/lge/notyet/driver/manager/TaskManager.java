@@ -1,20 +1,22 @@
 package com.lge.notyet.driver.manager;
 
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
+import java.util.concurrent.*;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
+public class TaskManager implements Runnable {
 
-public class TaskManager {
+    private static final int TASK_QUEUE_MAX = 20;
+    private static final int TASK_THREAD_MAX = 10;
 
-    ExecutorService executor = Executors.newFixedThreadPool(10);
+    private final BlockingQueue<FutureTask> mTaskQueue;
+    private final ExecutorService mTaskExecutor;
 
-    public static TaskManager sTaskManager = null;
+    private static TaskManager sTaskManager = null;
 
     private TaskManager () {
+        mTaskQueue = new ArrayBlockingQueue<>(TASK_QUEUE_MAX);
+        mTaskExecutor = Executors.newFixedThreadPool(TASK_THREAD_MAX);
 
+        new Thread(this).start();
     }
 
     public static TaskManager getInstance() {
@@ -25,7 +27,25 @@ public class TaskManager {
     }
 
     public void runTask (FutureTask task) {
-        System.out.println("RunTask");
-        executor.execute(task);
+        try {
+            mTaskQueue.put(task);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void run() {
+
+        while(true) {
+
+            FutureTask task = null;
+            try {
+                task = mTaskQueue.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            mTaskExecutor.execute(task);
+        }
     }
 }
