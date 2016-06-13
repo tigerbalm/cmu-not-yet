@@ -20,22 +20,12 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
 
     private static final String LOG_TAG = "MqttNetworkConnection";
 
-    private class RequestMessageCallback {
-
-        RequestMessageCallback (IMessageCallback messageCallback, IMessageTimeoutCallback messageTimeoutCallback) {
-            mIMessageCallback = messageCallback;
-            mIMessageTimeoutCallback = messageTimeoutCallback;
-        }
-
-        IMessageCallback mIMessageCallback = null;
-        IMessageTimeoutCallback mIMessageTimeoutCallback = null;
-    }
-
-    private final ConcurrentHashMap<String, RequestMessageCallback> mRequestCbMap = new ConcurrentHashMap<>();
+    // Channels
+    private final ConcurrentHashMap<String, NetworkChannel> mSubscribers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NetworkChannel> mRequestChannelMap = new ConcurrentHashMap<>();
     private static final AtomicInteger sRequestSequenceNumber = new AtomicInteger(0);
 
     // MQTT Variables
-    private static final int DEFAULT_MQTT_QOS = 2;
     private MqttAsyncClient mMqttAsyncClient = null;
     private final MqttCallback mMqttCallback = new MqttCallback() {
 
@@ -47,7 +37,6 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
 
         @Override
         public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-            RequestMessageCallback rspCbs = null;
 
             if (mqttMessage == null) {
                 throw new NullPointerException("received null message on topic=" + topic);
@@ -58,49 +47,59 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
             try {
                 message = JsonObject.readFrom(payload);
                 if (message == null) {
-                    throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage.toString() + " on topic=" + topic);
+                    throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage + " on topic=" + topic);
                 }
             } catch (Exception ex) {
-                message = new JsonObject().add(NetworkMessage.MSG_TYPE, NetworkMessage.MESSAGE_TYPE_NOTIFICATION).add("data", payload);
+                message = new JsonObject().add(MqttConstants.MSG_TYPE_KEY, NetworkMessage.MESSAGE_TYPE_NOTIFICATION).add("data", payload);
             }
 
             int messageType = NetworkMessage.MESSAGE_TYPE_UNKNOWN;
 
             try {
-                messageType = message.get(NetworkMessage.MSG_TYPE).asInt();
+                messageType = message.get(MqttConstants.MSG_TYPE_KEY).asInt();
             } catch (Exception e) {
                 // We will throw this exception, now, but can be added some handling later.
             }
 
-            MqttNetworkMessage networkMsg = MqttNetworkMessage.build(messageType, message);
-            networkMsg.removeMessageType();
-
             if (topic == null) {
-                log("received message=" + message + " on null topic");
+                logv("received message=" + message + " on null topic");
             }
 
-            logv("received message=" + message + " on topic=" + topic);
+            MqttNetworkMessage networkMsg = MqttNetworkMessage.build(message);
+            networkMsg.removeMessageType();
+
+            logv("received message=" + message + " on topic=" + topic + ", messageType=" + messageType);
 
             if (messageType == NetworkMessage.MESSAGE_TYPE_REQUEST) {
                 try {
                     networkMsg.makeResponseInfo(mMqttAsyncClient, topic);
+                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onRequest(channel, new MqttUri(topic), networkMsg));
                 } catch (UnsupportedOperationException uoe) {
                     log(uoe.toString());
                     throw uoe;
                 }
             }
+            else if (messageType == NetworkMessage.MESSAGE_TYPE_RESPONSE) {
+                if (topic != null && mRequestChannelMap.containsKey(topic)) {
+                    NetworkChannel requestedNc = mRequestChannelMap.get(topic);
 
-            if (messageType == NetworkMessage.MESSAGE_TYPE_RESPONSE) {
-                if (topic != null && mRequestCbMap.containsKey(topic)) {
-                    rspCbs = mRequestCbMap.get(topic);
-                    if (rspCbs != null && rspCbs.mIMessageCallback != null) {
-                        rspCbs.mIMessageCallback.onMessage(new MqttUri(topic), networkMsg);
+                    if (requestedNc != null) {
+                        requestedNc.onResponse(requestedNc, new MqttUri(topic), networkMsg);
                     }
-                    mRequestCbMap.remove(topic);
+
+                    mRequestChannelMap.remove(topic);
                     mMqttAsyncClient.unsubscribe(topic);
                 }
             }
-            else if (mMessageCallback != null && (rspCbs == null || rspCbs.mIMessageCallback == null)) mMessageCallback.onMessage(new MqttUri(topic), networkMsg);
+            else if (messageType == NetworkMessage.MESSAGE_TYPE_NOTIFICATION) {
+                try {
+
+                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onNotify(channel, new MqttUri(topic), networkMsg));
+                } catch (UnsupportedOperationException uoe) {
+                    log(uoe.toString());
+                    throw uoe;
+                }
+            }
         }
 
         @Override
@@ -126,9 +125,8 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         }
     };
 
-    public MqttNetworkConnection(String name, IMessageCallback msgCb) {
-        super(name, msgCb);
-        mMessageCallback = msgCb;
+    public MqttNetworkConnection(String name) {
+        super(name);
     }
 
     @Override
@@ -153,7 +151,6 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
             } else {
                 mMqttAsyncClient.connect(connOptions, null, mMqttConnectListener);
             }
-
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
@@ -181,9 +178,12 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     }
 
     @Override
-    public void subscribe(Uri uri) {
+    public void subscribe(NetworkChannel netChannel) {
         try {
-            mMqttAsyncClient.subscribe(uri.getPath(), DEFAULT_MQTT_QOS);
+            mSubscribers.put(netChannel.getHashKey(), netChannel);
+            mMqttAsyncClient.subscribe(netChannel.getChannelDescription().getLocation().toString(), MqttConstants.DEFAULT_QOS);
+
+            logv("subscribed for topic=" + netChannel.getChannelDescription().getLocation() + " NetworkChannel=" + netChannel.getHashKey());
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
@@ -191,9 +191,12 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     }
 
     @Override
-    public void unsubscribe(Uri uri) {
+    public void unsubscribe(NetworkChannel netChannel) {
         try {
-            mMqttAsyncClient.unsubscribe(uri.getPath());
+            mSubscribers.remove(netChannel.getHashKey());
+            mMqttAsyncClient.unsubscribe(netChannel.getChannelDescription().getLocation().toString());
+
+            logv("unsubscribe for topic=" + netChannel.getChannelDescription().getLocation() + " NetworkChannel=" + netChannel.getHashKey());
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
@@ -201,13 +204,13 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     }
 
     @Override
-    public void send(Uri uri, JsonObject message) {
+    public void send(NetworkChannel netChannel, NetworkMessage message) {
 
-        MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_NOTIFICATION, message);
+        MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
         mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
         try {
-            mMqttAsyncClient.publish(uri.getPath(), new MqttMessage(mqttNetworkMessage.getBytes()));
+            mMqttAsyncClient.publish(netChannel.getChannelDescription().getLocation().toString(), new MqttMessage(message.getBytes()));
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
@@ -215,28 +218,23 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     }
 
     @Override
-    public void request(Uri uri, JsonObject message, IMessageCallback responseCb) {
-        request(uri, message, responseCb, null);
-    }
-
-    @Override
-    public void request(Uri uri, JsonObject message, IMessageCallback responseCb, IMessageTimeoutCallback timeoutCallback) {
+    public void request(NetworkChannel netChannel, NetworkMessage message) {
 
         int sequenceNumber = sRequestSequenceNumber.addAndGet(1);
         try {
-            mRequestCbMap.put(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, new RequestMessageCallback(responseCb, timeoutCallback));
-            mMqttAsyncClient.subscribe(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, DEFAULT_MQTT_QOS);
+            mRequestChannelMap.put(netChannel.getChannelDescription().getLocation() + MqttConstants.RESPONSE_MESSAGE_TOPIC+ sequenceNumber, netChannel);
+            mMqttAsyncClient.subscribe(netChannel.getChannelDescription().getLocation() + MqttConstants.RESPONSE_MESSAGE_TOPIC + sequenceNumber, MqttConstants.DEFAULT_QOS);
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
         }
 
-        MqttNetworkMessage mqttNetworkMessage = MqttNetworkMessage.build(NetworkMessage.MESSAGE_TYPE_REQUEST, message);
+        MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
         mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_REQUEST);
 
         try {
-            mMqttAsyncClient.publish(uri.getPath() + MqttNetworkMessage.REQUEST_TOPIC + sequenceNumber, new MqttMessage(mqttNetworkMessage.getBytes()));
-            scheduleNetworkTimeout(uri.getPath() + MqttNetworkMessage.RESPONSE_TOPIC + sequenceNumber, uri);
+            mMqttAsyncClient.publish(netChannel.getChannelDescription().getLocation() + MqttConstants.REQUEST_MESSAGE_TOPIC + sequenceNumber, new MqttMessage(message.getBytes()));
+            scheduleNetworkTimeout(message, netChannel.getChannelDescription().getLocation() + MqttConstants.RESPONSE_MESSAGE_TOPIC + sequenceNumber);
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
@@ -249,22 +247,22 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
 
     private class RequestTimeoutCheckThread implements Runnable {
 
-        private final Uri mRequestedUri;
+        private final NetworkMessage mMessage;
         private final String mResponseTopic;
 
-        RequestTimeoutCheckThread(String responseTopic, Uri uri) {
-            mRequestedUri = uri;
+        RequestTimeoutCheckThread(NetworkMessage message, String responseTopic) {
+            mMessage = message;
             mResponseTopic = responseTopic;
         }
 
         public void run() {
 
-            if (mRequestCbMap.containsKey(mResponseTopic)) {
-                RequestMessageCallback rspCbs = mRequestCbMap.get(mResponseTopic);
-                if (rspCbs != null && rspCbs.mIMessageTimeoutCallback != null) {
-                    rspCbs.mIMessageTimeoutCallback.onMessageTimeout(mRequestedUri);
+            if (mRequestChannelMap.containsKey(mResponseTopic)) {
+                NetworkChannel netChannel = mRequestChannelMap.get(mResponseTopic);
+                if (netChannel != null) {
+                    netChannel.onTimeout(netChannel, mMessage);
                 }
-                mRequestCbMap.remove(mResponseTopic);
+                mRequestChannelMap.remove(mResponseTopic);
 
                 try {
                     mMqttAsyncClient.unsubscribe(mResponseTopic);
@@ -276,9 +274,9 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         }
     }
 
-    private void scheduleNetworkTimeout(String topic, Uri requestedUri) {
+    private void scheduleNetworkTimeout(NetworkMessage message, String responseTopic) {
         // TODO: Need to check Maximum Pended Requests?
-        mScheduler.schedule(new RequestTimeoutCheckThread(topic, requestedUri), REQUEST_MESSAGE_PENDING_TIME, SECONDS);
+        mScheduler.schedule(new RequestTimeoutCheckThread(message, responseTopic), REQUEST_MESSAGE_PENDING_TIME, SECONDS);
     }
 
     // Log functions

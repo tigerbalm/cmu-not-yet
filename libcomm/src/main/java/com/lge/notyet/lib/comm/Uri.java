@@ -1,20 +1,21 @@
 package com.lge.notyet.lib.comm;
 
-/**
- * Created by beney.kim on 2016-06-09.
- */
-public class Uri {
+abstract public class Uri<T> {
 
-    private String mPath = null;
+    private T mLocation = null;
 
-    public Uri(String path) {
-        mPath = path;
-    }
-    public String getPath() {
-        return mPath;
+    protected Uri(T location) {
+        mLocation = location;
     }
 
-    public String toString() {
-        return mPath;
+    public final T getLocation() {
+        return mLocation;
     }
+
+    public final String toString() {
+        return mLocation.toString();
+    }
+
+    // Need to implement, because in pub/sub pattern, it may be wildcard presentation.
+    abstract public boolean isSuperOf(Uri arg);
 }

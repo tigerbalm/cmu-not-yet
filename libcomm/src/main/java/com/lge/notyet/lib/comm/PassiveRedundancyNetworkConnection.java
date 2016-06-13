@@ -5,8 +5,6 @@ package com.lge.notyet.lib.comm;
  * This class provide Passive Redundancy for BaseConnection
  */
 
-import com.eclipsesource.json.JsonObject;
-
 import java.util.concurrent.*;
 import static java.util.concurrent.TimeUnit.*;
 
@@ -29,11 +27,10 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(3);
 
-    abstract public void subscribeSelfConfigurationChannel(Uri channelUri);
-    abstract public void unsubscribeSelfConfigurationChannel(Uri channelUri);
+    protected String mChannelName = null;
 
     protected boolean preHandleConnected() {
-        subscribeSelfConfigurationChannel(mConnectionUri);
+        mSelfConfigurationChannel.listen();
         doSelfConfiguration();
         return false;
     }
@@ -41,7 +38,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     protected boolean preHandleLost() {
         log("S3 E. Oops ConnectionLost, mServerId=" + mServerId);
         mIsMaster = false;
-        // unsubscribeSelfConfigurationChannel(mConnectionUri);
+
         mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
         if (mContentionWindowDelayTask != null) mContentionWindowDelayTask.cancel(true);
         doSelfConfiguration();
@@ -50,19 +47,26 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
     protected PassiveRedundancyNetworkConnection(String connectionName, BaseNetworkConnection networkConnection) {
 
-        super(connectionName, networkConnection);
+        super(networkConnection);
 
         mIsMaster = false;
         LOG_TAG = "PRNC-" + mServerId;
 
+        mChannelName = connectionName;
+
         log("Created, mServerId=" + mServerId);
-        if (isConnected()) preHandleConnected();
+
+        mSelfConfigurationChannel = new SelfConfigurationChannel(networkConnection);
+
+        if (isConnected()) {
+            preHandleConnected();
+        }
     }
 
     public void disconnect() {
         log("S3 E. I am dying, mServerId=" + mServerId);
         mIsMaster = false;
-        unsubscribeSelfConfigurationChannel(mConnectionUri);
+        mSelfConfigurationChannel.unlisten();
         mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
         if (mContentionWindowDelayTask != null) mContentionWindowDelayTask.cancel(true);
         super.disconnect();
@@ -77,12 +81,10 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
             if (mState == MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE) {
                 mState = MASTER_SELF_CONFIGURATION_STATE_MASTER;
                 mIsMaster = true;
-                send(mConnectionUri, new JsonObject()
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
+                mSelfConfigurationChannel.notify(getMasterAdvertisementMessage());
                 log("S3 S. I am new Master Node, mServerId=" + mServerId);
             } else {
-                // TODO: It should be not.
+                // TODO: It should be not reached.
                 log("DuplicateDetectionWindowDelayTask - It should not be reached, mState=" + mState);
             }
         }
@@ -99,9 +101,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
 
                 log("S2 S. Broadcast Probe from mServerId=" + mServerId);
                 mState = MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE;
-                send(mConnectionUri, new JsonObject()
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
-                        .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST));
+                mSelfConfigurationChannel.notify(getMasterSolicitationMessage());
 
                 mDuplicateDetectionWindowDelayTask = mScheduler.schedule(new DuplicateDetectionWindowDelayTask(),
                         MASTER_SELF_CONFIGURATION_DDW + mRandom.nextInt(MASTER_SELF_CONFIGURATION_DDW_RANDOM), MILLISECONDS);
@@ -113,68 +113,138 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     }
     private ScheduledFuture<?> mContentionWindowDelayTask = null;
 
-    protected boolean preHandleMessage(Uri uri, NetworkMessage msg) {
+    public class PassiveRedundancyNetworkChannel extends WrapNetworkChannel {
 
-        if (uri != null && uri.getPath().equals(mConnectionUri.getPath())) {
-
-            long rSrvId = 0L;
-            String rMsgType = "";
-
-            try {
-                rSrvId = msg.getMessage().get(MASTER_SELF_CONFIGURATION_MESSAGE_ID).asLong();
-                rMsgType = msg.getMessage().get(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE).asString();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            if (rSrvId == mServerId) return true;
-
-            log("Received self-configuration message, type=" + rMsgType + " from server " + rSrvId + ", current state=" + mState);
-
-            boolean isRequestMessage = MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_REQUEST.equals(rMsgType);
-
-            if (isRequestMessage) {
-                switch (mState) {
-                    case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
-                        mContentionWindowDelayTask.cancel(true);
-                        break;
-                    case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
-                        break;
-                    case MASTER_SELF_CONFIGURATION_STATE_MASTER:
-                        send(mConnectionUri, new JsonObject()
-                                .add(MASTER_SELF_CONFIGURATION_MESSAGE_ID, mServerId)
-                                .add(MASTER_SELF_CONFIGURATION_MESSAGE_TYPE, MASTER_SELF_CONFIGURATION_MESSAGE_TYPE_RESPONSE));
-                        break;
-                    default:
-                        log("preHandleMessage - It should not be reached");
-                        break;
-                }
-            }
-            // It should be response message
-            else {
-                switch (mState) {
-                    case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
-                        mContentionWindowDelayTask.cancel(true);
-                        break;
-                    case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
-                        mDuplicateDetectionWindowDelayTask.cancel(true);
-                        mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
-                        break;
-                    default:
-                        log("preHandleMessage - It should not be reached");
-                        mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
-                        break;
-                }
-            }
-            return true;
+        PassiveRedundancyNetworkChannel(NetworkChannel networkChannel) {
+            super(networkChannel);
         }
-        return false;
+
+        @Override
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onNotify(networkChannel, uri, message);
+        }
+
+        @Override
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+            if (mIsMaster) super.onRequest(networkChannel, uri, message);
+        }
+
+        @Override
+        public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            NetworkChannel nc =  mPassiveRedundancyNetworkChannels.get(mHookedChannel.getHashKey());
+            if (nc != null) {
+                mPassiveRedundancyNetworkChannels.remove(mHookedChannel.getHashKey());
+            }
+
+            if (mIsMaster) super.onResponse(networkChannel, uri, message);
+        }
+
+        @Override
+        public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
+
+            NetworkChannel nc =  mPassiveRedundancyNetworkChannels.get(mHookedChannel.getHashKey());
+            if (nc != null) {
+                mPassiveRedundancyNetworkChannels.remove(mHookedChannel.getHashKey());
+            }
+
+            if (mIsMaster) super.onTimeout(networkChannel, message);
+        }
     }
+    private final ConcurrentHashMap<String, NetworkChannel> mPassiveRedundancyNetworkChannels = new ConcurrentHashMap<>();
+
+    @Override
+    protected void subscribe(NetworkChannel networkChannel) {
+        NetworkChannel nc = new PassiveRedundancyNetworkChannel(networkChannel);
+        mPassiveRedundancyNetworkChannels.put(networkChannel.getHashKey(), nc);
+        super.subscribe(nc);
+    }
+
+    @Override
+    protected void unsubscribe(NetworkChannel networkChannel) {
+        NetworkChannel nc =  mPassiveRedundancyNetworkChannels.get(networkChannel.getHashKey());
+        if (nc != null) {
+            super.unsubscribe(new PassiveRedundancyNetworkChannel(nc));
+            mPassiveRedundancyNetworkChannels.remove(networkChannel.getHashKey());
+        }
+    }
+
+    @Override
+    protected void request(NetworkChannel networkChannel, NetworkMessage message) {
+        NetworkChannel nc = new PassiveRedundancyNetworkChannel(networkChannel);
+        mPassiveRedundancyNetworkChannels.put(networkChannel.getHashKey(), nc);
+        super.request(nc, message);
+    }
+
+    public class SelfConfigurationChannel extends NotificationChannel {
+
+        SelfConfigurationChannel(INetworkConnection networkConnection) {
+            super(networkConnection);
+        }
+
+        @Override
+        public Uri getChannelDescription() {
+            return getSelfConfigurationUri();
+        }
+
+        @Override
+        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+
+            if (uri != null && uri.getLocation().equals(getSelfConfigurationUri().getLocation())) {
+
+                boolean isSolicitationMessage = false;
+
+                try {
+                    isSolicitationMessage = isSolicitationMessage(message);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if (isLoopbackMessage(message)) return;
+
+                log("Received self-configuration message, solicitation=" + isSolicitationMessage + ", current state=" + mState);
+
+                if (isSolicitationMessage) {
+                    switch (mState) {
+                        case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
+                            mContentionWindowDelayTask.cancel(true);
+                            break;
+                        case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
+                            break;
+                        case MASTER_SELF_CONFIGURATION_STATE_MASTER:
+                            notify(getMasterAdvertisementMessage());
+                            break;
+                        default:
+                            log("preHandleMessage - It should not be reached");
+                            break;
+                    }
+                }
+                // It should be response message
+                else {
+                    switch (mState) {
+                        case MASTER_SELF_CONFIGURATION_STATE_SLAVE:
+                            mContentionWindowDelayTask.cancel(true);
+                            break;
+                        case MASTER_SELF_CONFIGURATION_STATE_MASTER_CANDIDATE:
+                            mDuplicateDetectionWindowDelayTask.cancel(true);
+                            mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
+                            break;
+                        default:
+                            log("preHandleMessage - It should not be reached");
+                            mState = MASTER_SELF_CONFIGURATION_STATE_SLAVE;
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    private SelfConfigurationChannel mSelfConfigurationChannel = null;
 
     protected synchronized void doSelfConfiguration() {
 
-        if (isConnected() == false) return;
-        if (mContentionWindowDelayTask != null && mContentionWindowDelayTask.isDone() == false) return;
+        if (!isConnected()) return;
+        if (mContentionWindowDelayTask != null && !mContentionWindowDelayTask.isDone()) return;
 
         log("S1 S. Contention Window Random Delay Started, state=" + mState);
 
@@ -183,4 +253,12 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
         mContentionWindowDelayTask = mScheduler.schedule(new ContentionWindowDelayTask(),
                 mRandom.nextInt(MASTER_SELF_CONFIGURATION_CONTENTION_WINDOW), MILLISECONDS);
     }
+
+    abstract protected Uri getSelfConfigurationUri();
+    abstract protected NetworkMessage getMasterSolicitationMessage();
+    abstract protected NetworkMessage getMasterAdvertisementMessage();
+
+    abstract protected boolean isLoopbackMessage(NetworkMessage message);
+    abstract protected boolean isSolicitationMessage(NetworkMessage message);
+
 }

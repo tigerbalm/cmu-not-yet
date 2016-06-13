@@ -1,50 +1,38 @@
 package com.lge.notyet.lib.comm.mqtt;
 
-/**
- * Created by beney.kim on 2016-06-10.
- */
-
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.lib.comm.NetworkMessage;
 import org.eclipse.paho.client.mqttv3.*;
 
-class MqttNetworkMessage extends NetworkMessage {
-
-    static final String REQUEST_TOPIC = "/request/";
-    static final String RESPONSE_TOPIC = "/response/";
-    static final String WILL_TOPIC = "/will";
+public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
 
     private MqttAsyncClient mResponseNetworkConnection = null;
     private String mResponseTopic = null;
 
-    private MqttNetworkMessage(int messageType, JsonObject message) {
-        super(messageType, message);
+    public MqttNetworkMessage(JsonObject message) {
+        super(message);
     }
 
-    static MqttNetworkMessage build(int messageType, JsonObject message) {
-        return new MqttNetworkMessage(messageType, message);
+    public static MqttNetworkMessage build(JsonObject message) {
+        return new MqttNetworkMessage(message);
     }
 
     void makeResponseInfo(MqttAsyncClient nc, String topic) throws UnsupportedOperationException {
 
-        if (topic.contains(REQUEST_TOPIC) == false) {
+        if (!topic.contains(MqttConstants.REQUEST_MESSAGE_TOPIC)) {
            throw new UnsupportedOperationException("this request type message has wrong topic, topic=" + topic);
         }
 
         String responseTopic = new String(topic);
-        responseTopic = responseTopic.replace(REQUEST_TOPIC, RESPONSE_TOPIC);
+        responseTopic = responseTopic.replace(MqttConstants.REQUEST_MESSAGE_TOPIC, MqttConstants.RESPONSE_MESSAGE_TOPIC);
 
         mResponseNetworkConnection = nc;
         mResponseTopic = responseTopic;
     }
 
-    byte[] getBytes() {
-        return getMessage().toString().getBytes();
-    }
-
     @Override
-    protected void response_impl(JsonObject message) throws ExceptionInInitializerError {
+    public void responseFor(NetworkMessage message) {
 
         if (mResponseNetworkConnection == null) {
             throw new ExceptionInInitializerError("response connection is null");
@@ -54,29 +42,25 @@ class MqttNetworkMessage extends NetworkMessage {
             throw new ExceptionInInitializerError("response topic connection is null");
         }
 
-        MqttNetworkMessage mqttNetworkMessage = new MqttNetworkMessage(MESSAGE_TYPE_RESPONSE, message);
+        MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
         mqttNetworkMessage.addMessageType(MESSAGE_TYPE_RESPONSE);
 
         try {
-            mResponseNetworkConnection.publish(mResponseTopic, new MqttMessage(mqttNetworkMessage.getBytes()));
+            mResponseNetworkConnection.publish(mResponseTopic, new MqttMessage(message.getBytes()));
         } catch (MqttException e) {
             // TODO: Add Exception Handler
         }
     }
 
-    // Utility Function to support request-response message flow.
+    // Internal functions to support request-response message flow, because we use JsonObject which includes "MESSAGE_TYPE" in the message, too.
     void addMessageType (int messageType) {
-        JsonObject messageObj = getMessage();
-        JsonValue typeValue = messageObj.get(MSG_TYPE);
+        JsonValue typeValue = mMessage.get(MqttConstants.MSG_TYPE_KEY);
         if (typeValue == null) {
-            messageObj.add(MSG_TYPE, messageType);
-        } else {
-            // TODO: Add Exception Handler
+            mMessage.add(MqttConstants.MSG_TYPE_KEY, messageType);
         }
     }
 
     void removeMessageType () {
-        JsonObject messageObj = getMessage();
-        messageObj.remove(MSG_TYPE);
+        mMessage.remove(MqttConstants.MSG_TYPE_KEY);
     }
 }
