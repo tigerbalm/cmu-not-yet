@@ -95,7 +95,7 @@ public class DatabaseProxy {
 
             @Override
             public boolean succeeded() {
-                return ar.succeeded() && ar.result().getRows().size() == 1;
+                return ar.succeeded();
             }
 
             @Override
@@ -162,7 +162,7 @@ public class DatabaseProxy {
     }
 
     public void selectUser(String sessionKey, Handler<AsyncResult<JsonObject>> resultHandler) {
-        singleItemReturnQuery("select * from user, session where session_key=\'" + sessionKey + "\'", resultHandler);
+        singleItemReturnQuery("select * from user inner join session on user.id = session.user_id where session_key=\'" + sessionKey + "\'", resultHandler);
     }
 
     public void selectSession(int userId, Handler<AsyncResult<JsonObject>> resultHandler) {
@@ -192,17 +192,17 @@ public class DatabaseProxy {
     }
 
     public void selectReservation(int confirmationNumber, Handler<AsyncResult<JsonObject>> resultHandler) {
-        String sql = "select reservation.id as id, reservation_ts, confirmation_number, user_id, user.email as user_email, slot_id, slot.number as slot_number, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
+        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_number, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
                 "inner join facility on facility.id = controller.facility_id " +
                 "inner join user on user.id = user_id " +
-                "where confirmation_number = " + confirmationNumber;
+                "where confirmation_no = " + confirmationNumber;
         singleItemReturnQuery(sql, resultHandler);
     }
 
     public void selectReservations(int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        String sql = "select reservation.id as id, reservation_ts, confirmation_number, user_id, user.email as user_email, slot_id, slot.number as slot_number, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
+        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_number, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
                 "inner join facility on facility.id = controller.facility_id " +
@@ -241,8 +241,8 @@ public class DatabaseProxy {
         updateWithParams(sql, parameters, resultHandler);
     }
 
-    public void insertReservation(int userId, int slotId, int reservationTs, int confirmationNo, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "insert into reservation(user_id, slot_id, reservation_ts, confirmation_number) values (?, ?, ?, ?)";
+    public void insertReservation(int userId, int slotId, long reservationTs, int confirmationNo, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "insert into reservation(user_id, slot_id, reservation_ts, confirmation_no) values (?, ?, ?, ?)";
         JsonArray parameters = new JsonArray();
         parameters.add(userId);
         parameters.add(slotId);
