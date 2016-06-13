@@ -1,9 +1,12 @@
 package com.lge.notyet.server.proxy;
 
+import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -14,10 +17,12 @@ public class CommunicationProxy {
     private static final String HOST = "localhost";
 
     private Vertx vertx;
+    private Logger logger;
     private INetworkConnection networkConnection;
 
     private CommunicationProxy(Vertx vertx) {
         this.vertx = vertx;
+        this.logger = LoggerFactory.getLogger(CommunicationProxy.class);
     }
 
     public static CommunicationProxy getInstance(Vertx vertx) {
@@ -65,5 +70,23 @@ public class CommunicationProxy {
 
     public INetworkConnection getNetworkConnection() {
         return networkConnection;
+    }
+
+    public void responseSuccess(NetworkMessage message, JsonObject responseObject) {
+        logger.info("responseSuccess: responseObject=" + responseObject);
+        responseObject.add("success", "1");
+        message.responseFor(message);
+    }
+
+    public void responseFail(NetworkMessage message, String cause) {
+        logger.info("responseFail: cause=" + cause);
+        JsonObject responseObject = new JsonObject();
+        responseObject.add("success", "0");
+        responseObject.add("cause", cause);
+        message.responseFor(new MqttNetworkMessage(responseObject));
+    }
+
+    public void responseServerError(NetworkMessage message) {
+        responseFail(message, "SERVER_ERROR");
     }
 }
