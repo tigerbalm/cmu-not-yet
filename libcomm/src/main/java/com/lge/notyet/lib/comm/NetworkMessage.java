@@ -22,4 +22,12 @@ public abstract class NetworkMessage <T> {
     }
 
     abstract public void responseFor(NetworkMessage message);
+
+    @Override
+    public String toString() {
+        return "NetworkMessage{" +
+                "clazz=" + this.getClass().getSimpleName() +
+                ", message=" + mMessage +
+                '}';
+    }
 }
