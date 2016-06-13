@@ -165,6 +165,10 @@ public class DatabaseProxy {
         singleItemReturnQuery("select * from user, session where session_key=\'" + sessionKey + "\'", resultHandler);
     }
 
+    public void selectSession(int userId, Handler<AsyncResult<JsonObject>> resultHandler) {
+        singleItemReturnQuery("select * from session where user_id=" + userId, resultHandler);
+    }
+
     public void selectReservableFacilities(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select id, name " +
                 "from facility " +

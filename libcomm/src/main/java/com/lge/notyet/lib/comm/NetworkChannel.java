@@ -38,4 +38,12 @@ abstract public class NetworkChannel implements IOnNotify, IOnRequest, IOnRespon
     }
 
     abstract public Uri getChannelDescription();
+
+    @Override
+    public String toString() {
+        return "NetworkChannel{" +
+                "clazz=" + this.getClass().getSimpleName() +
+                ", uri=" + getChannelDescription() +
+                '}';
+    }
 }
