@@ -10,7 +10,7 @@ public class ReservationRequestChannel extends ClientChannelRegistry {
 
     private int mFacilityId = 0;
 
-    private ReservationRequestChannel(INetworkConnection networkConnection, int facilityId) {
+    public ReservationRequestChannel(INetworkConnection networkConnection, int facilityId) {
         super(networkConnection);
         mFacilityId = facilityId;
     }

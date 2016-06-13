@@ -1,11 +1,10 @@
 package com.lge.notyet.server.verticle;
 
+import com.lge.notyet.server.manager.AuthenticationManager;
+import com.lge.notyet.server.manager.ReservationManager;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.*;
-import io.vertx.core.json.JsonObject;
-
-import java.util.List;
 
 public class MainVerticle extends AbstractVerticle {
     private DatabaseProxy databaseProxy;
@@ -14,46 +13,23 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(final Future<Void> startFuture) throws Exception {
         communicationProxy = CommunicationProxy.getInstance(vertx);
-        Future<Void> communicationReady = communicationProxy.start((networkChannel, uri, message) -> {
-            System.out.println("onRequested");
-            System.out.println(uri);
-            System.out.println(message);
-        });
         databaseProxy = DatabaseProxy.getInstance(vertx);
+        Future<Void> communicationReady = communicationProxy.start();
         Future<Void> databaseReady = databaseProxy.start();
 
         CompositeFuture.all(communicationReady, databaseReady).setHandler(ar -> {
             if (ar.succeeded()) {
                 startFuture.complete();
-
-                Future<JsonObject> future1 = Future.future();
-                Future<JsonObject> future2 = Future.future();
-                Future<List<JsonObject>> future3 = Future.future();
-                Future<List<JsonObject>> future4 = Future.future();
-                Future<Void> failedFuture = Future.future();
-                failedFuture.setHandler(far -> {
-                    System.out.println("failed");
-                });
-                databaseProxy.selectUser(0, future1.completer());
-                future1.compose(userObject -> {
-                    System.out.println(userObject);
-                    databaseProxy.selectUser("kkkkkk", future2.completer());
-                }, failedFuture);
-                future2.compose(userObject -> {
-                    System.out.println(userObject);
-                    databaseProxy.selectReservableFacilities(future3.completer());
-                }, failedFuture);
-                future3.compose(facilityObjects -> {
-                    System.out.println(facilityObjects);
-                    databaseProxy.selectReservableSlots(0, future4.completer());
-                }, failedFuture);
-                future4.compose(slotObjects -> {
-                    System.out.println(slotObjects);
-                }, null);
+                startManagers();
             } else {
                 startFuture.fail(ar.cause());
             }
         });
+    }
+
+    private void startManagers() {
+        AuthenticationManager.getInstance();
+        ReservationManager.getInstance();
     }
 
     @Override
