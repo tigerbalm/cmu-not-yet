@@ -50,14 +50,13 @@ public class DriverApplicationMainFrame extends JDialog {
 
         @Override
         public void onDone(int result, Object response) {
-            System.out.println("result=" + result + ", message=" + (NetworkMessage)response);
+            System.out.println("result=" + result + ", message=" + ((NetworkMessage)response).getMessage());
         }
     };
 
     private void onOK() {
 // add your code here
         TaskManager.getInstance().runTask(ReservationTask.getTask(0, mReservationDoneCallback));
-        System.out.println("a");
         //dispose();
     }
 

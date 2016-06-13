@@ -4,13 +4,13 @@ import java.util.concurrent.*;
 
 public class TaskManager implements Runnable {
 
-    private static int TASK_QUEUE_MAX = 10;
-    private static int TASK_THREAD_MAX = 10;
+    private static final int TASK_QUEUE_MAX = 10;
+    private static final int TASK_THREAD_MAX = 10;
 
     private final BlockingQueue<FutureTask> mTaskQueue;
     private final ExecutorService mTaskExecutor;
 
-    public static TaskManager sTaskManager = null;
+    private static TaskManager sTaskManager = null;
 
     private TaskManager () {
         mTaskQueue = new ArrayBlockingQueue<FutureTask>(TASK_QUEUE_MAX);
@@ -27,7 +27,6 @@ public class TaskManager implements Runnable {
     }
 
     public void runTask (FutureTask task) {
-        System.out.println("RunTask");
         try {
             mTaskQueue.put(task);
         } catch (InterruptedException e) {
