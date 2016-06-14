@@ -5,55 +5,34 @@ import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 public class ReservationMessage extends MqttNetworkMessage {
-    private static final String SESSION_ID = "session_id";
-    private static final String DATE = "date";
-    private static final String TIME = "time";
-    private static final String CREDIT_CARD_NUMBER = "credit_card_number";
+
+    private static final String SESSION_KEY = "session_key";
+    private static final String TIME_STAMP = "reservation_ts";
 
     public ReservationMessage() {
         super(new JsonObject());
     }
 
-    public ReservationMessage setSessionId(String sessionId) {
-        mMessage.add(SESSION_ID, sessionId);
+    public ReservationMessage setSessionKey(String sessionKey) {
+        mMessage.add(SESSION_KEY, sessionKey);
         return this;
     }
 
-    public ReservationMessage setDate(String date) {
-        mMessage.add(DATE, date);
+    public ReservationMessage setTimeStamp(long epoch) {
+        mMessage.add(TIME_STAMP, epoch);
         return this;
     }
 
-    public ReservationMessage setTime(String time) {
-        mMessage.add(TIME, time);
-        return this;
+    public String getSessionKey() {
+        return mMessage.get(SESSION_KEY).asString();
     }
 
-    public ReservationMessage setCreditCardNumber(String creditCardNumber) {
-        mMessage.add(CREDIT_CARD_NUMBER, creditCardNumber);
-        return this;
-    }
-
-    public String getSessionId() {
-        return mMessage.get(SESSION_ID).asString();
-    }
-
-    public String getDate(String date) {
-        return mMessage.get(DATE).asString();
-    }
-
-    public String getTime(String time) {
-        return mMessage.get(TIME).asString();
-    }
-
-    public String getCreditCardNumber(String creditCardNumber) {
-        return mMessage.get(CREDIT_CARD_NUMBER).asString();
+    public long getTimeStamp() {
+        return mMessage.get(TIME_STAMP).asLong();
     }
 
     public boolean validate() {
-        return (mMessage.get(SESSION_ID) != null) &&
-                (mMessage.get(DATE) != null) &&
-                (mMessage.get(TIME) != null) &&
-                (mMessage.get(CREDIT_CARD_NUMBER) != null);
+        return (mMessage.get(SESSION_KEY) != null) &&
+                (mMessage.get(TIME_STAMP) != null);
     }
 }

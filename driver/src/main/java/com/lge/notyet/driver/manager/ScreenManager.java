@@ -55,6 +55,8 @@ public class ScreenManager {
     }
 
     public void showReservationScreen() {
+
+        mReservationPanel.init();
         mMainCardLayout.show(mCards, mReservationPanel.getName());
     }
 

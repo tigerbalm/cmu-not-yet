@@ -6,6 +6,7 @@ import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.lib.comm.*;
 
+import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
@@ -13,13 +14,12 @@ import java.util.concurrent.FutureTask;
 public class ReservationTask implements Callable<Void> {
 
     private int mFacilityId;
+    private long mRequestTime;
     private ITaskDoneCallback mTaskDoneCallback;
 
-    public ReservationTask(int facilityId) {
+    public ReservationTask(int facilityId, long timeStamp, ITaskDoneCallback taskDoneCallback) {
         mFacilityId = facilityId;
-    }
-    public ReservationTask(int facilityId, ITaskDoneCallback taskDoneCallback) {
-        mFacilityId = facilityId;
+        mRequestTime = timeStamp;
         mTaskDoneCallback = taskDoneCallback;
     }
 
@@ -35,13 +35,13 @@ public class ReservationTask implements Callable<Void> {
         ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
         rc.addObserver(mReservationResult);
         rc.addTimeoutObserver(mReservationTimeout);
-        ReservationMessage message = new ReservationMessage().setSessionId("beney").setDate("6/1").setDate("11").setCreditCardNumber("1111-2222-3333-4444");
+        ReservationMessage message = new ReservationMessage().setSessionKey("beney").setTimeStamp(mRequestTime);
         rc.request(message);
         return null;
     }
 
     // Business Logic here, we have no time :(
-    IOnResponse mReservationResult = new IOnResponse() {
+    private IOnResponse mReservationResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
@@ -53,7 +53,7 @@ public class ReservationTask implements Callable<Void> {
         }
     };
 
-    IOnTimeout mReservationTimeout = new IOnTimeout() {
+    private IOnTimeout mReservationTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
@@ -62,7 +62,7 @@ public class ReservationTask implements Callable<Void> {
         }
     };
 
-    public static FutureTask<Void> getTask(int facilityId, ITaskDoneCallback taskDoneCallback) {
-        return new FutureTask<Void>(new ReservationTask(facilityId, taskDoneCallback));
+    public static FutureTask<Void> getTask(int facilityId, long timeStamp, ITaskDoneCallback taskDoneCallback) {
+        return new FutureTask<>(new ReservationTask(facilityId, timeStamp, taskDoneCallback));
     }
 }

@@ -8,6 +8,6 @@ if (!JavaVersion.current().java8Compatible) {
 include ':libcomm'
 include ':server'
 include ':application'
-include ':driver'
 include ':libchannels_biz'
+include ':driver'
 
