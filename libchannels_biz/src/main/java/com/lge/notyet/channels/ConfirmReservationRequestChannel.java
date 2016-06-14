@@ -33,7 +33,7 @@ public class ConfirmReservationRequestChannel extends ClientChannelRegistry {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_CONFIRMATION_NUMBER).asInt();
     }
 
-    public static MqttNetworkMessage createRequestMessage(String confirmationNumber) {
+    public static MqttNetworkMessage createRequestMessage(int confirmationNumber) {
         JsonObject requestObject = new JsonObject();
         requestObject.add(KEY_CONFIRMATION_NUMBER, confirmationNumber);
         return new MqttNetworkMessage(requestObject);

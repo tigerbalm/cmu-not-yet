@@ -174,7 +174,7 @@ public class DatabaseProxy {
     }
 
     public void selectReservation(int confirmationNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_number, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
+        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
                 "inner join facility on facility.id = controller.facility_id " +
@@ -184,7 +184,7 @@ public class DatabaseProxy {
     }
 
     public void selectReservations(int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_number, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
+        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
                 "inner join facility on facility.id = controller.facility_id " +

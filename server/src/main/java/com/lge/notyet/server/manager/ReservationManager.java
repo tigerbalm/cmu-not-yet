@@ -1,6 +1,8 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.channels.ConfirmReservationRequestChannel;
+import com.lge.notyet.channels.ConfirmReservationResponseChannel;
 import com.lge.notyet.channels.ReservationRequestChannel;
 import com.lge.notyet.channels.ReservationResponseChannel;
 import com.lge.notyet.lib.comm.*;
@@ -26,8 +28,12 @@ public class ReservationManager {
         communicationProxy = CommunicationProxy.getInstance(null);
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
+
         new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> reserve(uri, message)).listen();
+        new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirm(uri, message)).listen();
+
         // new ReservationRequestChannel(networkConnection, 1).request(ReservationRequestChannel.createRequestMessage("ssssss", System.currentTimeMillis()));
+        new ConfirmReservationRequestChannel(networkConnection, "p1").request(ConfirmReservationRequestChannel.createRequestMessage(9999));
     }
 
     public static ReservationManager getInstance() {
@@ -116,6 +122,27 @@ public class ReservationManager {
                             }
                         }
                     });
+                }
+            }
+        });
+    }
+
+    private void confirm(Uri uri, NetworkMessage message) {
+        final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
+
+        // 1. get reservation by confirmation number
+        databaseProxy.selectReservation(confirmationNumber, ar1 -> {
+            if (!ar1.succeeded()) {
+                ar1.cause().printStackTrace();
+                communicationProxy.responseServerError(message);
+            } else {
+                final List<JsonObject> reservationObjects = ar1.result();
+                if (reservationObjects.isEmpty()) {
+                    communicationProxy.responseFail(message, "INVALID_CONFIRMATION_NO");
+                } else {
+                    final JsonObject reservationObject = reservationObjects.get(0);
+                    final int slotNumber = reservationObject.get("slot_no").asInt();
+                    communicationProxy.responseSuccess(message, ConfirmReservationResponseChannel.createResponseOjbect(slotNumber));
                 }
             }
         });

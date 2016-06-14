@@ -28,7 +28,7 @@ public class StatusManager {
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
-        new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
+        // new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
     }
 
     public static StatusManager getInstance() {
