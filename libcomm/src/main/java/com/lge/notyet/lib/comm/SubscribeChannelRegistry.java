@@ -10,16 +10,18 @@ abstract public class SubscribeChannelRegistry extends SubscribeChannel {
 
     ArrayList<IOnNotify> mIOnNotifyList = new ArrayList <IOnNotify>();
 
-    public void addObserver(IOnNotify observer) {
+    public SubscribeChannelRegistry addObserver(IOnNotify observer) {
         synchronized (SubscribeChannelRegistry.class) {
             mIOnNotifyList.add(observer);
         }
+        return this;
     }
 
-    public void removeObserver(IOnNotify observer) {
+    public SubscribeChannelRegistry removeObserver(IOnNotify observer) {
         synchronized (SubscribeChannelRegistry.class) {
             mIOnNotifyList.remove(observer);
         }
+        return this;
     }
 
     @Override

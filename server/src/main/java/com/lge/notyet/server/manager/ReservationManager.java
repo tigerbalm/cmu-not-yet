@@ -145,7 +145,6 @@ public class ReservationManager {
     }
 
     private void confirmReservation(Uri uri, NetworkMessage message) {
-        final String controllerPhysicalId = ConfirmReservationRequestChannel.getControllerPhysicalId(uri);
         final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
 
         getReservation(confirmationNumber, ar1 -> {

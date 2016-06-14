@@ -1,11 +1,11 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.channels.ReservableFacilitiesRequestChannel;
-import com.lge.notyet.channels.ReservableFacilitiesResponseChannel;
-import com.lge.notyet.channels.ReservationRequestChannel;
+import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
+import com.lge.notyet.lib.comm.Uri;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.server.model.User;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
@@ -34,7 +34,10 @@ public class StatusManager {
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
+        new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
+
         // new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
+        // new UpdateSlotStatusPublishChannel(networkConnection, "p1", 1).notify(new MqttNetworkMessage(new JsonObject().add("occupied", 1)));
     }
 
     public static StatusManager getInstance() {
@@ -46,7 +49,51 @@ public class StatusManager {
         }
     }
 
-    public void getReservableFacilities(Handler<AsyncResult<List<JsonObject>>> handler) {
+    private void getSlot(String controllerPhysicalId, int slotNumber, Handler<AsyncResult<JsonObject>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectSlot(sqlConnection, controllerPhysicalId, slotNumber, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar -> {});
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        if (objects.size() != 1) {
+                            handler.handle(Future.failedFuture("NO_SLOT_EXIST"));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                        } else {
+                            handler.handle(Future.succeededFuture(objects.get(0)));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void updateSlotOccupied(int slotId, boolean occupied, Handler<AsyncResult<Void>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.updateSlotOccupied(sqlConnection, slotId, occupied, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                    } else {
+                        handler.handle(Future.succeededFuture());
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                    }
+                });
+            }
+        });
+    }
+
+    private void getReservableFacilities(Handler<AsyncResult<List<JsonObject>>> handler) {
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -66,7 +113,7 @@ public class StatusManager {
         });
     }
 
-    public void getReservableSlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> handler) {
+    private void getReservableSlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> handler) {
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -106,6 +153,28 @@ public class StatusManager {
                         }
                     });
                 }
+            }
+        });
+    }
+
+    private void updateSlotStatus(Uri uri, NetworkMessage message) {
+        final String controllerPhysicalId = UpdateSlotStatusPublishChannel.getControllerPhysicalId(uri);
+        final int slotNumber = UpdateSlotStatusPublishChannel.getSlotNumber(uri);
+        final boolean occupied = UpdateSlotStatusPublishChannel.isOccupied(message);
+
+        getSlot(controllerPhysicalId, slotNumber, ar1 -> {
+            if (ar1.failed()) {
+                ar1.cause().printStackTrace();
+            } else {
+                final JsonObject slotObject = ar1.result();
+                final int slotId = slotObject.get("id").asInt();
+                updateSlotOccupied(slotId, occupied, ar2 -> {
+                   if (ar2.failed()) {
+                       ar2.cause().printStackTrace();
+                   } else {
+                       logger.info("updateSlotStatus: slot=" + slotObject + " updated occupied=" + occupied);
+                   }
+                });
             }
         });
     }
