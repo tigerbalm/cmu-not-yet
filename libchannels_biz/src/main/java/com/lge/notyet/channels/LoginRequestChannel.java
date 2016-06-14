@@ -10,6 +10,8 @@ import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
 public class LoginRequestChannel extends ClientChannelRegistry {
     private final static String TOPIC = "/login";
+    private final static String KEY_EMAIL = "email";
+    private final static String KEY_PASSWORD = "password";
 
     public LoginRequestChannel(INetworkConnection networkConnection) {
         super(networkConnection);
@@ -26,5 +28,10 @@ public class LoginRequestChannel extends ClientChannelRegistry {
 
     public static final String getPassword(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get("password").asString();
+    }
+
+    public static MqttNetworkMessage createRequestMessage(String email, String password) {
+        JsonObject requestObject = new JsonObject().add(KEY_EMAIL, email).add(KEY_PASSWORD, password);
+        return new MqttNetworkMessage(requestObject);
     }
 }

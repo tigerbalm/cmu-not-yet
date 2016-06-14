@@ -29,8 +29,8 @@ public class ReservationRequestChannel extends ClientChannelRegistry {
         return ((JsonObject) networkMessage.getMessage()).get("session_key").asString();
     }
 
-    public static final long getReservationTimestamp(NetworkMessage networkMessage) {
-        return ((JsonObject) networkMessage.getMessage()).get("reservation_ts").asLong();
+    public static final int getReservationTimestamp(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get("reservation_ts").asInt();
     }
 
     public static MqttNetworkMessage createRequestMessage(String sessionKey, long reservationTimestamp) {

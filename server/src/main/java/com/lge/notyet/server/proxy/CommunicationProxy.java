@@ -86,6 +86,10 @@ public class CommunicationProxy {
         message.responseFor(new MqttNetworkMessage(responseObject));
     }
 
+    public void responseFail(NetworkMessage message, Throwable cause) {
+        responseFail(message, cause.getMessage());
+    }
+
     public void responseServerError(NetworkMessage message) {
         responseFail(message, "SERVER_ERROR");
     }

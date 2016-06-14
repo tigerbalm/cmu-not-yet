@@ -5,17 +5,16 @@ import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.channels.LoginResponseChannel;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
-import com.lge.notyet.lib.comm.Uri;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import com.lge.notyet.server.model.User;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.sql.SQLConnection;
 
 import java.util.List;
-import java.util.UUID;
 
 public class AuthenticationManager {
     private static AuthenticationManager instance = null;
@@ -43,48 +42,81 @@ public class AuthenticationManager {
         }
     }
 
+    public void getSessionUser(String sessionKey, Handler<AsyncResult<JsonObject>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectUser(sqlConnection, sessionKey, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {});
+                    } else {
+                        List<JsonObject> userObjects = ar2.result();
+                        if (userObjects.size() != 1) {
+                            handler.handle(Future.failedFuture("INVALID_SESSION"));
+                            databaseProxy.closeConnection(sqlConnection, ar4 -> {});
+                        } else {
+                            handler.handle(Future.succeededFuture(userObjects.get(0)));
+                            databaseProxy.closeConnection(sqlConnection, ar5 -> {});
+                        }
+                    }
+                });
+            }
+        });
+    };
+
+    public void getEmailPasswordUser(String email, String password, Handler<AsyncResult<JsonObject>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectUser(sqlConnection, email, password, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {});
+                    } else {
+                        List<JsonObject> userObjects = ar2.result();
+                        if (userObjects.size() != 1) {
+                            handler.handle(Future.failedFuture("INVALID_EMAIL_PASSWORD"));
+                            databaseProxy.closeConnection(sqlConnection, ar4 -> {});
+                        } else {
+                            handler.handle(Future.succeededFuture(userObjects.get(0)));
+                            databaseProxy.closeConnection(sqlConnection, ar5 -> {});
+                        }
+                    }
+                });
+            }
+        });
+    };
+
+    public void checkUserType(String sessionKey, int userType, Handler<AsyncResult<Boolean>> handler) {
+        getSessionUser(sessionKey, ar -> {
+            if (ar.failed()) {
+                handler.handle(Future.failedFuture(ar.cause()));
+            } else {
+                final JsonObject userObject = ar.result();
+                if (userObject.get("type").asInt() == userType) {
+                    handler.handle(Future.succeededFuture(true));
+                } else {
+                    handler.handle(Future.succeededFuture(false));
+                }
+            }
+        });
+    }
+
     private void login(NetworkMessage message) {
         final String email = LoginRequestChannel.getEmail(message);
         final String password = LoginRequestChannel.getPassword(message);
 
-        // 1. email, password -> userObject
-        databaseProxy.selectUser(email, password, ar1 -> {
-            if (!ar1.succeeded()) {
-                ar1.cause().printStackTrace();
-                communicationProxy.responseServerError(message);
+        getEmailPasswordUser(email, password, ar -> {
+            if (ar.failed()) {
+                communicationProxy.responseFail(message, ar.cause());
             } else {
-                final List<JsonObject> userObjects = ar1.result();
-                if (userObjects.isEmpty()) {
-                    communicationProxy.responseFail(message, "INVALID_EMAIL_PASSWORD");
-                } else {
-                    final JsonObject userObject = userObjects.get(0);
-                    final int userId = userObject.get("id").asInt();
-                    final int userType = userObject.get("type").asInt();
-
-                    // 2. userId -> session
-                    databaseProxy.selectSession(userId, ar2 -> {
-                        if (!ar2.succeeded()) {
-                            ar2.cause().printStackTrace();
-                            communicationProxy.responseServerError(message);
-                        } else {
-                            final List<JsonObject> sessionObjects = ar2.result();
-                            if (sessionObjects.isEmpty()) {
-                                communicationProxy.responseServerError(message);
-                            } else {
-                                final JsonObject sessionObject = sessionObjects.get(0);
-                                final String sessionKey = sessionObject.get("session_key").asString();
-                                String cardNumber = null;
-                                String cardExpiration = null;
-                                if (userType == User.USER_TYPE_DRIVER) {
-                                    cardNumber = userObject.get("card_number").asString();
-                                    cardExpiration = userObject.get("card_expiration").asString();
-                                }
-                                final JsonObject responseObject = LoginResponseChannel.createResponseObject(userId, userType, cardNumber, cardExpiration, sessionKey);
-                                communicationProxy.responseSuccess(message, responseObject);
-                            }
-                        }
-                    });
-                }
+                JsonObject userObject = ar.result();
+                communicationProxy.responseSuccess(message, userObject);
             }
         });
     }

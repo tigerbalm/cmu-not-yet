@@ -25,7 +25,7 @@ public class DatabaseProxy {
 
     private Vertx vertx;
     private Logger logger;
-    private SQLConnection sqlConnection;
+    private AsyncSQLClient sqlClient;
 
     private DatabaseProxy(Vertx vertx) {
         this.vertx = vertx;
@@ -48,42 +48,60 @@ public class DatabaseProxy {
                 put("username", USERNAME).
                 put("password", PASSWORD).
                 put("database", DATABASE);
-        AsyncSQLClient sqlClient = MySQLClient.createShared(vertx, mysqlConfig);
-        sqlClient.getConnection(ar -> {
-            if (ar.succeeded()) {
-                sqlConnection = ar.result();
-                logger.info("database connected");
-                sqlConnection.setAutoCommit(false, ar2 -> {
-                    if (ar2.succeeded()) {
-                        logger.info("set auto commit false");
-                        future.complete();
-                    } else {
-                        future.fail(ar2.cause());
-                    }
-                });
-            } else {
-                future.fail(ar.cause());
-            }
-        });
+        sqlClient = MySQLClient.createShared(vertx, mysqlConfig);
+        future.complete();
         return future;
     }
 
     public Future<Void> stop() {
         final Future<Void> future = Future.future();
-        sqlConnection.close(res -> future.complete());
+        sqlClient.close(ar -> future.complete());
         return future;
     }
 
-    public void commit(Handler<AsyncResult<Void>> resultHandler) {
-        sqlConnection.commit(resultHandler);
+    public void openConnection(Handler<AsyncResult<SQLConnection>> handler) {
+        sqlClient.getConnection(ar -> {
+            if (!ar.succeeded()) {
+                handler.handle(Future.failedFuture(ar.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar.result();
+                sqlConnection.setAutoCommit(false, ar2 -> {
+                    if (!ar2.succeeded()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                    } else {
+                        handler.handle(Future.succeededFuture(sqlConnection));
+                    }
+                });
+            }
+        });
     }
 
-    public void rollback(Handler<AsyncResult<Void>> resultHandler) {
-        sqlConnection.rollback(resultHandler);
+    public void closeConnection(SQLConnection connection, Handler<AsyncResult<Void>> handler) {
+        closeConnection(connection, true, handler);
     }
 
-    private void query(String sql, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        sqlConnection.query(sql, ar -> resultHandler.handle(new AsyncResult<List<JsonObject>>() {
+    public void closeConnection(SQLConnection connection, boolean commit, Handler<AsyncResult<Void>> handler) {
+        if (commit) {
+            connection.commit(ar -> {
+                connection.close(ar2 -> {
+                    handler.handle(ar);
+                });
+            });
+        } else {
+            connection.rollback(ar -> {
+                connection.close(ar2 -> {
+                    handler.handle(ar);
+                });
+            });
+        }
+    }
+
+    public void commit(SQLConnection connection, Handler<AsyncResult<Void>> resultHandler) {
+        connection.commit(resultHandler);
+    }
+
+    private void query(SQLConnection connection, String sql, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        connection.query(sql, ar -> resultHandler.handle(new AsyncResult<List<JsonObject>>() {
             @Override
             public List<JsonObject> result() {
                 return ar.result().getRows().stream().map(row -> JsonObject.readFrom(row.toString())).collect(Collectors.toList());
@@ -106,8 +124,8 @@ public class DatabaseProxy {
         }));
     }
 
-    private void updateWithParams(String sql, io.vertx.core.json.JsonArray parameters, Handler<AsyncResult<JsonArray>> resultHandler) {
-        sqlConnection.updateWithParams(sql, parameters, ar -> resultHandler.handle(new AsyncResult<JsonArray>() {
+    private void updateWithParams(SQLConnection connection, String sql, io.vertx.core.json.JsonArray parameters, Handler<AsyncResult<JsonArray>> resultHandler) {
+        connection.updateWithParams(sql, parameters, ar -> resultHandler.handle(new AsyncResult<JsonArray>() {
             @Override
             public JsonArray result() {
                 JsonArray result = new JsonArray();
@@ -135,23 +153,23 @@ public class DatabaseProxy {
         }));
     }
 
-    public void selectUser(int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        query("select * from user where id = " + userId, resultHandler);
+    public void selectUser(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        query(connection, "select * from user where id = " + userId, resultHandler);
     }
 
-    public void selectUser(String email, String password, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        query("select * from user where email=\'" + email + "\' and password=\'" + password + "\'", resultHandler);
+    public void selectUser(SQLConnection connection, String email, String password, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        query(connection, "select * from user inner join session on user.id = session.user_id where email=\'" + email + "\' and password=\'" + password + "\'", resultHandler);
     }
 
-    public void selectUser(String sessionKey, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        query("select * from user inner join session on user.id = session.user_id where session_key=\'" + sessionKey + "\'", resultHandler);
+    public void selectUser(SQLConnection connection, String sessionKey, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        query(connection, "select * from user inner join session on user.id = session.user_id where session_key=\'" + sessionKey + "\'", resultHandler);
     }
 
-    public void selectSession(int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        query("select * from session where user_id=" + userId, resultHandler);
+    public void selectSession(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        query(connection, "select * from session where user_id=" + userId, resultHandler);
     }
 
-    public void selectReservableFacilities(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void selectReservableFacilities(SQLConnection connection, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select id, name " +
                 "from facility " +
                 "where id in ( " +
@@ -160,76 +178,76 @@ public class DatabaseProxy {
                 "where controller.available = 1 " +
                 "and slot.occupied = 0 " +
                 "and slot.reserved = 0)";
-        query(sql, resultHandler);
+        query(connection, sql, resultHandler);
     }
 
-    public void selectReservableSlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void selectReservableSlots(SQLConnection connection, int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select slot.id as id, slot.number, controller.facility_id, slot.controller_id" +
                 " from controller inner join slot on controller.id = slot.controller_id" +
                 " where controller.facility_id = " + facilityId +
                 " and controller.available = 1" +
                 " and slot.occupied = 0" +
                 " and slot.reserved = 0";
-        query(sql, resultHandler);
+        query(connection, sql, resultHandler);
     }
 
-    public void selectReservation(int confirmationNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void selectReservation(SQLConnection connection, int confirmationNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
                 "inner join facility on facility.id = controller.facility_id " +
                 "inner join user on user.id = user_id " +
                 "where confirmation_no = " + confirmationNumber;
-        query(sql, resultHandler);
+        query(connection, sql, resultHandler);
     }
 
-    public void selectReservations(int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void selectReservations(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
                 "inner join facility on facility.id = controller.facility_id " +
                 "inner join user on user.id = user_id " +
                 "where user_id = " + userId;
-        query(sql, resultHandler);
+        query(connection, sql, resultHandler);
     }
 
-    public void updateSlotOccupied(int slotId, boolean occupied, Handler<AsyncResult<JsonArray>> resultHandler) {
+    public void updateSlotOccupied(SQLConnection connection, int slotId, boolean occupied, Handler<AsyncResult<JsonArray>> resultHandler) {
         String sql = "update slot set occupied = ? where id = ?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(occupied ? 1 : 0);
         parameters.add(slotId);
-        updateWithParams(sql, parameters, resultHandler);
+        updateWithParams(connection, sql, parameters, resultHandler);
     }
 
-    public void updateSlotReserved(int slotId, boolean reserved, Handler<AsyncResult<JsonArray>> resultHandler) {
+    public void updateSlotReserved(SQLConnection connection, int slotId, boolean reserved, Handler<AsyncResult<JsonArray>> resultHandler) {
         String sql = "update slot set reserved = ? where id = ?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(reserved ? 1 : 0);
         parameters.add(slotId);
-        updateWithParams(sql, parameters, resultHandler);
+        updateWithParams(connection, sql, parameters, resultHandler);
     }
 
-    public void updateControllerAvailable(int controllerId, boolean available, Handler<AsyncResult<JsonArray>> resultHandler) {
+    public void updateControllerAvailable(SQLConnection connection, int controllerId, boolean available, Handler<AsyncResult<JsonArray>> resultHandler) {
         String sql = "update controller set available = ? where id = ?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(available ? 1 : 0);
         parameters.add(controllerId);
-        updateWithParams(sql, parameters, resultHandler);
+        updateWithParams(connection, sql, parameters, resultHandler);
     }
 
-    public void deleteReservation(int reservationId, Handler<AsyncResult<JsonArray>> resultHandler) {
+    public void deleteReservation(SQLConnection connection, int reservationId, Handler<AsyncResult<JsonArray>> resultHandler) {
         String sql = "delete from controller where id = ?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray().add(reservationId);
-        updateWithParams(sql, parameters, resultHandler);
+        updateWithParams(connection, sql, parameters, resultHandler);
     }
 
-    public void insertReservation(int userId, int slotId, long reservationTs, int confirmationNo, Handler<AsyncResult<JsonArray>> resultHandler) {
+    public void insertReservation(SQLConnection connection, int userId, int slotId, int reservationTs, int confirmationNo, Handler<AsyncResult<JsonArray>> resultHandler) {
         String sql = "insert into reservation(user_id, slot_id, reservation_ts, confirmation_no) values (?, ?, ?, ?)";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(userId);
         parameters.add(slotId);
         parameters.add(reservationTs);
         parameters.add(confirmationNo);
-        updateWithParams(sql, parameters, resultHandler);
+        updateWithParams(connection, sql, parameters, resultHandler);
     }
 }
