@@ -1,5 +1,6 @@
 package com.lge.notyet.driver.manager;
 
+import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.channels.ReservationRequestChannel;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
@@ -60,6 +61,10 @@ public class NetworkConnectionManager {
     }
 
     public ReservationRequestChannel createReservationChannel(int facility) {
-        return ReservationRequestChannel.build(mNc, facility);
+        return new ReservationRequestChannel(mNc, facility);
+    }
+
+    public LoginRequestChannel createLoginChannel() {
+        return new LoginRequestChannel(mNc);
     }
 }
