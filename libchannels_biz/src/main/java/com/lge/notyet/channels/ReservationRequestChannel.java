@@ -16,10 +16,6 @@ public class ReservationRequestChannel extends ClientChannelRegistry {
         this.facilityId = facilityId;
     }
 
-    public static ReservationRequestChannel build(INetworkConnection networkConnection, int facilityId) {
-        return new ReservationRequestChannel(networkConnection, facilityId);
-    }
-
     @Override
     public Uri getChannelDescription() {
         return new MqttUri(StringFormatter.format(TOPIC, facilityId).getValue());
