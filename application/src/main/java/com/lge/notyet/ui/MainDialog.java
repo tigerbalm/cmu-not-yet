@@ -24,9 +24,6 @@ public class MainDialog extends JDialog {
     public static Color SLOT_EMPTY_COLOR= Color.LIGHT_GRAY;
     public static JPanel uiParkingSlot[];
 
-    //private static String serverURI="tcp://192.168.43.24";
-    //private static String serverURI="tcp://localhost";
-    private static String serverURI="tcp://192.168.1.20";
     private static String uniqueClientID="ClientPrototypeModule2";
 
 
@@ -82,7 +79,7 @@ public class MainDialog extends JDialog {
         MainDialog dialog = new MainDialog();
         dialog.pack();
         dialog.setSize(300, 200);
-        NetworkCommunicator.startService(serverURI, uniqueClientID, dialog);
+        NetworkCommunicator.startService(uniqueClientID, dialog);
 
         dialog.setVisible(true);
         System.exit(0);
