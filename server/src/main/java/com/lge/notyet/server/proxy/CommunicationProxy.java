@@ -74,14 +74,14 @@ public class CommunicationProxy {
 
     public void responseSuccess(NetworkMessage message, JsonObject responseObject) {
         logger.info("responseSuccess: responseObject=" + responseObject);
-        responseObject.add("success", "1");
+        responseObject.add("success", 1);
         message.responseFor(new MqttNetworkMessage(responseObject));
     }
 
     public void responseFail(NetworkMessage message, String cause) {
         logger.info("responseFail: cause=" + cause);
         JsonObject responseObject = new JsonObject();
-        responseObject.add("success", "0");
+        responseObject.add("success", 0);
         responseObject.add("cause", cause);
         message.responseFor(new MqttNetworkMessage(responseObject));
     }

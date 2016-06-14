@@ -67,7 +67,7 @@ public class ReservationManager {
                                 communicationProxy.responseFail(message, "NO_AVAILABLE_SLOT");
                             } else {
                                 final int slotId = slots.get(0).get("id").asInt();
-                                final int confirmationNumber = new Random().nextInt((999999 - 100000) + 1) + 100000;
+                                final int confirmationNumber = new Random().nextInt((9999 - 1000) + 1) + 1000;
                                 // 3. make a reservation
                                 databaseProxy.insertReservation(userId, slotId, reservationTimestamp, confirmationNumber, ar3 -> {
                                     if (!ar3.succeeded()) {
