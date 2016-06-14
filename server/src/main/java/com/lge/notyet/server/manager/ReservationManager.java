@@ -1,10 +1,7 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.channels.ConfirmReservationRequestChannel;
-import com.lge.notyet.channels.ConfirmReservationResponseChannel;
-import com.lge.notyet.channels.ReservationRequestChannel;
-import com.lge.notyet.channels.ReservationResponseChannel;
+import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
@@ -38,9 +35,11 @@ public class ReservationManager {
 
         new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
         new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmReservation(uri, message)).listen();
+        new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(uri, message)).listen();
 
         // new ReservationRequestChannel(networkConnection, 1).request(ReservationRequestChannel.createRequestMessage("ssssss", System.currentTimeMillis()));
         // new ConfirmReservationRequestChannel(networkConnection, "p1").request(ConfirmReservationRequestChannel.createRequestMessage(9999));
+        // new GetReservationRequestChannel(networkConnection).request(GetReservationRequestChannel.createRequestMessage("ssssss"));
     }
 
     public static ReservationManager getInstance() {
@@ -52,7 +51,7 @@ public class ReservationManager {
         }
     }
 
-    public void getReservation(int confirmationNumber, Handler<AsyncResult<JsonObject>> handler) {
+    public void getReservationByConfirmationNumber(int confirmationNumber, Handler<AsyncResult<JsonObject>> handler) {
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -66,6 +65,31 @@ public class ReservationManager {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
                             handler.handle(Future.failedFuture("INVALID_CONFIRMATION_NO"));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                        } else {
+                            handler.handle(Future.succeededFuture(objects.get(0)));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    public void getReservationByUserId(int userId, Handler<AsyncResult<JsonObject>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectReservationByUserId(sqlConnection, userId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar -> {});
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        if (objects.isEmpty()) {
+                            handler.handle(Future.failedFuture("NO_RESERVATION_EXIST"));
                             databaseProxy.closeConnection(sqlConnection, ar -> {});
                         } else {
                             handler.handle(Future.succeededFuture(objects.get(0)));
@@ -94,7 +118,7 @@ public class ReservationManager {
                                 databaseProxy.closeConnection(sqlConnection, false, ar -> {});
                             } else {
                                 databaseProxy.closeConnection(sqlConnection, true, ar -> {});
-                                getReservation(confirmationNumber, ar4 -> {
+                                getReservationByConfirmationNumber(confirmationNumber, ar4 -> {
                                     if (ar4.failed()) {
                                         handler.handle(Future.failedFuture(ar4.cause()));
                                     } else {
@@ -147,13 +171,33 @@ public class ReservationManager {
     private void confirmReservation(Uri uri, NetworkMessage message) {
         final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
 
-        getReservation(confirmationNumber, ar1 -> {
+        getReservationByConfirmationNumber(confirmationNumber, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
                 final JsonObject reservationObject = ar1.result();
                 final int slotNumber = reservationObject.get("slot_no").asInt();
                 communicationProxy.responseSuccess(message, ConfirmReservationResponseChannel.createResponseOjbect(slotNumber));
+            }
+        });
+    }
+
+    private void getReservation(Uri uri, NetworkMessage message) {
+        final String sessionKey = GetReservationRequestChannel.getSessionKey(message);
+
+        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final JsonObject userObject = ar1.result();
+                final int userId = userObject.get("id").asInt();
+                getReservationByUserId(userId, ar2 -> {
+                    if (ar2.failed()) {
+                        communicationProxy.responseFail(message, ar2.cause());
+                    } else {
+                        communicationProxy.responseSuccess(message, ar2.result());
+                    }
+                });
             }
         });
     }

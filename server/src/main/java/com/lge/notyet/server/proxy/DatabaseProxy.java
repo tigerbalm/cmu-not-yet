@@ -209,13 +209,14 @@ public class DatabaseProxy {
         query(connection, sql, resultHandler);
     }
 
-    public void selectReservations(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void selectReservationByUserId(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
                 "inner join facility on facility.id = controller.facility_id " +
                 "inner join user on user.id = user_id " +
-                "where user_id = " + userId;
+                "where user_id = " + userId + " " +
+                "order by reservation_ts";
         query(connection, sql, resultHandler);
     }
 
