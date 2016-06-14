@@ -6,6 +6,7 @@ import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class NetworkConnectionManager {
 
@@ -44,7 +45,11 @@ public class NetworkConnectionManager {
 
     public void open() {
         if (!mNc.isConnected()) {
-            mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
+            try {
+                mNc.connect(/*InetAddress.getLoopbackAddress()*/ InetAddress.getByName("128.237.212.113"), mNetworkCallback);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
         }
     }
 

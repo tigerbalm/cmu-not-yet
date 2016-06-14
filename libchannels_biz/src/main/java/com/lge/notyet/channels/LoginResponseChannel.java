@@ -18,7 +18,7 @@ public class LoginResponseChannel extends ServerChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-    public static JsonObject createResponseOjbect(int userId, int userType, String cardNumber, String cardExpiration, String sessionKey) {
+    public static JsonObject createResponseObject(int userId, int userType, String cardNumber, String cardExpiration, String sessionKey) {
         JsonObject responseObject = new JsonObject();
         responseObject.add("id", userId);
         responseObject.add("type", userType);

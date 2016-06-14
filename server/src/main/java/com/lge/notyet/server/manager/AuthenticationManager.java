@@ -79,7 +79,7 @@ public class AuthenticationManager {
                                     cardNumber = userObject.get("card_number").asString();
                                     cardExpiration = userObject.get("card_expiration").asString();
                                 }
-                                final JsonObject responseObject = LoginResponseChannel.createResponseOjbect(userId, userType, cardNumber, cardExpiration, sessionKey);
+                                final JsonObject responseObject = LoginResponseChannel.createResponseObject(userId, userType, cardNumber, cardExpiration, sessionKey);
                                 communicationProxy.responseSuccess(message, responseObject);
                             }
                         }

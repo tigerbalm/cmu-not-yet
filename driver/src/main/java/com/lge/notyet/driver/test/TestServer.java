@@ -1,9 +1,8 @@
 package com.lge.notyet.driver.test;
 
-import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.channels.ReservationRequestMessage;
+import com.lge.notyet.driver.business.ReservationRequestMessage;
 import com.lge.notyet.channels.ReservationResponseChannel;
-import com.lge.notyet.channels.ReservationResponseMessage;
+import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
 import com.lge.notyet.lib.comm.util.Log;

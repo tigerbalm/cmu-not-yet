@@ -27,11 +27,4 @@ public class LoginRequestChannel extends ClientChannelRegistry {
     public static final String getPassword(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get("password").asString();
     }
-
-    public static MqttNetworkMessage createRequestMessage(String email, String password) {
-        JsonObject requestObject = new JsonObject();
-        requestObject.add("email", email);
-        requestObject.add("password", password);
-        return new MqttNetworkMessage(requestObject);
-    }
 }

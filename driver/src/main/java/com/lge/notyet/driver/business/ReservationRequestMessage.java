@@ -1,7 +1,6 @@
-package com.lge.notyet.channels;
+package com.lge.notyet.driver.business;
 
 import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 public class ReservationRequestMessage extends MqttNetworkMessage {
