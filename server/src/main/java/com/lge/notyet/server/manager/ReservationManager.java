@@ -16,24 +16,18 @@ import java.util.Random;
 public class ReservationManager {
     private static ReservationManager instance = null;
 
-    private Logger logger;
-    private DatabaseProxy databaseProxy;
-    private CommunicationProxy communicationProxy;
+    private final Logger logger;
+    private final DatabaseProxy databaseProxy;
+    private final CommunicationProxy communicationProxy;
 
     private ReservationManager() {
-        this.logger = LoggerFactory.getLogger(ReservationManager.class);
+        logger = LoggerFactory.getLogger(ReservationManager.class);
         databaseProxy = DatabaseProxy.getInstance(null);
         communicationProxy = CommunicationProxy.getInstance(null);
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
         new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> reserve(uri, message)).listen();
-        /*
-        new ReservationRequestChannel(networkConnection, 1).request(
-                new MqttNetworkMessage(
-                        new JsonObject()
-                                .add("session_key", "ssssss")
-                                .add("reservation_ts", System.currentTimeMillis() / 1000)));
-        */
+        // new ReservationRequestChannel(networkConnection, 1).request(ReservationRequestChannel.createRequestMessage("ssssss", System.currentTimeMillis()));
     }
 
     public static ReservationManager getInstance() {
@@ -45,39 +39,40 @@ public class ReservationManager {
         }
     }
 
-    private void reserve(Uri uri, NetworkMessage networkMessage) {
-        final String sessionKey = ReservationResponseChannel.getSessionKey(networkMessage);
-        final int facilityId = ReservationResponseChannel.getFacilityId(uri);
-        final long reservationTimestamp = ReservationResponseChannel.getReservationTimestamp(networkMessage);
+    private void reserve(Uri uri, NetworkMessage message) {
+        final String sessionKey = ReservationRequestChannel.getSessionKey(message);
+        final int facilityId = ReservationRequestChannel.getFacilityId(uri);
+        final long reservationTimestamp = ReservationRequestChannel.getReservationTimestamp(message);
 
         // 1. sessionKey -> userObject
         databaseProxy.selectUser(sessionKey, ar1 -> {
             if (!ar1.succeeded()) {
                 ar1.cause().printStackTrace();
-                communicationProxy.responseServerError(networkMessage);
+                communicationProxy.responseServerError(message);
             } else {
-                final io.vertx.core.json.JsonObject userObject = ar1.result();
-                if (userObject == null) {
-                    communicationProxy.responseFail(networkMessage, "INVALID_SESSION");
+                final List<JsonObject> userObjects = ar1.result();
+                if (userObjects.isEmpty()) {
+                    communicationProxy.responseFail(message, "INVALID_SESSION");
                 } else {
-                    final int userId = userObject.getInteger("id");
+                    final JsonObject userObject = userObjects.get(0);
+                    final int userId = userObject.get("id").asInt();
                     // 2. facilityId -> reservable slots
                     databaseProxy.selectReservableSlots(facilityId, ar2 -> {
                         if (!ar2.succeeded()) {
                             ar2.cause().printStackTrace();
-                            communicationProxy.responseServerError(networkMessage);
+                            communicationProxy.responseServerError(message);
                         } else {
-                            final List<io.vertx.core.json.JsonObject> slots = ar2.result();
+                            final List<JsonObject> slots = ar2.result();
                             if (slots.size() == 0) {
-                                communicationProxy.responseFail(networkMessage, "NO_AVAILABLE_SLOT");
+                                communicationProxy.responseFail(message, "NO_AVAILABLE_SLOT");
                             } else {
-                                final int slotId = slots.get(0).getInteger("id");
+                                final int slotId = slots.get(0).get("id").asInt();
                                 final int confirmationNumber = new Random().nextInt((999999 - 100000) + 1) + 100000;
                                 // 3. make a reservation
                                 databaseProxy.insertReservation(userId, slotId, reservationTimestamp, confirmationNumber, ar3 -> {
                                     if (!ar3.succeeded()) {
                                         ar3.cause().printStackTrace();
-                                        communicationProxy.responseServerError(networkMessage);
+                                        communicationProxy.responseServerError(message);
                                         databaseProxy.rollback(v -> {
                                         });
                                     } else {
@@ -85,25 +80,30 @@ public class ReservationManager {
                                         databaseProxy.updateSlotReserved(slotId, true, ar4 -> {
                                             if (!ar4.succeeded()) {
                                                 ar4.cause().printStackTrace();
-                                                communicationProxy.responseServerError(networkMessage);
+                                                communicationProxy.responseServerError(message);
                                             } else {
                                                 // 5. commit
                                                 databaseProxy.commit(ar5 -> {
                                                     if (!ar5.succeeded()) {
                                                         ar5.cause().printStackTrace();
-                                                        communicationProxy.responseServerError(networkMessage);
+                                                        communicationProxy.responseServerError(message);
                                                     } else {
                                                         // 6. get the reservation and response
                                                         databaseProxy.selectReservation(confirmationNumber, ar6 -> {
                                                             if (!ar6.succeeded()) {
                                                                 ar6.cause().printStackTrace();
-                                                                communicationProxy.responseServerError(networkMessage);
+                                                                communicationProxy.responseServerError(message);
                                                             } else {
-                                                                final io.vertx.core.json.JsonObject reservationObject = ar6.result();
-                                                                if (reservationObject == null) {
-                                                                    communicationProxy.responseServerError(networkMessage);
+                                                                final List<JsonObject> reservationObjects = ar6.result();
+                                                                if (reservationObjects.size() != 1) {
+                                                                    communicationProxy.responseServerError(message);
                                                                 } else {
-                                                                    communicationProxy.responseSuccess(networkMessage, JsonObject.readFrom(reservationObject.toString()));
+                                                                    final JsonObject reservationObject = reservationObjects.get(0);
+                                                                    if (reservationObjects == null) {
+                                                                        communicationProxy.responseServerError(message);
+                                                                    } else {
+                                                                        communicationProxy.responseSuccess(message, reservationObject);
+                                                                    }
                                                                 }
                                                             }
                                                         });

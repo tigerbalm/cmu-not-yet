@@ -9,9 +9,9 @@ public class User {
     private String cardNumber;
     private String cardExpiration;
 
-    private static final int USER_TYPE_OWNER = 0;
-    private static final int USER_TYPE_ATTENDANT = 1;
-    private static final int USER_TYPE_DRIVER = 2;
+    public static final int USER_TYPE_OWNER = 0;
+    public static final int USER_TYPE_ATTENDANT = 1;
+    public static final int USER_TYPE_DRIVER = 2;
 
     public User(JsonObject userObject) {
         id = userObject.get("id").asInt();

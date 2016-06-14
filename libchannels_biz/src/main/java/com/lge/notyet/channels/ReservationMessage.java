@@ -5,7 +5,6 @@ import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 public class ReservationMessage extends MqttNetworkMessage {
-
     private static final String SESSION_ID = "session_id";
     private static final String DATE = "date";
     private static final String TIME = "time";
