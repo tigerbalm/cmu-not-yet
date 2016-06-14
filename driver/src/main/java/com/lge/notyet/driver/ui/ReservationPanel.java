@@ -1,6 +1,6 @@
 package com.lge.notyet.driver.ui;
 
-import com.lge.notyet.channels.ReservationResponseMessage;
+import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.ReservationTask;
 import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.TaskManager;
@@ -58,7 +58,7 @@ public class ReservationPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Long selectedTime = ((JSpinner.DateEditor) mJSpinnerHour.getEditor()).getModel().getDate().getTime()/1000;
-                TaskManager.getInstance().runTask(ReservationTask.getTask(0, selectedTime, mReservationDoneCallback));
+                TaskManager.getInstance().runTask(ReservationTask.getTask(1, selectedTime, mReservationDoneCallback));
                 mBtnMakeReservation.setEnabled(false);
             }
         });
@@ -81,8 +81,20 @@ public class ReservationPanel {
             }
 
             ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
+            System.out.println("Success to make reservation, confirmation number is " + resMsg.getMessage());
+            System.out.println("Success to make reservation, confirmation number is " + resMsg.getResult());
 
             if (resMsg.getResult() == 1) { // Success
+
+                if(resMsg.validate() == false) {
+                    System.out.println("Failed to validate response message");
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            "Failed to validate response message",
+                            "SurePark",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
                 System.out.println("Success to make reservation, confirmation number is " + resMsg.getConfirmationNumber());
                 JOptionPane.showMessageDialog(getRootPanel(),
                         "Your reservation number is:" + resMsg.getConfirmationNumber(),
@@ -92,7 +104,7 @@ public class ReservationPanel {
             } else if (resMsg.getResult() == 0) {
                 System.out.println("Failed to make reservation, fail cause is " + resMsg.getFailCause());
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to make reservation, fail cause=" + resMsg.getFailCause(),
+                        "Failed to make reservation, fail cause=" + resMsg.getFailCause(),
                         "SurePark",
                         JOptionPane.WARNING_MESSAGE);
             }

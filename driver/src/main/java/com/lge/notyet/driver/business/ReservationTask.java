@@ -1,6 +1,5 @@
 package com.lge.notyet.driver.business;
 
-import com.lge.notyet.channels.ReservationRequestMessage;
 import com.lge.notyet.channels.ReservationRequestChannel;
 import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
@@ -30,7 +29,7 @@ public class ReservationTask implements Callable<Void> {
         ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
         rc.addObserver(mReservationResult);
         rc.addTimeoutObserver(mReservationTimeout);
-        ReservationRequestMessage message = new ReservationRequestMessage().setSessionKey(/*mSessionKey*/ "beney").setTimeStamp(mRequestTime);
+        ReservationRequestMessage message = new ReservationRequestMessage().setSessionKey(/*mSessionKey*/ "ssssss").setTimeStamp(mRequestTime);
         rc.request(message);
         return null;
     }

@@ -181,7 +181,9 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     public void subscribe(NetworkChannel netChannel) {
         try {
             mSubscribers.put(netChannel.getHashKey(), netChannel);
-            mMqttAsyncClient.subscribe(netChannel.getChannelDescription().getLocation().toString(), MqttConstants.DEFAULT_QOS);
+            if (mMqttAsyncClient.isConnected()) {
+                mMqttAsyncClient.subscribe(netChannel.getChannelDescription().getLocation().toString(), MqttConstants.DEFAULT_QOS);
+            }
 
             logv("subscribed for topic=" + netChannel.getChannelDescription().getLocation() + " NetworkChannel=" + netChannel.getHashKey());
         } catch (MqttException e) {
@@ -194,7 +196,9 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     public void unsubscribe(NetworkChannel netChannel) {
         try {
             mSubscribers.remove(netChannel.getHashKey());
-            mMqttAsyncClient.unsubscribe(netChannel.getChannelDescription().getLocation().toString());
+            if (mMqttAsyncClient.isConnected()) {
+                mMqttAsyncClient.unsubscribe(netChannel.getChannelDescription().getLocation().toString());
+            }
 
             logv("unsubscribe for topic=" + netChannel.getChannelDescription().getLocation() + " NetworkChannel=" + netChannel.getHashKey());
         } catch (MqttException e) {
@@ -263,6 +267,8 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
                     netChannel.onTimeout(netChannel, mMessage);
                 }
                 mRequestChannelMap.remove(mResponseTopic);
+
+                logv("Request is timed out for response topic=" + mResponseTopic + " NetworkChannel=" + netChannel.getHashKey());
 
                 try {
                     mMqttAsyncClient.unsubscribe(mResponseTopic);

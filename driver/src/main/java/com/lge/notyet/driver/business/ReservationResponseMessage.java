@@ -1,4 +1,4 @@
-package com.lge.notyet.channels;
+package com.lge.notyet.driver.business;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
@@ -30,7 +30,7 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
         return this;
     }
 
-    public ReservationResponseMessage setFailCause(int cause) {
+    public ReservationResponseMessage setFailCause(String cause) {
         mMessage.add(FAIL_CAUSE, cause);
         return this;
     }
@@ -43,8 +43,8 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
         return mMessage.get(CONFIRMATION_NUMBER).asLong();
     }
 
-    public int getFailCause() {
-        return mMessage.get(CONFIRMATION_NUMBER).asInt();
+    public String getFailCause() {
+        return mMessage.get(FAIL_CAUSE).asString();
     }
 
     public boolean validate() {
