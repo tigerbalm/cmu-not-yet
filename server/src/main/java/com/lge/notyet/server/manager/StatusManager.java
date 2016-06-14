@@ -5,7 +5,6 @@ import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.Uri;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.server.model.User;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
@@ -113,7 +112,7 @@ public class StatusManager {
         });
     }
 
-    private void getReservableSlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> handler) {
+    public void getReservableSlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> handler) {
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
