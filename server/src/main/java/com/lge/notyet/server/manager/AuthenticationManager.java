@@ -30,7 +30,7 @@ public class AuthenticationManager {
         communicationProxy = CommunicationProxy.getInstance(null);
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
-        new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(uri, message)).listen();
+        new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
         // new LoginRequestChannel(networkConnection).request(LoginRequestChannel.createRequestMessage("reshout@gmail.com", "password"));
     }
 
@@ -43,7 +43,7 @@ public class AuthenticationManager {
         }
     }
 
-    private void login(Uri uri, NetworkMessage message) {
+    private void login(NetworkMessage message) {
         final String email = LoginRequestChannel.getEmail(message);
         final String password = LoginRequestChannel.getPassword(message);
 
