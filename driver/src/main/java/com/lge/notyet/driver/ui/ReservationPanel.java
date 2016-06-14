@@ -1,5 +1,6 @@
 package com.lge.notyet.driver.ui;
 
+import com.lge.notyet.channels.ReservationResponseMessage;
 import com.lge.notyet.driver.business.ReservationTask;
 import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.TaskManager;
@@ -8,12 +9,8 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 
 public class ReservationPanel {
@@ -82,10 +79,23 @@ public class ReservationPanel {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
 
-            System.out.println("result=" + result + ", message=" + (MqttNetworkMessage) response);
+            ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
 
+            if (resMsg.getResult() == 1) { // Success
+                System.out.println("Success to make reservation, confirmation number is " + resMsg.getConfirmationNumber());
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Your reservation number is:" + resMsg.getConfirmationNumber(),
+                        "SurePark",
+                        JOptionPane.PLAIN_MESSAGE);
+
+            } else if (resMsg.getResult() == 0) {
+                System.out.println("Failed to make reservation, fail cause is " + resMsg.getFailCause());
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Network Connection Error: Failed to make reservation, fail cause=" + resMsg.getFailCause(),
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+            }
         }
     };
 

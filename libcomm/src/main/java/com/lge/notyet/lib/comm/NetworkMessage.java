@@ -7,7 +7,7 @@ public abstract class NetworkMessage <T> {
     public static final int MESSAGE_TYPE_REQUEST = 1;
     public static final int MESSAGE_TYPE_RESPONSE = 2;
 
-    protected final T mMessage;
+    protected T mMessage;
 
     public NetworkMessage(T message) {
         mMessage = message;

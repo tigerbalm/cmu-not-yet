@@ -1,12 +1,11 @@
 package com.lge.notyet.driver.business;
 
-import com.lge.notyet.channels.ReservationMessage;
+import com.lge.notyet.channels.ReservationRequestMessage;
 import com.lge.notyet.channels.ReservationRequestChannel;
 import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.lib.comm.*;
 
-import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
@@ -23,10 +22,6 @@ public class ReservationTask implements Callable<Void> {
         mTaskDoneCallback = taskDoneCallback;
     }
 
-    public void setTaskDoneCallback(ITaskDoneCallback taskDoneCallback) {
-        mTaskDoneCallback = taskDoneCallback;
-    }
-
     @Override
     public Void call() throws Exception {
 
@@ -35,7 +30,7 @@ public class ReservationTask implements Callable<Void> {
         ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
         rc.addObserver(mReservationResult);
         rc.addTimeoutObserver(mReservationTimeout);
-        ReservationMessage message = new ReservationMessage().setSessionKey("beney").setTimeStamp(mRequestTime);
+        ReservationRequestMessage message = new ReservationRequestMessage().setSessionKey(/*mSessionKey*/ "beney").setTimeStamp(mRequestTime);
         rc.request(message);
         return null;
     }
