@@ -45,4 +45,7 @@
 #
 # pattern write sensor/%u/data
 #
-pattern readwrite #
+pattern write /server/%c/#
+pattern read /%c/server/#
+user server
+topic readwrite #

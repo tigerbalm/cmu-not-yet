@@ -1,3 +1,4 @@
+"c:\Program Files\mosquittoWin\mosquitto_sub.exe" -d -h "si-gladvinc1" -p 8883 --cafile "D:\programs\JavaProg\IdeaProjects\cmu-not-yet\mosquittoConfig\certificates\ca.crt" -t "#" -u "server" --pw "server"
+rem "c:\Program Files\mosquittoWin\mosquitto_sub.exe" -d -h "localhost" -p 8883 --cafile "D:\programs\JavaProg\IdeaProjects\cmu-not-yet\mosquittoConfig\certificates\ca.crt" -t "#" -u "server" --pw "server"
+rem "c:\Program Files\mosquittoWin\mosquitto_sub.exe" -d -h "128.237.182.134" -p 8883 --cafile "D:\programs\JavaProg\IdeaProjects\cmu-not-yet\mosquittoConfig\certificates\ca.crt" -t "#" -u "server" --pw "server"
 rem "c:\Program Files\mosquittoWin\mosquitto_sub.exe" -h localhost -t "/$SYS/broker/bytes/#"  -d --cafile "D:\programs\JavaProg\IdeaProjects\cmu-not-yet\mosquittoConfig\certificates\ca.crt" -p 8883 -u "server" --pw "server"
-"c:\Program Files\mosquittoWin\mosquitto_sub.exe" -h "si-gladvinc1" -t "/$SYS/broker/bytes/#"  -d --cafile "D:\programs\JavaProg\IdeaProjects\cmu-not-yet\mosquittoConfig\certificates\ca.crt" -p 8883 -u "server" --pw "server"
-rem "c:\Program Files\mosquittoWin\mosquitto_sub.exe" -h "128.237.182.134" -t "/$SYS/broker/bytes/#"  -d --cafile "D:\programs\JavaProg\IdeaProjects\cmu-not-yet\mosquittoConfig\certificates\ca.crt" -p 8883 -u "server" --pw "server"
