@@ -11,4 +11,5 @@ include ':application'
 include ':libchannels_biz'
 include ':driver'
 include 'owner'
+include 'attendant'
 
