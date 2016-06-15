@@ -151,7 +151,7 @@ public class LoginPanel {
                     SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
                     SessionManager.getInstance().setKey(session);
 
-                    Log.log(LOG_TAG, "Success to make reservation, session key is " + resMsg.getMessage().get("session_key").asString());
+                    Log.log(LOG_TAG, "Success to login, session key is " + resMsg.getMessage().get("session_key").asString());
 
                 } else if (success == 0) {
                     Log.log(LOG_TAG, "Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());
