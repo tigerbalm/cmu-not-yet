@@ -1,9 +1,12 @@
 package com.lge.notyet.owner.ui;
 
+import com.lge.notyet.owner.business.StateMachine;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Enumeration;
 
 public class MainUI extends JDialog {
     private JPanel contentPane;
@@ -35,14 +38,26 @@ public class MainUI extends JDialog {
 
     private void onOK() {
 // add your code here
+        //Find selected button
+        int selectedQuery= -1;
+        for (Enumeration<AbstractButton> buttons = choiceGroup.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+
+            if (button.isSelected()) {
+                selectedQuery= Integer.parseInt(button.getText());
+                break;
+            }
+        }
         if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
             JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
         else{
+            StateMachine.getInstance().setQuery(selectedQuery, customAdditionalDeveloperQueryRadioButton.isSelected());
             if(specialSettingAndResult==null) {
                 specialSettingAndResult = new Specification_Result();
             }
             specialSettingAndResult.pack();
             specialSettingAndResult.setVisible(true);
+            StateMachine.getInstance().setInternalState(StateMachine.States.MAINUI);
         }
     }
 
@@ -51,6 +66,7 @@ public class MainUI extends JDialog {
         System.exit(0);
     }
     public static void main(String[] args) {
+        StateMachine.getInstance().setInternalState(StateMachine.States.MAINUI);
         MainUI dialog = new MainUI();
         dialog.pack();
         dialog.setVisible(true);
