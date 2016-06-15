@@ -14,8 +14,8 @@ import java.net.UnknownHostException;
 public class CommunicationProxy {
     private static CommunicationProxy instance = null;
 
-    // private static final String HOST = "192.168.1.21";
-    private static final String HOST = "localhost";
+    private static final String HOST = "192.168.1.21";
+    // private static final String HOST = "localhost";
 
     private Vertx vertx;
     private Logger logger;
@@ -40,7 +40,7 @@ public class CommunicationProxy {
         networkConnection = new MqttNetworkConnection(null);
         // networkConnection = new MqttPassiveRedundancyNetworkConnection("server", new MqttNetworkConnection(null));
         try {
-            logger.info("making MQTT connection");
+            logger.info("making MQTT connection (" + HOST + ")");
             networkConnection.connect(InetAddress.getByName(HOST), new INetworkCallback() {
                 @Override
                 public void onConnected() {
@@ -91,9 +91,5 @@ public class CommunicationProxy {
 
     public void responseFail(NetworkMessage message, Throwable cause) {
         responseFail(message, cause.getMessage());
-    }
-
-    public void responseServerError(NetworkMessage message) {
-        responseFail(message, "SERVER_ERROR");
     }
 }
