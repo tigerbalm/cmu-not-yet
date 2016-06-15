@@ -17,15 +17,15 @@ import io.vertx.ext.sql.SQLConnection;
 
 import java.util.List;
 
-public class StatusManager {
-    private static StatusManager instance = null;
+public class FacilityManager {
+    private static FacilityManager instance = null;
 
     private final Logger logger;
     private final DatabaseProxy databaseProxy;
     private final CommunicationProxy communicationProxy;
     private final AuthenticationManager authenticationManager;
 
-    private StatusManager() {
+    private FacilityManager() {
         logger = LoggerFactory.getLogger(ReservationManager.class);
         databaseProxy = DatabaseProxy.getInstance(null);
         communicationProxy = CommunicationProxy.getInstance(null);
@@ -34,15 +34,19 @@ public class StatusManager {
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
         new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
+        new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(uri, message)).listen();
+        new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
 
         // new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
         // new UpdateSlotStatusPublishChannel(networkConnection, "p1", 1).notify(new MqttNetworkMessage(new JsonObject().add("occupied", 1)));
+        // new GetFacilitiesRequestChannel(networkConnection).request(GetFacilitiesRequestChannel.createRequestMessage("qqqqqq"));
+        // new GetSlotsRequestChannel(networkConnection, 1).request(GetSlotsRequestChannel.createRequestMessage("111111"));
     }
 
-    public static StatusManager getInstance() {
+    public static FacilityManager getInstance() {
         synchronized (AuthenticationManager.class) {
             if (instance == null) {
-                instance = new StatusManager();
+                instance = new FacilityManager();
             }
             return instance;
         }
@@ -70,6 +74,50 @@ public class StatusManager {
                             databaseProxy.closeConnection(sqlConnection, ar -> {
                             });
                         }
+                    }
+                });
+            }
+        });
+    }
+
+    private void getFacilitySlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectFacilitySlots(sqlConnection, facilityId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {
+                        });
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        handler.handle(Future.succeededFuture(objects));
+                        databaseProxy.closeConnection(sqlConnection, ar4 -> {
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    private void getFacilities(int userId, Handler<AsyncResult<List<JsonObject>>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectUserFacilities(sqlConnection, userId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {
+                        });
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        handler.handle(Future.succeededFuture(objects));
+                        databaseProxy.closeConnection(sqlConnection, ar4 -> {
+                        });
                     }
                 });
             }
@@ -178,6 +226,70 @@ public class StatusManager {
                         logger.info("updateSlotStatus: slot=" + slotObject + " updated occupied=" + occupied);
                     }
                 });
+            }
+        });
+    }
+
+    private void getFacilities(Uri uri, NetworkMessage message) {
+        final String sessionKey = GetFacilitiesRequestChannel.getSessionKey(message);
+
+        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final int userId = ar1.result().get("id").asInt();
+                getFacilities(userId, ar2 -> {
+                    if (ar2.failed()) {
+                        communicationProxy.responseFail(message, ar2.cause());
+                    } else {
+                        communicationProxy.responseSuccess(message, GetFacilitiesResponseChannel.createResponseObject(ar2.result()));
+                    }
+                });
+            }
+        });
+    }
+
+    private void getSlots(Uri uri, NetworkMessage message) {
+        final String sessionKey = GetSlotsRequestChannel.getSessionKey(message);
+        final int facilityId = GetSlotsRequestChannel.getFacilityId(uri);
+
+        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final JsonObject userObject = ar1.result();
+                final int userId = userObject.get("id").asInt();
+                final int userType = userObject.get("type").asInt();
+
+                if (userType != User.USER_TYPE_ATTENDANT) {
+                    communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                } else {
+                    getFacilities(userId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            final List<JsonObject> facilityObjectList = ar2.result();
+                            boolean isAttendantFacility = false;
+                            for (JsonObject facilityObject : facilityObjectList) {
+                                if (facilityObject.get("id").asInt() == facilityId) {
+                                    isAttendantFacility = true;
+                                    break;
+                                }
+                            }
+                            if (!isAttendantFacility) {
+                                communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                            } else {
+                                getFacilitySlots(facilityId, ar3 -> {
+                                    if (ar3.failed()) {
+                                        communicationProxy.responseFail(message, ar3.cause());
+                                    } else {
+                                        communicationProxy.responseSuccess(message, GetSlotsResponseChannel.createResponseObject(ar3.result()));
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
             }
         });
     }
