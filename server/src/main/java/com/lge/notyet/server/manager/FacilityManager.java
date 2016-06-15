@@ -35,10 +35,12 @@ public class FacilityManager {
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
         new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
         new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(uri, message)).listen();
+        new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
 
         // new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
         // new UpdateSlotStatusPublishChannel(networkConnection, "p1", 1).notify(new MqttNetworkMessage(new JsonObject().add("occupied", 1)));
         // new GetFacilitiesRequestChannel(networkConnection).request(GetFacilitiesRequestChannel.createRequestMessage("qqqqqq"));
+        // new GetSlotsRequestChannel(networkConnection, 1).request(GetSlotsRequestChannel.createRequestMessage("111111"));
     }
 
     public static FacilityManager getInstance() {
@@ -243,6 +245,51 @@ public class FacilityManager {
                         communicationProxy.responseSuccess(message, GetFacilitiesResponseChannel.createResponseObject(ar2.result()));
                     }
                 });
+            }
+        });
+    }
+
+    private void getSlots(Uri uri, NetworkMessage message) {
+        final String sessionKey = GetSlotsRequestChannel.getSessionKey(message);
+        final int facilityId = GetSlotsRequestChannel.getFacilityId(uri);
+
+        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final JsonObject userObject = ar1.result();
+                final int userId = userObject.get("id").asInt();
+                final int userType = userObject.get("type").asInt();
+
+                if (userType != User.USER_TYPE_ATTENDANT) {
+                    communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                } else {
+                    getFacilities(userId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            final List<JsonObject> facilityObjectList = ar2.result();
+                            boolean isAttendantFacility = false;
+                            for (JsonObject facilityObject : facilityObjectList) {
+                                if (facilityObject.get("id").asInt() == facilityId) {
+                                    isAttendantFacility = true;
+                                    break;
+                                }
+                            }
+                            if (!isAttendantFacility) {
+                                communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                            } else {
+                                getFacilitySlots(facilityId, ar3 -> {
+                                    if (ar3.failed()) {
+                                        communicationProxy.responseFail(message, ar3.cause());
+                                    } else {
+                                        communicationProxy.responseSuccess(message, GetSlotsResponseChannel.createResponseObject(ar3.result()));
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
             }
         });
     }

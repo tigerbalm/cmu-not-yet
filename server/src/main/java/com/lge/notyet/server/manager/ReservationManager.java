@@ -55,6 +55,7 @@ public class ReservationManager {
     }
 
     public void getReservationByConfirmationNumber(int confirmationNumber, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("getReservationByConfirmationNumber: confirmationNumber=" + confirmationNumber);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -80,6 +81,7 @@ public class ReservationManager {
     }
 
     public void getReservationByUserId(int userId, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("getReservationByUserId: userId=" + userId);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -105,6 +107,7 @@ public class ReservationManager {
     }
 
     public void getReservation(int reservationId, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("getReservation: reservationId=" + reservationId);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -130,6 +133,7 @@ public class ReservationManager {
     }
 
     public void makeReservation(int userId, int slotId, int reservationTimestamp, int confirmationNumber, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("makeReservation: userId=" + userId + ", slotId=" + slotId);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -162,6 +166,7 @@ public class ReservationManager {
     }
 
     public void removeReservation(int reservationId, Handler<AsyncResult<Void>> handler) {
+        logger.info("removeReservation: reservationId=" + reservationId);
         getReservation(reservationId, ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -231,6 +236,8 @@ public class ReservationManager {
 
     private void confirmReservation(Uri uri, NetworkMessage message) {
         final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
+
+        logger.debug("confirmReservation: confirmationNumber=" + confirmationNumber);
 
         getReservationByConfirmationNumber(confirmationNumber, ar1 -> {
             if (ar1.failed()) {
