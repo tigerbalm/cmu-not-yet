@@ -1,9 +1,6 @@
 package com.lge.notyet.driver.manager;
 
-import com.lge.notyet.channels.GetReservationRequestChannel;
-import com.lge.notyet.channels.LoginRequestChannel;
-import com.lge.notyet.channels.ReservableFacilitiesRequestChannel;
-import com.lge.notyet.channels.ReservationRequestChannel;
+import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
@@ -79,6 +76,10 @@ public class NetworkConnectionManager {
 
     public ReservableFacilitiesRequestChannel createReservableFacilitiesRequestChannel() {
         return new ReservableFacilitiesRequestChannel(mNc);
+    }
+
+    public SignUpRequestChannel createSignUpChannel() {
+        return new SignUpRequestChannel(mNc);
     }
 
 }
