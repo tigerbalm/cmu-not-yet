@@ -161,8 +161,9 @@ CREATE TABLE `slot` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `controller_id` int(11) NOT NULL,
   `number` int(11) NOT NULL,
-  `occupied` tinyint(1) NOT NULL,
-  `reserved` tinyint(1) NOT NULL,
+  `occupied` tinyint(1) NOT NULL DEFAULT '0',
+  `reserved` tinyint(1) NOT NULL DEFAULT '0',
+  `occupied_ts` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `controller_id` (`controller_id`),
   CONSTRAINT `slot_ibfk_1` FOREIGN KEY (`controller_id`) REFERENCES `controller` (`id`)
@@ -175,7 +176,7 @@ CREATE TABLE `slot` (
 
 LOCK TABLES `slot` WRITE;
 /*!40000 ALTER TABLE `slot` DISABLE KEYS */;
-INSERT INTO `slot` VALUES (1,1,1,0,0),(2,1,2,0,0),(3,1,3,0,0),(4,1,4,0,0),(5,2,1,0,0),(6,2,2,0,0),(7,2,3,0,0),(8,2,4,0,0),(10,3,1,0,0),(11,3,2,0,0),(12,4,1,0,0),(13,4,2,0,0);
+INSERT INTO `slot` VALUES (1,1,1,0,0,-1),(2,1,2,0,0,-1),(3,1,3,0,0,-1),(4,1,4,0,0,-1),(5,2,1,0,0,-1),(6,2,2,0,0,-1),(7,2,3,0,0,-1),(8,2,4,0,0,-1),(10,3,1,0,0,-1),(11,3,2,0,0,-1),(12,4,1,0,0,-1),(13,4,2,0,0,-1);
 /*!40000 ALTER TABLE `slot` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -245,4 +246,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-06-15 17:28:56
+-- Dump completed on 2016-06-15 18:09:49

@@ -192,7 +192,7 @@ public class DatabaseProxy {
     }
 
     public void selectSlot(SQLConnection connection, String controllerPhysicalId, int slotNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        String sql = "select slot.id as id, number, occupied, reserved, controller_id\n" +
+        String sql = "select slot.id as id, number, occupied, occupied_ts, reserved, controller_id\n" +
                 "from controller inner join slot on controller.id = slot.controller_id\n" +
                 "where physical_id = \'" + controllerPhysicalId + "\'" +
                 "and number = " + slotNumber;
@@ -200,7 +200,7 @@ public class DatabaseProxy {
     }
 
     public void selectFacilitySlots(SQLConnection connection, int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        String sql = "select slot.id, number, occupied, reserved\n" +
+        String sql = "select slot.id, number, occupied, occupied_ts, reserved\n" +
                 "from facility inner join controller on facility.id = controller.facility_id\n" +
                 "inner join slot on controller.id = slot.controller_id\n" +
                 "where facility.id = " + facilityId;
@@ -243,10 +243,11 @@ public class DatabaseProxy {
         query(connection, sql, resultHandler);
     }
 
-    public void updateSlotOccupied(SQLConnection connection, int slotId, boolean occupied, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "update slot set occupied = ? where id = ?";
+    public void updateSlotOccupied(SQLConnection connection, int slotId, boolean occupied, int occupiedTs, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "update slot set occupied = ?, occupied_ts = ? where id = ?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(occupied ? 1 : 0);
+        parameters.add(occupiedTs);
         parameters.add(slotId);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
