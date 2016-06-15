@@ -158,14 +158,17 @@ public class DatabaseProxy {
     }
 
     public void selectUser(SQLConnection connection, String email, String password, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        logger.info("selectUser: email=" + email + ", password=" + password);
         query(connection, "select * from user inner join session on user.id = session.user_id where email=\'" + email + "\' and password=\'" + password + "\'", resultHandler);
     }
 
     public void selectUser(SQLConnection connection, String sessionKey, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        logger.info("selectUser: sessionKey=" + sessionKey);
         query(connection, "select * from user inner join session on user.id = session.user_id where session_key=\'" + sessionKey + "\'", resultHandler);
     }
 
     public void selectSession(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        logger.info("selectSession: userId=" + userId);
         query(connection, "select * from session where user_id=" + userId, resultHandler);
     }
 
@@ -178,6 +181,13 @@ public class DatabaseProxy {
                 "where controller.available = 1 " +
                 "and slot.occupied = 0 " +
                 "and slot.reserved = 0)";
+        query(connection, sql, resultHandler);
+    }
+
+    public void selectUserFacilities(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        String sql = "select facility.id, facility.name " +
+                "from facility inner join manage on facility.id = manage.facility_id inner join user on user.id = manage.facility_id " +
+                "where user_id = " + userId;
         query(connection, sql, resultHandler);
     }
 

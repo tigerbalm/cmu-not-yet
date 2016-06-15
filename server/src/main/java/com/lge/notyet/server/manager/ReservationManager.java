@@ -23,14 +23,14 @@ public class ReservationManager {
     private final DatabaseProxy databaseProxy;
     private final CommunicationProxy communicationProxy;
     private final AuthenticationManager authenticationManager;
-    private final StatusManager statusManager;
+    private final FacilityManager facilityManager;
 
     private ReservationManager() {
         logger = LoggerFactory.getLogger(ReservationManager.class);
         databaseProxy = DatabaseProxy.getInstance(null);
         communicationProxy = CommunicationProxy.getInstance(null);
         authenticationManager = AuthenticationManager.getInstance();
-        statusManager = StatusManager.getInstance();
+        facilityManager = FacilityManager.getInstance();
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
 
@@ -205,7 +205,7 @@ public class ReservationManager {
             } else {
                 final JsonObject userObject = ar1.result();
                 final int userId = userObject.get("id").asInt();
-                statusManager.getReservableSlots(facilityId, ar2 -> {
+                facilityManager.getReservableSlots(facilityId, ar2 -> {
                     if (ar2.failed()) {
                         communicationProxy.responseFail(message, ar2.cause());
                     } else {

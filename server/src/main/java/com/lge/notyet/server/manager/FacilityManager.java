@@ -1,5 +1,6 @@
 package com.lge.notyet.server.manager;
 
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkConnection;
@@ -17,15 +18,15 @@ import io.vertx.ext.sql.SQLConnection;
 
 import java.util.List;
 
-public class StatusManager {
-    private static StatusManager instance = null;
+public class FacilityManager {
+    private static FacilityManager instance = null;
 
     private final Logger logger;
     private final DatabaseProxy databaseProxy;
     private final CommunicationProxy communicationProxy;
     private final AuthenticationManager authenticationManager;
 
-    private StatusManager() {
+    private FacilityManager() {
         logger = LoggerFactory.getLogger(ReservationManager.class);
         databaseProxy = DatabaseProxy.getInstance(null);
         communicationProxy = CommunicationProxy.getInstance(null);
@@ -34,15 +35,17 @@ public class StatusManager {
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
         new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
+        new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(uri, message)).listen();
 
         // new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
         // new UpdateSlotStatusPublishChannel(networkConnection, "p1", 1).notify(new MqttNetworkMessage(new JsonObject().add("occupied", 1)));
+        new GetFacilitiesRequestChannel(networkConnection).request(GetFacilitiesRequestChannel.createRequestMessage("qqqqqq"));
     }
 
-    public static StatusManager getInstance() {
+    public static FacilityManager getInstance() {
         synchronized (AuthenticationManager.class) {
             if (instance == null) {
-                instance = new StatusManager();
+                instance = new FacilityManager();
             }
             return instance;
         }
@@ -70,6 +73,28 @@ public class StatusManager {
                             databaseProxy.closeConnection(sqlConnection, ar -> {
                             });
                         }
+                    }
+                });
+            }
+        });
+    }
+
+    private void getFacilities(int userId, Handler<AsyncResult<List<JsonObject>>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectUserFacilities(sqlConnection, userId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {
+                        });
+                    } else {
+                        List<JsonObject> userObjects = ar2.result();
+                        handler.handle(Future.succeededFuture(userObjects));
+                        databaseProxy.closeConnection(sqlConnection, ar4 -> {
+                        });
                     }
                 });
             }
@@ -176,6 +201,25 @@ public class StatusManager {
                         ar2.cause().printStackTrace();
                     } else {
                         logger.info("updateSlotStatus: slot=" + slotObject + " updated occupied=" + occupied);
+                    }
+                });
+            }
+        });
+    }
+
+    private void getFacilities(Uri uri, NetworkMessage message) {
+        final String sessionKey = GetFacilitiesRequestChannel.getSessionKey(message);
+
+        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final int userId = ar1.result().get("id").asInt();
+                getFacilities(userId, ar2 -> {
+                    if (ar2.failed()) {
+                        communicationProxy.responseFail(message, ar2.cause());
+                    } else {
+                        communicationProxy.responseSuccess(message, GetFacilitiesResponseChannel.createResponseObject(ar2.result()));
                     }
                 });
             }
