@@ -14,6 +14,7 @@ public class MainUI extends JDialog {
     private JRadioButton revenueBasedOnFacilityRadioButton;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
     private ButtonGroup choiceGroup;
+    private Specification_Result specialSettingAndResult;
 
     public MainUI() {
         choiceGroup= new ButtonGroup();
@@ -37,7 +38,11 @@ public class MainUI extends JDialog {
         if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
             JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
         else{
-
+            if(specialSettingAndResult==null) {
+                specialSettingAndResult = new Specification_Result();
+            }
+            specialSettingAndResult.pack();
+            specialSettingAndResult.setVisible(true);
         }
     }
 
