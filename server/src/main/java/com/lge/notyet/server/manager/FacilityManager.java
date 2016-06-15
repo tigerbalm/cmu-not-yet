@@ -40,7 +40,7 @@ public class FacilityManager {
         // new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
         // new UpdateSlotStatusPublishChannel(networkConnection, "p1", 1).notify(new MqttNetworkMessage(new JsonObject().add("occupied", 1)));
         // new GetFacilitiesRequestChannel(networkConnection).request(GetFacilitiesRequestChannel.createRequestMessage("qqqqqq"));
-        // new GetSlotsRequestChannel(networkConnection, 1).request(GetSlotsRequestChannel.createRequestMessage("111111"));
+        // new GetSlotsRequestChannel(networkConnection, 1).request(GetSlotsRequestChannel.createRequestMessage("session2"));
     }
 
     public static FacilityManager getInstance() {
@@ -130,7 +130,8 @@ public class FacilityManager {
                 handler.handle(Future.failedFuture(ar1.cause()));
             } else {
                 final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.updateSlotOccupied(sqlConnection, slotId, occupied, ar2 -> {
+                final int occupiedTs = occupied ? ((int) System.currentTimeMillis() / 1000) : -1;
+                databaseProxy.updateSlotOccupied(sqlConnection, slotId, occupied, occupiedTs, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
                         databaseProxy.closeConnection(sqlConnection, false, ar -> {
