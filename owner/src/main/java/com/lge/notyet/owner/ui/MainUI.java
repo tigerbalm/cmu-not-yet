@@ -1,6 +1,7 @@
 package com.lge.notyet.owner.ui;
 
 import com.lge.notyet.owner.business.StateMachine;
+import jdk.nashorn.internal.scripts.JD;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,6 +64,13 @@ public class MainUI extends JDialog {
     }
     public static void main(String[] args) {
         StateMachine.getInstance().setInternalState(StateMachine.States.MAINUI);
+
+        JDialog loginDialog = new JDialog();
+        loginDialog.add(new LoginPanel().getRootPanel());
+        loginDialog.pack();
+        loginDialog.setModal(true);
+        loginDialog.setVisible(true);
+
         MainUI dialog = new MainUI();
         dialog.pack();
         dialog.setVisible(true);
