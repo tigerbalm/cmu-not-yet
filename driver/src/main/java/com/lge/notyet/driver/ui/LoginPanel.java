@@ -64,6 +64,28 @@ public class LoginPanel {
                 }
             }
         });
+        mLabelForgetPassword.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Please contact to operator/attendant, Telephone #: 111-222-3333",
+                        "SurePark",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+        mLabelForgetPassword.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Please contact to operator/attendant, Telephone #: 111-222-3333",
+                        "SurePark",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
     }
 
     private void doLogin() {
