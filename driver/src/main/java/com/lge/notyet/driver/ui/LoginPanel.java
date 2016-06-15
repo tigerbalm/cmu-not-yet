@@ -11,10 +11,10 @@ import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import sun.font.ScriptRun;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 
 public class LoginPanel {
@@ -34,6 +34,20 @@ public class LoginPanel {
                 mTfUserEmailAddress.setEnabled(false);
                 mTfUserPassword.setEnabled(false);
                 mBtnSignIn.setEnabled(false);
+            }
+        });
+        mLabelCreateAccount.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                ScreenManager.getInstance().showSignUpScreen();
+            }
+        });
+        mLabelCreateAccount.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                ScreenManager.getInstance().showSignUpScreen();
             }
         });
     }

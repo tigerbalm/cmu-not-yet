@@ -9,4 +9,13 @@ public class ReservationHistoryPanel {
     private JLabel mLabelUserName;
     private JLabel mLabalReservationDate;
     private JLabel mLabalReservationLocation;
+    private JPanel mForm;
+
+    public JPanel getRootPanel() {
+        return mForm;
+    }
+
+    public String getName() {
+        return "ReservationHistoryPanel";
+    }
 }

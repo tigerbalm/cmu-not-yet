@@ -17,6 +17,7 @@ public class ScreenManager {
 
     private LoginPanel mLoginPanel;
     private ReservationPanel mReservationPanel;
+    private SignupPanel mSignupPanel;
 
     private ScreenManager () {
         mMainCardLayout = new CardLayout();
@@ -37,9 +38,11 @@ public class ScreenManager {
 
         mLoginPanel = new LoginPanel();
         mReservationPanel = new ReservationPanel();
+        mSignupPanel = new SignupPanel();
 
         mCards.add(mLoginPanel.getRootPanel(), mLoginPanel.getName());
         mCards.add(mReservationPanel.getRootPanel(), mReservationPanel.getName());
+        mCards.add(mSignupPanel.getRootPanel(), mSignupPanel.getName());
 
         showLoginScreen();
 
@@ -58,6 +61,12 @@ public class ScreenManager {
 
         mReservationPanel.init();
         mMainCardLayout.show(mCards, mReservationPanel.getName());
+    }
+
+    public void showSignUpScreen() {
+
+        mReservationPanel.init();
+        mMainCardLayout.show(mCards, mSignupPanel.getName());
     }
 
 }
