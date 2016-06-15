@@ -1,10 +1,10 @@
-package com.lge.notyet.attendant.ui;
+package com.lge.notyet.owner.ui;
 
-import com.lge.notyet.attendant.business.LoginTask;
-import com.lge.notyet.attendant.manager.SessionManager;
-import com.lge.notyet.attendant.manager.TaskManager;
-import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import com.lge.notyet.owner.business.LoginTask;
+import com.lge.notyet.owner.manager.SessionManager;
+import com.lge.notyet.owner.manager.TaskManager;
+import com.lge.notyet.owner.util.Log;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -21,7 +21,6 @@ public class LoginPanel {
     private JButton mBtnSignIn;
     private JPasswordField mTfUserPassword;
     private JPanel mForm;
-
 
     public LoginPanel() {
 
