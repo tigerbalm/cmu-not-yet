@@ -22,6 +22,7 @@ public class SignupPanel {
     private JButton mBtnCreateAccount;
     private JTextField mTfCreditCardCVC;
     private JPanel mForm;
+    private JButton mBtnCancel;
 
     public SignupPanel() {
         mBtnCreateAccount.addActionListener(new ActionListener() {
@@ -33,6 +34,12 @@ public class SignupPanel {
                 mTfUserEmailAddress.setEnabled(false);
                 mTfUserPassword.setEnabled(false);
                 mBtnCreateAccount.setEnabled(false);
+            }
+        });
+        mBtnCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ScreenManager.getInstance().showLoginScreen();
             }
         });
     }

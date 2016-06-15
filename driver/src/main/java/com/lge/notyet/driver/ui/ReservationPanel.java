@@ -2,6 +2,7 @@ package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.ReservationTask;
+import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
@@ -22,6 +23,7 @@ public class ReservationPanel {
     private JTextField mTfCreditCardNumber;
     private JSpinner mJSpinnerHour;
     private JLabel mLabelModifyAccountInfo;
+    private JLabel mLabelLogout;
 
     public JPanel getRootPanel() {
         return mForm;
@@ -111,6 +113,24 @@ public class ReservationPanel {
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
                 ScreenManager.getInstance().showModifyAccountPanelScreen();
+            }
+        });
+        mLabelLogout.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                SessionManager.getInstance().clear(); // Log-out
+                NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+        });
+        mLabelLogout.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                SessionManager.getInstance().clear(); // Log-out
+                NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
             }
         });
     }

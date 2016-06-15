@@ -16,6 +16,7 @@ public class MainUI extends JDialog {
     private JRadioButton howMuchTimeCarsRadioButton;
     private JRadioButton revenueBasedOnFacilityRadioButton;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
+    private JPanel choicePanel;
     private ButtonGroup choiceGroup;
     private Specification_Result specialSettingAndResult;
 
@@ -39,7 +40,9 @@ public class MainUI extends JDialog {
     private void onOK() {
 // add your code here
         //Find selected button
-        int selectedQuery= -1;
+        String selectedQuery= choiceGroup.getSelection().getActionCommand();
+        //choiceGroup.getSelection().getSelectedObjects()[0].toString();
+        /*
         for (Enumeration<AbstractButton> buttons = choiceGroup.getElements(); buttons.hasMoreElements();) {
             AbstractButton button = buttons.nextElement();
 
@@ -48,6 +51,7 @@ public class MainUI extends JDialog {
                 break;
             }
         }
+        */
         if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
             JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
         else{
