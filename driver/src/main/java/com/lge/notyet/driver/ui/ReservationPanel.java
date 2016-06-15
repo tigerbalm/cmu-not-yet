@@ -80,7 +80,7 @@ public class ReservationPanel {
             mCbLocation.setSelectedIndex(0);
         }
 
-        //mLabelUserName.setText(SessionManager.getInstance().getUserEmail());
+        mLabelUserName.setText("Dear " + SessionManager.getInstance().getUserEmail());
         mTfCreditCardNumber.setText(SessionManager.getInstance().getCreditCardNumber());
     }
 

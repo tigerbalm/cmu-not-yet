@@ -34,30 +34,7 @@ public class LoginPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                // Verify Inputs
-                String userEmailAddress = mTfUserEmailAddress.getText();
-                String userPassword = new String(mTfUserPassword.getPassword());
-
-                Log.logv(LOG_TAG, "user email address=" + userEmailAddress + ", password=" + userPassword);
-
-                if (userEmailAddress == null || userEmailAddress.length() == 0) {
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            "Please input user email address",
-                            "SurePark",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                if (userPassword.length() == 0) {
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            "Please input user password",
-                            "SurePark",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                setUserInputEnabled(false);
-                TaskManager.getInstance().runTask(LoginTask.getTask(userEmailAddress, userPassword, mLoginDoneCallback));
+                doLogin();
             }
         });
 
@@ -78,6 +55,42 @@ public class LoginPanel {
                 ScreenManager.getInstance().showSignUpScreen();
             }
         });
+        mTfUserPassword.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    doLogin();
+                }
+            }
+        });
+    }
+
+    private void doLogin() {
+        // Verify Inputs
+        String userEmailAddress = mTfUserEmailAddress.getText();
+        String userPassword = new String(mTfUserPassword.getPassword());
+
+        Log.logv(LOG_TAG, "user email address=" + userEmailAddress + ", password=" + userPassword);
+
+        if (userEmailAddress == null || userEmailAddress.length() == 0) {
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    "Please input user email address",
+                    "SurePark",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (userPassword.length() == 0) {
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    "Please input user password",
+                    "SurePark",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        setUserInputEnabled(false);
+        TaskManager.getInstance().runTask(LoginTask.getTask(userEmailAddress, userPassword, mLoginDoneCallback));
     }
 
     private ITaskDoneCallback mReservationCheckCallback = new ITaskDoneCallback() {
@@ -127,8 +140,6 @@ public class LoginPanel {
             }
         }
     };
-
-
 
     private ITaskDoneCallback mUpdateFacilityListCallback = new ITaskDoneCallback() {
 

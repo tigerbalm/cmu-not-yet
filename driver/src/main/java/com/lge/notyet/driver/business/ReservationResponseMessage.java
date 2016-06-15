@@ -31,6 +31,11 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
         return this;
     }
 
+    public ReservationResponseMessage setReservationId(long reservationId) {
+        mMessage.add(RESERVATION_ID, reservationId);
+        return this;
+    }
+
     public ReservationResponseMessage setFailCause(String cause) {
         mMessage.add(FAIL_CAUSE, cause);
         return this;
