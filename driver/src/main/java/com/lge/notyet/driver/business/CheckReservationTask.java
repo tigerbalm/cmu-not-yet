@@ -1,7 +1,7 @@
 package com.lge.notyet.driver.business;
 
 import com.lge.notyet.channels.GetReservationRequestChannel;
-import com.lge.notyet.driver.manager.ITaskDoneCallback;
+import com.lge.notyet.driver.ui.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.lib.comm.*;
 

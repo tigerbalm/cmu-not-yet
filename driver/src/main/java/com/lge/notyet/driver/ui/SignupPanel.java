@@ -2,7 +2,6 @@ package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.SignUpTask;
-import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.TaskManager;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;

@@ -6,12 +6,10 @@ import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.driver.business.CheckReservationTask;
 import com.lge.notyet.driver.business.LoginTask;
 import com.lge.notyet.driver.business.UpdateFacilityListTask;
-import com.lge.notyet.driver.manager.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import sun.font.ScriptRun;
 
 import javax.swing.*;
 import java.awt.event.*;

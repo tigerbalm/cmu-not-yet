@@ -1,4 +1,4 @@
-package com.lge.notyet.driver.manager;
+package com.lge.notyet.driver.ui;
 
 public interface ITaskDoneCallback <T> {
 
