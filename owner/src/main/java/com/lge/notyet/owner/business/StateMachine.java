@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * Created by gladvin.durai on 15-Jun-2016.
  */
 public class StateMachine {
-    private static ArrayList<AbstractMap.SimpleEntry<String, String>> QUERY_LIST= new ArrayList();
+    public static ArrayList<AbstractMap.SimpleEntry<String, String>> QUERY_LIST= new ArrayList();
     {
         QUERY_LIST.add(new AbstractMap.SimpleEntry("Average Occupancy", "select custId from custTable"));
         QUERY_LIST.add(new AbstractMap.SimpleEntry("Peak Usage Hours", "select custId from custTable"));

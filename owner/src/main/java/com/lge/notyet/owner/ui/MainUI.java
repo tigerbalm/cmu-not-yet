@@ -6,26 +6,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.AbstractMap;
 import java.util.Enumeration;
 
 public class MainUI extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
-    private JRadioButton averageOccupancyRadioButton;
-    private JRadioButton peakUsageHoursRadioButton;
-    private JRadioButton howMuchTimeCarsRadioButton;
-    private JRadioButton revenueBasedOnFacilityRadioButton;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
     private JPanel choicePanel;
     private ButtonGroup choiceGroup;
     private Specification_Result specialSettingAndResult;
 
     public MainUI() {
-        choiceGroup= new ButtonGroup();
-        choiceGroup.add(averageOccupancyRadioButton);
-        choiceGroup.add(peakUsageHoursRadioButton);
-        choiceGroup.add(howMuchTimeCarsRadioButton);
-        choiceGroup.add(revenueBasedOnFacilityRadioButton);
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -75,5 +67,25 @@ public class MainUI extends JDialog {
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
+    }
+
+    private void createUIComponents() {
+        choiceGroup= new ButtonGroup();
+        choicePanel= new JPanel(new GridLayout(0,1));
+        boolean firstControl= true;
+        for (AbstractMap.SimpleEntry queryMapping:StateMachine.QUERY_LIST) {
+            String textToDisplay= queryMapping.getKey().toString();
+            JRadioButton jb= new JRadioButton(textToDisplay);
+            jb.setActionCommand(textToDisplay);
+            if(firstControl){
+                firstControl= false;
+                jb.setSelected(true);
+            }
+            choicePanel.add(jb);
+            choiceGroup.add(jb);
+        }
+        customAdditionalDeveloperQueryRadioButton= new JRadioButton("Custom (Additional developer query)");
+        choicePanel.add(customAdditionalDeveloperQueryRadioButton);
+       // revalidate();
     }
 }
