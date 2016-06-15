@@ -7,8 +7,9 @@ import javax.swing.*;
  */
 public class ReservationHistoryPanel {
     private JLabel mLabelUserName;
-    private JLabel mLabalReservationDate;
-    private JLabel mLabalReservationLocation;
+    private JLabel mLabelReservationDate;
+    private JLabel mLabelReservationLocation;
+    private JLabel mLabelReservationConfirmationNumber;
     private JPanel mForm;
 
     public JPanel getRootPanel() {

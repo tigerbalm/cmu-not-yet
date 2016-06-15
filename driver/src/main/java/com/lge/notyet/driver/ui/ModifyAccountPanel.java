@@ -8,6 +8,13 @@ import javax.swing.*;
 public class ModifyAccountPanel {
 
     private JPanel mForm;
+    private JTextField mTfUserEmailAddress;
+    private JPasswordField mTfUserPassword;
+    private JTextField mTfCreditCardNumber;
+    private JTextField mTfCreditCardMonth;
+    private JTextField mTfCreditCardYear;
+    private JTextField mTfCreditCardCVC;
+    private JButton mBtnCreateAccount;
 
     public JPanel getRootPanel() {
         return mForm;
