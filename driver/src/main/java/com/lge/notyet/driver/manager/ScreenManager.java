@@ -15,6 +15,9 @@ public class ScreenManager {
     private CardLayout mMainCardLayout;
     private JPanel mCards;
 
+    private String mLastScreenName;
+    private String mCurrentScreenName;
+
     private LoginPanel mLoginPanel;
     private ReservationPanel mReservationPanel;
     private SignupPanel mSignupPanel;
@@ -61,27 +64,45 @@ public class ScreenManager {
     }
 
     public void showLoginScreen() {
+        mLastScreenName = mCurrentScreenName;
         mMainCardLayout.show(mCards, mLoginPanel.getName());
+        mCurrentScreenName = mLoginPanel.getName();
     }
 
     public void showReservationRequestScreen() {
-
+        mLastScreenName = mCurrentScreenName;
         mReservationPanel.init();
         mMainCardLayout.show(mCards, mReservationPanel.getName());
+        mCurrentScreenName = mReservationPanel.getName();
     }
 
     public void showSignUpScreen() {
-
+        mLastScreenName = mCurrentScreenName;
         mMainCardLayout.show(mCards, mSignupPanel.getName());
+        mCurrentScreenName = mSignupPanel.getName();
     }
 
     public void showReservationHistoryScreen() {
-
+        mLastScreenName = mCurrentScreenName;
+        mReservationHistoryPanel.init();
         mMainCardLayout.show(mCards, mReservationHistoryPanel.getName());
+        mCurrentScreenName = mReservationHistoryPanel.getName();
     }
 
     public void showModifyAccountPanelScreen() {
-
+        mLastScreenName = mCurrentScreenName;
+        mModifyAccountPanel.init();
         mMainCardLayout.show(mCards, mModifyAccountPanel.getName());
+        mCurrentScreenName = mModifyAccountPanel.getName();
+    }
+
+
+    public void showPreviousScreen() {
+
+        if (mLastScreenName == null || mLastScreenName.length() == 0) return;
+
+        mCurrentScreenName = mLastScreenName;
+        mMainCardLayout.show(mCards, mLastScreenName);
+        mLastScreenName = null;
     }
 }

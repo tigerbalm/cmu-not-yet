@@ -8,7 +8,7 @@ abstract public class ServerChannelRegistry extends ServerChannel {
         super(networkConnection);
     }
 
-    ArrayList<IOnRequest> mIOnRequestList = new ArrayList <IOnRequest>();
+    private final ArrayList<IOnRequest> mIOnRequestList = new ArrayList <>();
 
     public ServerChannelRegistry addObserver(IOnRequest observer) {
         synchronized (ServerChannelRegistry.class) {

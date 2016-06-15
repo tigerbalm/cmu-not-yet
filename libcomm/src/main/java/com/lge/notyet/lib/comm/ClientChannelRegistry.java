@@ -8,7 +8,7 @@ abstract public class ClientChannelRegistry extends ClientChannel {
         super(networkConnection);
     }
 
-    private ArrayList<IOnResponse> mIOnResponseList = new ArrayList <IOnResponse>();
+    private final ArrayList<IOnResponse> mIOnResponseList = new ArrayList <>();
 
     public void addObserver(IOnResponse observer) {
         synchronized (ClientChannelRegistry.class) {
@@ -32,7 +32,7 @@ abstract public class ClientChannelRegistry extends ClientChannel {
         }
     }
 
-    private ArrayList<IOnTimeout> mIOnTimeoutList = new ArrayList <IOnTimeout>();
+    private final ArrayList<IOnTimeout> mIOnTimeoutList = new ArrayList <>();
 
     public void addTimeoutObserver(IOnTimeout observer) {
         synchronized (ClientChannelRegistry.class) {

@@ -80,7 +80,7 @@ public class ReservationPanel {
             mCbLocation.setSelectedIndex(0);
         }
 
-        //mLabelUserName.setText(SessionManager.getInstance().getUserEmail());
+        mLabelUserName.setText("Dear " + SessionManager.getInstance().getUserEmail());
         mTfCreditCardNumber.setText(SessionManager.getInstance().getCreditCardNumber());
     }
 
@@ -152,7 +152,8 @@ public class ReservationPanel {
                         JOptionPane.PLAIN_MESSAGE);
 
                 int confirmationNumber = resMsg.getConfirmationNumber();
-                SessionManager.getInstance().setReservationInformation(mRequestedTime, confirmationNumber, mRequestedFacilityId);
+                int reservationId = resMsg.getReservationId();
+                SessionManager.getInstance().setReservationInformation(mRequestedTime, confirmationNumber, mRequestedFacilityId, reservationId);
 
                 ScreenManager.getInstance().showReservationHistoryScreen();
 

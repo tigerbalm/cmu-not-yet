@@ -8,6 +8,7 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
 
     private static final String RESULT = "success";
     private static final String CONFIRMATION_NUMBER = "confirmation_no";
+    private static final String RESERVATION_ID = "id";
     private static final String FAIL_CAUSE = "cause";
 
     public ReservationResponseMessage() {
@@ -30,6 +31,11 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
         return this;
     }
 
+    public ReservationResponseMessage setReservationId(long reservationId) {
+        mMessage.add(RESERVATION_ID, reservationId);
+        return this;
+    }
+
     public ReservationResponseMessage setFailCause(String cause) {
         mMessage.add(FAIL_CAUSE, cause);
         return this;
@@ -41,6 +47,10 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
 
     public int getConfirmationNumber() {
         return mMessage.get(CONFIRMATION_NUMBER).asInt();
+    }
+
+    public int getReservationId() {
+        return mMessage.get(RESERVATION_ID).asInt();
     }
 
     public String getFailCause() {

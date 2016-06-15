@@ -44,8 +44,21 @@ public class TestServer {
             // Need to parse
 
             MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
-            response.getMessage().add("success", 0);
-            response.getMessage().add("cause", "NO_RESERVATION_EXIST");
+
+            boolean isReservedTest = true;
+
+            if (isReservedTest == false) {
+                response.getMessage().add("success", 0);
+                response.getMessage().add("cause", "NO_RESERVATION_EXIST");
+            } else {
+
+                response.getMessage().add("success", 1);
+                response.getMessage().add("reservation_ts", 1466021160L);
+                response.getMessage().add("confirmation_no", 3333);
+                response.getMessage().add("id", 1);
+                response.getMessage().add("facility_id", 1);
+            }
+
             System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
             message.responseFor(response);
         }
@@ -100,6 +113,21 @@ public class TestServer {
     };
 
     // Business Logic here, we have no time :(
+    private IOnRequest mCancelReservationRequestReceived = new IOnRequest() {
+
+        @Override
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            // Need to parse
+            MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
+            response.getMessage().add("success", 1);
+            System.out.println("mCancelReservationRequestReceived Requested Received=" + message.getMessage());
+
+            message.responseFor(response);
+        }
+    };
+
+    // Business Logic here, we have no time :(
     private IOnRequest mReservationRequestReceived = new IOnRequest() {
 
         @Override
@@ -108,7 +136,7 @@ public class TestServer {
             // Need to parse
             ReservationRequestMessage reqMsg = new ReservationRequestMessage((MqttNetworkMessage)message);
             System.out.println("Reservation Requested Received=" + message.getMessage());
-            message.responseFor(new ReservationResponseMessage().setResult(1).setConfirmationNumber(10L));
+            message.responseFor(new ReservationResponseMessage().setResult(1).setConfirmationNumber(10L).setReservationId(1));
         }
     };
 
@@ -130,6 +158,8 @@ public class TestServer {
             mGetReservationResponseChannel.addObserver(mGetReservationRequestReceived);
             mSignUpResponseChannel.listen();
             mSignUpResponseChannel.addObserver(mSignUpRequestReceived);
+            mCancelReservationResponseChannel.listen();
+            mCancelReservationResponseChannel.addObserver(mCancelReservationRequestReceived);
         }
 
         @Override
@@ -150,6 +180,7 @@ public class TestServer {
     private ReservableFacilitiesResponseChannel mReservableFacilitiesResponseChannel = null;
     private GetReservationResponseChannel mGetReservationResponseChannel = null;
     private SignUpResponseChannel mSignUpResponseChannel = null;
+    private CancelReservationResponseChannel mCancelReservationResponseChannel = null;
 
     private TestServer() {
 
@@ -160,6 +191,7 @@ public class TestServer {
         mReservableFacilitiesResponseChannel = new ReservableFacilitiesResponseChannel(mNc);
         mGetReservationResponseChannel = new GetReservationResponseChannel(mNc);
         mSignUpResponseChannel = new SignUpResponseChannel(mNc);
+        mCancelReservationResponseChannel = new CancelReservationResponseChannel(mNc);
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 

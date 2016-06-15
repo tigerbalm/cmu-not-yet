@@ -8,7 +8,7 @@ abstract public class SubscribeChannelRegistry extends SubscribeChannel {
         super(networkConnection);
     }
 
-    ArrayList<IOnNotify> mIOnNotifyList = new ArrayList <IOnNotify>();
+    private final ArrayList<IOnNotify> mIOnNotifyList = new ArrayList <>();
 
     public SubscribeChannelRegistry addObserver(IOnNotify observer) {
         synchronized (SubscribeChannelRegistry.class) {
