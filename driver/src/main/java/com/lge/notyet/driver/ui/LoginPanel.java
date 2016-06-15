@@ -88,6 +88,10 @@ public class LoginPanel {
         });
     }
 
+    public void init() {
+        mTfUserPassword.setText("");
+    }
+
     private void doLogin() {
         // Verify Inputs
         String userEmailAddress = mTfUserEmailAddress.getText();

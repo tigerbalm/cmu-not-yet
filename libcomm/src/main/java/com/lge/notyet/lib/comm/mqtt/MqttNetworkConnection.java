@@ -161,7 +161,9 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     public void disconnect() {
 
         try {
-            mMqttAsyncClient.disconnect();
+            if (mMqttAsyncClient.isConnected()) {
+                mMqttAsyncClient.disconnect();
+            }
 
             // TODO: Should we call onLost() or make one more function like onDisconnected()?
             if (mNetworkCallback != null) mNetworkCallback.onLost();
