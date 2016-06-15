@@ -268,7 +268,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
                 }
                 mRequestChannelMap.remove(mResponseTopic);
 
-                logv("Request is timed out for response topic=" + mResponseTopic + " NetworkChannel=" + netChannel.getHashKey());
+                logv("Request is timed out for response topic=" + mResponseTopic + " NetworkChannel=" + ((netChannel == null) ? "null" : netChannel.getHashKey()));
 
                 try {
                     mMqttAsyncClient.unsubscribe(mResponseTopic);
