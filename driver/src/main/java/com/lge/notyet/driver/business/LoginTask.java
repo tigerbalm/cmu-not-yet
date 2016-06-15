@@ -3,13 +3,17 @@ package com.lge.notyet.driver.business;
 import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.driver.ui.ITaskDoneCallback;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
+import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 
 public class LoginTask implements Callable<Void> {
+
+    private static final String LOG_TAG = "LoginTask";
 
     private String mUserEmailAddress;
     private String mPassWord;
@@ -29,7 +33,10 @@ public class LoginTask implements Callable<Void> {
         LoginRequestChannel lc = ncm.createLoginChannel();
         lc.addObserver(mLoginResult);
         lc.addTimeoutObserver(mLoginTimeout);
-        lc.request(lc.createRequestMessage(mUserEmailAddress, mPassWord));
+
+        MqttNetworkMessage requestMsg = lc.createRequestMessage(mUserEmailAddress, mPassWord);
+        Log.log(LOG_TAG, requestMsg.toString());
+        lc.request(requestMsg);
         return null;
     }
 

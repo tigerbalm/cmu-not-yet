@@ -46,8 +46,10 @@ public class NetworkConnectionManager {
     public void open() {
         if (!mNc.isConnected()) {
             try {
-                mNc.connect(InetAddress.getLoopbackAddress(),
+                mNc.connect(
+                        //InetAddress.getLoopbackAddress(),
                         //InetAddress.getByName("128.237.212.113"),
+                        InetAddress.getByName("128.237.206.5"),
                         //InetAddress.getByName("10.245.148.224"),
                         mNetworkCallback);
             } catch (/*UnknownHost*/Exception e) {
