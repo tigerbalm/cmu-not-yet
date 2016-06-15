@@ -39,8 +39,8 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
         return mMessage.get(RESULT).asInt();
     }
 
-    public long getConfirmationNumber() {
-        return mMessage.get(CONFIRMATION_NUMBER).asLong();
+    public int getConfirmationNumber() {
+        return mMessage.get(CONFIRMATION_NUMBER).asInt();
     }
 
     public String getFailCause() {

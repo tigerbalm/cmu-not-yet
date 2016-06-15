@@ -1,11 +1,8 @@
 package com.lge.notyet.driver.test;
 
 import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.channels.GetReservationResponseChannel;
-import com.lge.notyet.channels.LoginResponseChannel;
-import com.lge.notyet.channels.ReservableFacilitiesResponseChannel;
+import com.lge.notyet.channels.*;
 import com.lge.notyet.driver.business.ReservationRequestMessage;
-import com.lge.notyet.channels.ReservationResponseChannel;
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
@@ -88,6 +85,21 @@ public class TestServer {
     };
 
     // Business Logic here, we have no time :(
+    private IOnRequest mSignUpRequestReceived = new IOnRequest() {
+
+        @Override
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            // Need to parse
+            MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
+            response.getMessage().add("success", 1);
+            System.out.println("mSignUpRequestReceived Requested Received=" + message.getMessage());
+
+            message.responseFor(response);
+        }
+    };
+
+    // Business Logic here, we have no time :(
     private IOnRequest mReservationRequestReceived = new IOnRequest() {
 
         @Override
@@ -116,6 +128,8 @@ public class TestServer {
             mReservableFacilitiesResponseChannel.addObserver(mUpdateFacilityListRequestReceived);
             mGetReservationResponseChannel.listen();
             mGetReservationResponseChannel.addObserver(mGetReservationRequestReceived);
+            mSignUpResponseChannel.listen();
+            mSignUpResponseChannel.addObserver(mSignUpRequestReceived);
         }
 
         @Override
@@ -135,6 +149,7 @@ public class TestServer {
     private LoginResponseChannel mLoginResponseChannel = null;
     private ReservableFacilitiesResponseChannel mReservableFacilitiesResponseChannel = null;
     private GetReservationResponseChannel mGetReservationResponseChannel = null;
+    private SignUpResponseChannel mSignUpResponseChannel = null;
 
     private TestServer() {
 
@@ -144,6 +159,7 @@ public class TestServer {
         mLoginResponseChannel = new LoginResponseChannel(mNc);
         mReservableFacilitiesResponseChannel = new ReservableFacilitiesResponseChannel(mNc);
         mGetReservationResponseChannel = new GetReservationResponseChannel(mNc);
+        mSignUpResponseChannel = new SignUpResponseChannel(mNc);
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 

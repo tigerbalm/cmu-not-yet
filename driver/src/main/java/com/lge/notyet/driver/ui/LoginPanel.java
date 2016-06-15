@@ -90,7 +90,7 @@ public class LoginPanel {
                 int facilityId = resMsg.getMessage().get("facility_id").asInt();
 
                 SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId);
-                // ScreenManager.getInstance().showReservationScreen();
+                ScreenManager.getInstance().showReservationHistoryScreen();
 
             } else if (success == 0) {
                 System.out.println("No Reservation : " + resMsg.getMessage().get("cause").asString());

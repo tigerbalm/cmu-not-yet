@@ -17,15 +17,15 @@ public class SignUpTask implements Callable<Void> {
     private String mUserEmailAddress;
     private String mPassWord;
     private String mCreditCardNumber;
-    private String mCreditCardExpireData;
+    private String mCreditCardExpireDate;
     private String mCreditCardCvc;
     private ITaskDoneCallback mTaskDoneCallback;
 
-    public SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireData, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
+    public SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
         mUserEmailAddress = userEmailAddress;
         mPassWord = passWord;
         mCreditCardNumber = creditCardNumber;
-        mCreditCardExpireData = creditCardExpireData;
+        mCreditCardExpireDate = creditCardExpireDate;
         mCreditCardCvc = creditCardCvc;
         mTaskDoneCallback = taskDoneCallback;
     }
@@ -40,10 +40,7 @@ public class SignUpTask implements Callable<Void> {
         sc.addObserver(mSignUpResult);
         sc.addTimeoutObserver(mSignUpTimeout);
 
-        /* Need to send Message
-        sc.request(sc.createRequestMessage(mUserEmailAddress, mPassWord));
-        */
-
+        sc.request(sc.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
         return null;
     }
 
@@ -69,7 +66,7 @@ public class SignUpTask implements Callable<Void> {
         }
     };
 
-    public static FutureTask<Void> getTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireData, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
-        return new FutureTask<>(new SignUpTask(userEmailAddress, passWord, creditCardNumber, creditCardExpireData, creditCardCvc, taskDoneCallback));
+    public static FutureTask<Void> getTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
+        return new FutureTask<>(new SignUpTask(userEmailAddress, passWord, creditCardNumber, creditCardExpireDate, creditCardCvc, taskDoneCallback));
     }
 }

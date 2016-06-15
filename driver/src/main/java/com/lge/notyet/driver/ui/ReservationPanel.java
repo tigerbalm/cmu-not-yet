@@ -3,14 +3,14 @@ package com.lge.notyet.driver.ui;
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.ReservationTask;
 import com.lge.notyet.driver.manager.ITaskDoneCallback;
+import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -23,6 +23,7 @@ public class ReservationPanel {
     private JComboBox mCbLocation;
     private JTextField mTfCreditCardNumber;
     private JSpinner mJSpinnerHour;
+    private JLabel mLabelModifyAccountInfo;
 
     public JPanel getRootPanel() {
         return mForm;
@@ -85,14 +86,33 @@ public class ReservationPanel {
         mTfCreditCardNumber.setText(SessionManager.getInstance().getCreditCardNumber());
     }
 
+    private long mRequestedTime = 0L;
+    private int mRequestedFacilityId = 0;
+
     public ReservationPanel() {
 
         mBtnMakeReservation.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Long selectedTime = ((JSpinner.DateEditor) mJSpinnerHour.getEditor()).getModel().getDate().getTime()/1000;
-                TaskManager.getInstance().runTask(ReservationTask.getTask(1, selectedTime, mReservationDoneCallback));
+                mRequestedTime = ((JSpinner.DateEditor) mJSpinnerHour.getEditor()).getModel().getDate().getTime()/1000;
+                String location = (String) mCbLocation.getSelectedItem();
+                mRequestedFacilityId = SessionManager.getInstance().getFacilityId(location);
+                TaskManager.getInstance().runTask(ReservationTask.getTask(mRequestedFacilityId, mRequestedTime, mReservationDoneCallback));
                 mBtnMakeReservation.setEnabled(false);
+            }
+        });
+        mLabelModifyAccountInfo.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                ScreenManager.getInstance().showModifyAccountPanelScreen();
+            }
+        });
+        mLabelModifyAccountInfo.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                ScreenManager.getInstance().showModifyAccountPanelScreen();
             }
         });
     }
@@ -132,6 +152,11 @@ public class ReservationPanel {
                         "Your reservation number is:" + resMsg.getConfirmationNumber(),
                         "SurePark",
                         JOptionPane.PLAIN_MESSAGE);
+
+                int confirmationNumber = resMsg.getConfirmationNumber();
+                SessionManager.getInstance().setReservationInformation(mRequestedTime, confirmationNumber, mRequestedFacilityId);
+
+                ScreenManager.getInstance().showReservationHistoryScreen();
 
             } else if (resMsg.getResult() == 0) {
                 System.out.println("Failed to make reservation, fail cause is " + resMsg.getFailCause());
