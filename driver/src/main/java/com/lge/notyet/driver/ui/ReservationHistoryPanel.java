@@ -3,6 +3,7 @@ package com.lge.notyet.driver.ui;
 import com.lge.notyet.driver.business.ReservationCancelTask;
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.SignUpTask;
+import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
@@ -25,6 +26,7 @@ public class ReservationHistoryPanel {
     private JPanel mForm;
     private JLabel mLabelModifyAccountInfo;
     private JButton cancelButton;
+    private JLabel mLabelLogout;
 
     public void init() {
 
@@ -72,6 +74,24 @@ public class ReservationHistoryPanel {
                 TaskManager.getInstance().runTask(ReservationCancelTask.getTask(SessionManager.getInstance().getKey(),
                         SessionManager.getInstance().getReservationId(),
                         mCancelReservationDoneCallback));
+            }
+        });
+        mLabelLogout.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                SessionManager.getInstance().clear(); // Log-out
+                NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+        });
+        mLabelLogout.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                SessionManager.getInstance().clear(); // Log-out
+                NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
             }
         });
     }
