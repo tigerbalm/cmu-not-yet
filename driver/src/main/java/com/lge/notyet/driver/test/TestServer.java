@@ -1,5 +1,9 @@
 package com.lge.notyet.driver.test;
 
+import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.channels.GetReservationResponseChannel;
+import com.lge.notyet.channels.LoginResponseChannel;
+import com.lge.notyet.channels.ReservableFacilitiesResponseChannel;
 import com.lge.notyet.driver.business.ReservationRequestMessage;
 import com.lge.notyet.channels.ReservationResponseChannel;
 import com.lge.notyet.driver.business.ReservationResponseMessage;
@@ -8,6 +12,8 @@ import com.lge.notyet.lib.comm.mqtt.*;
 import com.lge.notyet.lib.comm.util.Log;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestServer {
 
@@ -33,7 +39,56 @@ public class TestServer {
     }
 
     // Business Logic here, we have no time :(
-    private IOnRequest mServervationRequestReceived = new IOnRequest() {
+    private IOnRequest mGetReservationRequestReceived = new IOnRequest() {
+
+        @Override
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            // Need to parse
+
+            MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
+            response.getMessage().add("success", 0);
+            response.getMessage().add("cause", "NO_RESERVATION_EXIST");
+            System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
+            message.responseFor(response);
+        }
+    };
+
+    // Business Logic here, we have no time :(
+    private IOnRequest mUpdateFacilityListRequestReceived = new IOnRequest() {
+
+        @Override
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            // Need to parse
+
+            List<JsonObject> facilityList = new ArrayList<>();
+            facilityList.add(new JsonObject().add("id", 1).add("name", "Shadyside Parking Lot"));
+            facilityList.add(new JsonObject().add("id", 7).add("name", "CMU Parking Lot"));
+            MqttNetworkMessage response = new MqttNetworkMessage(mReservableFacilitiesResponseChannel.createResponseObject(facilityList));
+            response.getMessage().add("success", 1);
+            System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
+            message.responseFor(response);
+        }
+    };
+
+    // Business Logic here, we have no time :(
+    private IOnRequest mLoginRequestReceived = new IOnRequest() {
+
+        @Override
+        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+
+            // Need to parse
+            MqttNetworkMessage response = new MqttNetworkMessage(mLoginResponseChannel.createResponseObject(1, 2, "1111-2222-3333-4444", "12/16", "12345678"));
+            response.getMessage().add("success", 1);
+            System.out.println("Login Requested Received=" + message.getMessage());
+
+            message.responseFor(response);
+        }
+    };
+
+    // Business Logic here, we have no time :(
+    private IOnRequest mReservationRequestReceived = new IOnRequest() {
 
         @Override
         public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
@@ -54,7 +109,13 @@ public class TestServer {
             Log.logd(LOG_TAG, "onConnected");
             mTestSubscribeChannel.listen();
             mReservationResponseChannel.listen();
-            mReservationResponseChannel.addObserver(mServervationRequestReceived);
+            mReservationResponseChannel.addObserver(mReservationRequestReceived);
+            mLoginResponseChannel.listen();
+            mLoginResponseChannel.addObserver(mLoginRequestReceived);
+            mReservableFacilitiesResponseChannel.listen();
+            mReservableFacilitiesResponseChannel.addObserver(mUpdateFacilityListRequestReceived);
+            mGetReservationResponseChannel.listen();
+            mGetReservationResponseChannel.addObserver(mGetReservationRequestReceived);
         }
 
         @Override
@@ -71,12 +132,18 @@ public class TestServer {
 
     private TestSubscribeChannel mTestSubscribeChannel = null;
     private ReservationResponseChannel mReservationResponseChannel = null;
+    private LoginResponseChannel mLoginResponseChannel = null;
+    private ReservableFacilitiesResponseChannel mReservableFacilitiesResponseChannel = null;
+    private GetReservationResponseChannel mGetReservationResponseChannel = null;
 
     private TestServer() {
 
         mNc = new MqttNetworkConnection(null);
         mTestSubscribeChannel = new TestSubscribeChannel(mNc);
         mReservationResponseChannel = new ReservationResponseChannel(mNc);
+        mLoginResponseChannel = new LoginResponseChannel(mNc);
+        mReservableFacilitiesResponseChannel = new ReservableFacilitiesResponseChannel(mNc);
+        mGetReservationResponseChannel = new GetReservationResponseChannel(mNc);
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
     }
 

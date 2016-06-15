@@ -1,6 +1,8 @@
 package com.lge.notyet.driver.manager;
 
+import com.lge.notyet.channels.GetReservationRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
+import com.lge.notyet.channels.ReservableFacilitiesRequestChannel;
 import com.lge.notyet.channels.ReservationRequestChannel;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
@@ -47,8 +49,11 @@ public class NetworkConnectionManager {
     public void open() {
         if (!mNc.isConnected()) {
             try {
-                mNc.connect(/*InetAddress.getLoopbackAddress()*/ InetAddress.getByName("128.237.212.113"), mNetworkCallback);
-            } catch (UnknownHostException e) {
+                mNc.connect(InetAddress.getLoopbackAddress(),
+                        //InetAddress.getByName("128.237.212.113"),
+                        //InetAddress.getByName("10.245.148.224"),
+                        mNetworkCallback);
+            } catch (/*UnknownHost*/Exception e) {
                 e.printStackTrace();
             }
         }
@@ -67,4 +72,13 @@ public class NetworkConnectionManager {
     public LoginRequestChannel createLoginChannel() {
         return new LoginRequestChannel(mNc);
     }
+
+    public GetReservationRequestChannel createGetReservationRequestChannel() {
+        return new GetReservationRequestChannel(mNc);
+    }
+
+    public ReservableFacilitiesRequestChannel createReservableFacilitiesRequestChannel() {
+        return new ReservableFacilitiesRequestChannel(mNc);
+    }
+
 }

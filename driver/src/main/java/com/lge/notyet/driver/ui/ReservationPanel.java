@@ -3,10 +3,12 @@ package com.lge.notyet.driver.ui;
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.ReservationTask;
 import com.lge.notyet.driver.manager.ITaskDoneCallback;
+import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
@@ -30,6 +32,29 @@ public class ReservationPanel {
         return "ReservationPanel";
     }
 
+    class FacilityComboBoxModel extends AbstractListModel implements ComboBoxModel {
+
+        String selection = null;
+
+        public Object getElementAt(int index) {
+            return SessionManager.getInstance().getFacilityByIndex(index);
+        }
+
+        public int getSize() {
+            return SessionManager.getInstance().getFacilitySize();
+        }
+
+        public void setSelectedItem(Object anItem) {
+            selection = (String) anItem; // to select and register an
+        } // item from the pull-down list
+
+        // Methods implemented from the interface ComboBoxModel
+        public Object getSelectedItem() {
+            return selection; // to add the selection to the combo box
+        }
+    }
+
+
     public void init() {
 
         Calendar calNewYork = Calendar.getInstance();
@@ -50,6 +75,14 @@ public class ReservationPanel {
         model.setValue(calNewYork.getTime());
         model.setStart(minTime.getTime());
         model.setEnd(maxTime.getTime());
+
+        mCbLocation.setModel(new FacilityComboBoxModel());
+        if (SessionManager.getInstance().getFacilitySize() > 0) {
+            mCbLocation.setSelectedIndex(0);
+        }
+
+        //mLabelUserName.setText(SessionManager.getInstance().getUserEmail());
+        mTfCreditCardNumber.setText(SessionManager.getInstance().getCreditCardNumber());
     }
 
     public ReservationPanel() {
@@ -81,8 +114,7 @@ public class ReservationPanel {
             }
 
             ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
-            System.out.println("Success to make reservation, confirmation number is " + resMsg.getMessage());
-            System.out.println("Success to make reservation, confirmation number is " + resMsg.getResult());
+            System.out.println("Success to make reservation, response message=" + resMsg.getMessage());
 
             if (resMsg.getResult() == 1) { // Success
 
