@@ -57,15 +57,18 @@ public class StatusManager {
                 databaseProxy.selectSlot(sqlConnection, controllerPhysicalId, slotNumber, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, ar -> {});
+                        databaseProxy.closeConnection(sqlConnection, ar -> {
+                        });
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.size() != 1) {
                             handler.handle(Future.failedFuture("NO_SLOT_EXIST"));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> {
+                            });
                         } else {
                             handler.handle(Future.succeededFuture(objects.get(0)));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> {
+                            });
                         }
                     }
                 });
@@ -82,10 +85,12 @@ public class StatusManager {
                 databaseProxy.updateSlotOccupied(sqlConnection, slotId, occupied, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {
+                        });
                     } else {
                         handler.handle(Future.succeededFuture());
-                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> {
+                        });
                     }
                 });
             }
@@ -101,11 +106,13 @@ public class StatusManager {
                 databaseProxy.selectReservableFacilities(sqlConnection, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, ar3 -> {});
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {
+                        });
                     } else {
                         List<JsonObject> userObjects = ar2.result();
                         handler.handle(Future.succeededFuture(userObjects));
-                        databaseProxy.closeConnection(sqlConnection, ar4 -> {});
+                        databaseProxy.closeConnection(sqlConnection, ar4 -> {
+                        });
                     }
                 });
             }
@@ -121,11 +128,13 @@ public class StatusManager {
                 databaseProxy.selectReservableSlots(sqlConnection, facilityId, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, ar3 -> {});
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {
+                        });
                     } else {
                         List<JsonObject> userObjects = ar2.result();
                         handler.handle(Future.succeededFuture(userObjects));
-                        databaseProxy.closeConnection(sqlConnection, ar4 -> {});
+                        databaseProxy.closeConnection(sqlConnection, ar4 -> {
+                        });
                     }
                 });
             }
@@ -139,19 +148,14 @@ public class StatusManager {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                final boolean isDriver = ar1.result();
-                if (!isDriver) {
-                    communicationProxy.responseFail(message, "NO_AUTHORIZATION");
-                } else {
-                    getReservableFacilities(ar2 -> {
-                        if (ar2.failed()) {
-                            communicationProxy.responseFail(message, ar2.cause());
-                        } else {
-                            List<JsonObject> facilityObjects = ar2.result();
-                            communicationProxy.responseSuccess(message, ReservableFacilitiesResponseChannel.createResponseObject(facilityObjects));
-                        }
-                    });
-                }
+                getReservableFacilities(ar2 -> {
+                    if (ar2.failed()) {
+                        communicationProxy.responseFail(message, ar2.cause());
+                    } else {
+                        List<JsonObject> facilityObjects = ar2.result();
+                        communicationProxy.responseSuccess(message, ReservableFacilitiesResponseChannel.createResponseObject(facilityObjects));
+                    }
+                });
             }
         });
     }
@@ -168,11 +172,11 @@ public class StatusManager {
                 final JsonObject slotObject = ar1.result();
                 final int slotId = slotObject.get("id").asInt();
                 updateSlotOccupied(slotId, occupied, ar2 -> {
-                   if (ar2.failed()) {
-                       ar2.cause().printStackTrace();
-                   } else {
-                       logger.info("updateSlotStatus: slot=" + slotObject + " updated occupied=" + occupied);
-                   }
+                    if (ar2.failed()) {
+                        ar2.cause().printStackTrace();
+                    } else {
+                        logger.info("updateSlotStatus: slot=" + slotObject + " updated occupied=" + occupied);
+                    }
                 });
             }
         });

@@ -92,16 +92,16 @@ public class AuthenticationManager {
         });
     };
 
-    public void checkUserType(String sessionKey, int userType, Handler<AsyncResult<Boolean>> handler) {
+    public void checkUserType(String sessionKey, int userType, Handler<AsyncResult<Void>> handler) {
         getSessionUser(sessionKey, ar -> {
             if (ar.failed()) {
                 handler.handle(Future.failedFuture(ar.cause()));
             } else {
                 final JsonObject userObject = ar.result();
-                if (userObject.get("type").asInt() == userType) {
-                    handler.handle(Future.succeededFuture(true));
+                if (userObject.get("type").asInt() != userType) {
+                    handler.handle(Future.failedFuture("NO_AUTHORIZATION"));
                 } else {
-                    handler.handle(Future.succeededFuture(false));
+                    handler.handle(Future.succeededFuture());
                 }
             }
         });

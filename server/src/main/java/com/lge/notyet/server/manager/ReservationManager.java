@@ -3,6 +3,7 @@ package com.lge.notyet.server.manager;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.server.model.User;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
@@ -36,21 +37,12 @@ public class ReservationManager {
         new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
         new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmReservation(uri, message)).listen();
         new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(uri, message)).listen();
+        new CancelReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> cancelReservation(uri, message)).listen();
 
         // new ReservationRequestChannel(networkConnection, 1).request(ReservationRequestChannel.createRequestMessage("ssssss", System.currentTimeMillis()));
         // new ConfirmReservationRequestChannel(networkConnection, "p1").request(ConfirmReservationRequestChannel.createRequestMessage(9999));
         // new GetReservationRequestChannel(networkConnection).request(GetReservationRequestChannel.createRequestMessage("ssssss"));
-
-        removeReservation(24, ar -> {
-            if (ar.succeeded()) {
-                System.out.println("success");
-            }
-        });
-        removeReservation(25, ar -> {
-            if (ar.succeeded()) {
-                System.out.println("success");
-            }
-        });
+        // new CancelReservationRequestChannel(networkConnection, 1).request(CancelReservationRequestChannel.createRequestMessage("ssssss"));
     }
 
     public static ReservationManager getInstance() {
@@ -259,12 +251,36 @@ public class ReservationManager {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
                 final JsonObject userObject = ar1.result();
+                final int userType = userObject.get("type").asInt();
                 final int userId = userObject.get("id").asInt();
-                getReservationByUserId(userId, ar2 -> {
+                if (userType != User.USER_TYPE_DRIVER) {
+                    communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                } else {
+                    getReservationByUserId(userId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            communicationProxy.responseSuccess(message, ar2.result());
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void cancelReservation(Uri uri, NetworkMessage message) {
+        final int reservationId = CancelReservationRequestChannel.getReservationId(uri);
+        final String sessionKey = CancelReservationRequestChannel.getSessionKey(message);
+
+        authenticationManager.checkUserType(sessionKey, User.USER_TYPE_DRIVER, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                removeReservation(reservationId, ar2 -> {
                     if (ar2.failed()) {
                         communicationProxy.responseFail(message, ar2.cause());
                     } else {
-                        communicationProxy.responseSuccess(message, ar2.result());
+                        communicationProxy.responseSuccess(message, new JsonObject());
                     }
                 });
             }
