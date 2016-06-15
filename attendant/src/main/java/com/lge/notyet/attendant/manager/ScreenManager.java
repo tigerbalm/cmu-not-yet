@@ -4,6 +4,7 @@ package com.lge.notyet.attendant.manager;
  * Created by beney.kim on 2016-06-12.
  */
 
+import com.lge.notyet.attendant.ui.FacilityMonitorPanel;
 import com.lge.notyet.attendant.ui.LoginPanel;
 
 import javax.swing.*;
@@ -19,6 +20,7 @@ public class ScreenManager {
     private String mCurrentScreenName;
 
     private LoginPanel mLoginPanel;
+    private FacilityMonitorPanel mFacilityMonitorPanel;
 
     private ScreenManager () {
         mMainCardLayout = new CardLayout();
@@ -38,8 +40,10 @@ public class ScreenManager {
         mCards = new JPanel(mMainCardLayout);
 
         mLoginPanel = new LoginPanel();
+        mFacilityMonitorPanel = new FacilityMonitorPanel();
 
         mCards.add(mLoginPanel.getRootPanel(), mLoginPanel.getName());
+        mCards.add(mFacilityMonitorPanel.getRootPanel(), mFacilityMonitorPanel.getName());
 
         showLoginScreen();
 
@@ -55,5 +59,12 @@ public class ScreenManager {
         mLoginPanel.init();
         mMainCardLayout.show(mCards, mLoginPanel.getName());
         mCurrentScreenName = mLoginPanel.getName();
+    }
+
+    public void showFacilityMonitorScreen() {
+        mLastScreenName = mCurrentScreenName;
+        mFacilityMonitorPanel.init();
+        mMainCardLayout.show(mCards, mFacilityMonitorPanel.getName());
+        mCurrentScreenName = mFacilityMonitorPanel.getName();
     }
 }

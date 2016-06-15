@@ -207,7 +207,7 @@ public class LoginPanel {
                     SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
                     SessionManager.getInstance().setKey(session);
 
-                    Log.log(LOG_TAG, "Success to make reservation, session key is " + resMsg.getMessage().get("session_key").asString());
+                    Log.log(LOG_TAG, "Success to login, session key is " + resMsg.getMessage().get("session_key").asString());
 
                     // TaskManager.getInstance().runTask(UpdateFacilityListTask.getTask(session, mUpdateFacilityListCallback));
 
