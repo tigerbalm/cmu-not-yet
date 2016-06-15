@@ -199,7 +199,12 @@ public class DatabaseProxy {
         query(connection, sql, resultHandler);
     }
 
-    public void selectReservation(SQLConnection connection, int confirmationNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void selectReservation(SQLConnection connection, int reservationId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, slot_id, slot.number as slot_no from reservation inner join slot on reservation.slot_id = slot.id where reservation.id = " + reservationId;
+        query(connection, sql, resultHandler);
+    }
+
+    public void selectReservationByConfirmationNumber(SQLConnection connection, int confirmationNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name " +
                 "from reservation inner join slot on reservation.slot_id = slot.id " +
                 "inner join controller on controller.id = slot.controller_id " +
@@ -245,7 +250,7 @@ public class DatabaseProxy {
     }
 
     public void deleteReservation(SQLConnection connection, int reservationId, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "delete from controller where id = ?";
+        String sql = "delete from reservation where id = ?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray().add(reservationId);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
