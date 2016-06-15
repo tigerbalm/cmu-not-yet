@@ -36,8 +36,11 @@ public class ReservationHistoryPanel {
         reservedTime.setTimeInMillis(mSessionManager.getReservationTime()*1000);
         reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm, MM/dd/yyyy z");
+        sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+        String reservedTimeString = sdf.format(reservedTime.getTime());
 
-        mLabelReservationDate.setText(reservedTime.getTime().toString());
+        mLabelReservationDate.setText(reservedTimeString);
 
         int reservedFacilityId = mSessionManager.getReservationFacilityId();
         mLabelReservationLocation.setText(mSessionManager.getFacilityName(reservedFacilityId));

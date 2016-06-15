@@ -65,7 +65,7 @@ public class AuthenticationManager {
                 });
             }
         });
-    };
+    }
 
     public void getEmailPasswordUser(String email, String password, Handler<AsyncResult<JsonObject>> handler) {
         databaseProxy.openConnection(ar1 -> {
@@ -90,7 +90,7 @@ public class AuthenticationManager {
                 });
             }
         });
-    };
+    }
 
     public void checkUserType(String sessionKey, int userType, Handler<AsyncResult<Void>> handler) {
         getSessionUser(sessionKey, ar -> {
