@@ -1,5 +1,8 @@
 package com.lge.notyet.owner.ui;
 
+import com.lge.notyet.owner.business.Networking;
+import com.lge.notyet.owner.business.StateMachine;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,7 +10,9 @@ import java.awt.event.ActionListener;
 public class Specification_Result extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
-    private JButton buttonCancel;
+    private JTextField startDate;
+    private JTextField endDate;
+    private JTextArea resultArea;
 
     public Specification_Result() {
         setContentPane(contentPane);
@@ -22,7 +27,6 @@ public class Specification_Result extends JDialog {
     }
 
     private void onOK() {
-// add your code here
-        dispose();
+        Networking.getInstance().queryServer(StateMachine.getInstance().getQuery());
     }
 }
