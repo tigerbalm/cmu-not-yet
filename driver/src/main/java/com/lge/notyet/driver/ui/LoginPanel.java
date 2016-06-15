@@ -48,7 +48,7 @@ public class LoginPanel {
                     return;
                 }
 
-                if (userPassword == null || userPassword.length() == 0) {
+                if (userPassword.length() == 0) {
                     JOptionPane.showMessageDialog(getRootPanel(),
                             "Please input user password",
                             "SurePark",
@@ -86,7 +86,7 @@ public class LoginPanel {
         public void onDone(int result, Object response) {
 
             if (result == ITaskDoneCallback.FAIL) {
-                System.out.println("Failed to check reservation due to timeout");
+                Log.log(LOG_TAG, "Failed to check reservation due to timeout");
                 JOptionPane.showMessageDialog(getRootPanel(),
                         "Network Connection Error: Failed to check reservation information.",
                         "SurePark",
@@ -94,9 +94,8 @@ public class LoginPanel {
                 return;
             }
 
-
             MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            System.out.println("Success to check reservation information, response message=" + resMsg.getMessage());
+            Log.log(LOG_TAG, "Success to check reservation information, response message=" + resMsg.getMessage());
 
             int success = resMsg.getMessage().get("success").asInt();
 
@@ -104,7 +103,7 @@ public class LoginPanel {
 
                 /*
                 if(resMsg.validate() == false) {
-                    System.out.println("Failed to validate response message");
+                    Log.log(LOG_TAG, "Failed to validate response message");
                     JOptionPane.showMessageDialog(getRootPanel(),
                             "Failed to validate response message",
                             "SurePark",
@@ -116,12 +115,13 @@ public class LoginPanel {
                 long reservationTime = resMsg.getMessage().get("reservation_ts").asLong();
                 int confirmationNumber = resMsg.getMessage().get("confirmation_no").asInt();
                 int facilityId = resMsg.getMessage().get("facility_id").asInt();
+                int reservationId = resMsg.getMessage().get("id").asInt();
 
-                SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId);
+                SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId);
                 ScreenManager.getInstance().showReservationHistoryScreen();
 
             } else if (success == 0) {
-                System.out.println("No Reservation : " + resMsg.getMessage().get("cause").asString());
+                Log.log(LOG_TAG, "No Reservation : " + resMsg.getMessage().get("cause").asString());
                 SessionManager.getInstance().clearReservationInformation();
                 ScreenManager.getInstance().showReservationRequestScreen();
             }
@@ -136,7 +136,7 @@ public class LoginPanel {
         public void onDone(int result, Object response) {
 
             if (result == ITaskDoneCallback.FAIL) {
-                System.out.println("Failed to update facility list due to timeout");
+                Log.log(LOG_TAG, "Failed to update facility list due to timeout");
                 JOptionPane.showMessageDialog(getRootPanel(),
                         "Network Connection Error: Failed to update facility list.",
                         "SurePark",
@@ -146,7 +146,7 @@ public class LoginPanel {
 
 
             MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            System.out.println("Success to update facility list, response message=" + resMsg.getMessage());
+            Log.log(LOG_TAG, "Success to update facility list, response message=" + resMsg.getMessage());
 
             int success = resMsg.getMessage().get("success").asInt();
 
@@ -154,7 +154,7 @@ public class LoginPanel {
 
                 /*
                 if(resMsg.validate() == false) {
-                    System.out.println("Failed to validate response message");
+                    Log.log(LOG_TAG, "Failed to validate response message");
                     JOptionPane.showMessageDialog(getRootPanel(),
                             "Failed to validate response message",
                             "SurePark",
@@ -175,7 +175,7 @@ public class LoginPanel {
                 TaskManager.getInstance().runTask(CheckReservationTask.getTask(SessionManager.getInstance().getKey(), mReservationCheckCallback));
 
             } else if (success == 0) {
-                System.out.println("Failed update facility list, fail cause is " + resMsg.getMessage().get("cause").asString());
+                Log.log(LOG_TAG, "Failed update facility list, fail cause is " + resMsg.getMessage().get("cause").asString());
                 JOptionPane.showMessageDialog(getRootPanel(),
                         "Failed to update facility list, fail cause=" + resMsg.getMessage().get("cause").asString(),
                         "SurePark",
@@ -211,7 +211,7 @@ public class LoginPanel {
 
                 /*
                 if(resMsg.validate() == false) {
-                    System.out.println("Failed to validate response message");
+                    Log.log(LOG_TAG, "Failed to validate response message");
                     JOptionPane.showMessageDialog(getRootPanel(),
                             "Failed to validate response message",
                             "SurePark",
@@ -224,17 +224,17 @@ public class LoginPanel {
                     String creditCard = resMsg.getMessage().get("card_number").asString();
                     String cardExpiration = resMsg.getMessage().get("card_expiration").asString();
 
-                    SessionManager.getInstance().setKey(mTfUserEmailAddress.getText());
+                    SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
                     SessionManager.getInstance().setKey(session);
                     SessionManager.getInstance().setCreditCardNumber(creditCard);
                     SessionManager.getInstance().setCreditCardExpireDate(cardExpiration);
 
-                    System.out.println("Success to make reservation, session key is " + resMsg.getMessage().get("session_key").asString());
+                    Log.log(LOG_TAG, "Success to make reservation, session key is " + resMsg.getMessage().get("session_key").asString());
 
                     TaskManager.getInstance().runTask(UpdateFacilityListTask.getTask(session, mUpdateFacilityListCallback));
 
                 } else if (success == 0) {
-                    System.out.println("Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());
+                    Log.log(LOG_TAG, "Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());
                     JOptionPane.showMessageDialog(getRootPanel(),
                             "Failed to login, fail cause=" + resMsg.getMessage().get("cause").asString(),
                             "SurePark",

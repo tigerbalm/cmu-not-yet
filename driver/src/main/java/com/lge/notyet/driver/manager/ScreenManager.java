@@ -77,6 +77,7 @@ public class ScreenManager {
 
     public void showReservationHistoryScreen() {
 
+        mReservationHistoryPanel.init();
         mMainCardLayout.show(mCards, mReservationHistoryPanel.getName());
     }
 

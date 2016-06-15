@@ -44,8 +44,20 @@ public class TestServer {
             // Need to parse
 
             MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
-            response.getMessage().add("success", 0);
-            response.getMessage().add("cause", "NO_RESERVATION_EXIST");
+
+            boolean isReservedTest = true;
+
+            if (isReservedTest == false) {
+                response.getMessage().add("success", 0);
+                response.getMessage().add("cause", "NO_RESERVATION_EXIST");
+            } else {
+
+                response.getMessage().add("success", 1);
+                response.getMessage().add("reservation_ts", 1466021160L);
+                response.getMessage().add("confirmation_no", 3333);
+                response.getMessage().add("facility_id", 1);
+            }
+
             System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
             message.responseFor(response);
         }

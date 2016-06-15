@@ -19,6 +19,7 @@ public class SessionManager {
     private long mReservedTime = 0L;
     private int mReservedConfirmationNumber = 0;
     private int mReservedFacilityId = 0;
+    private int mReservedId = 0;
 
     private static SessionManager sSessionManager = null;
 
@@ -68,24 +69,42 @@ public class SessionManager {
         mSession.put(CREDIT_CARD_EXPIRE, credit_card_expire);
     }
 
-    public void setReservationInformation(long reservedTime, int reservedConfirmationNumber, int reservedFacilityId) {
+    public void setReservationInformation(long reservedTime, int reservedConfirmationNumber, int reservedFacilityId, int reservatoinId) {
         mReservedTime = reservedTime;
         mReservedConfirmationNumber = reservedConfirmationNumber;
         mReservedFacilityId = reservedFacilityId;
+        mReservedId = reservatoinId;
+    }
+
+    public long getReservationTime() {
+        return mReservedTime;
+    }
+
+    public int getReservationConfirmationNumber() {
+        return mReservedConfirmationNumber;
+    }
+
+    public int getReservationFacilityId() {
+        return mReservedFacilityId;
+    }
+
+    public int getReservationId() {
+        return mReservedId;
     }
 
     public void clearReservationInformation() {
         mReservedTime = 0L;
         mReservedConfirmationNumber = 0;
         mReservedFacilityId = 0;
+        mReservedId = 0;
     }
 
     public void addFacility(int id, String name) {
         mFacilityList.put(id, name);
     }
 
-    public void getFacilityName(int id) {
-        mFacilityList.get(id);
+    public String getFacilityName(int id) {
+        return mFacilityList.get(id);
     }
 
     public int getFacilityId(String name) {

@@ -120,7 +120,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text value="ssssss"/>
+                  <text value="password"/>
                 </properties>
               </component>
               <grid id="76354" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

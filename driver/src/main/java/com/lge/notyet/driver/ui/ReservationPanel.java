@@ -152,7 +152,8 @@ public class ReservationPanel {
                         JOptionPane.PLAIN_MESSAGE);
 
                 int confirmationNumber = resMsg.getConfirmationNumber();
-                SessionManager.getInstance().setReservationInformation(mRequestedTime, confirmationNumber, mRequestedFacilityId);
+                int reservationId = resMsg.getReservationId();
+                SessionManager.getInstance().setReservationInformation(mRequestedTime, confirmationNumber, mRequestedFacilityId, reservationId);
 
                 ScreenManager.getInstance().showReservationHistoryScreen();
 

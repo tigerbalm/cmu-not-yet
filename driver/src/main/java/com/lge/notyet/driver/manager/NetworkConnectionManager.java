@@ -48,8 +48,10 @@ public class NetworkConnectionManager {
             try {
                 mNc.connect(
                         //InetAddress.getLoopbackAddress(),
+                        //InetAddress.getByName("192.168.1.20"),
+                        InetAddress.getByName("192.168.1.21"),
                         //InetAddress.getByName("128.237.212.113"),
-                        InetAddress.getByName("128.237.206.5"),
+                        //InetAddress.getByName("128.237.206.5"),
                         //InetAddress.getByName("10.245.148.224"),
                         mNetworkCallback);
             } catch (/*UnknownHost*/Exception e) {
@@ -84,4 +86,8 @@ public class NetworkConnectionManager {
         return new SignUpRequestChannel(mNc);
     }
 
+
+    public CancelReservationRequestChannel createCancelReservationRequestChannel(int reservationId) {
+        return new CancelReservationRequestChannel(mNc, reservationId);
+    }
 }
