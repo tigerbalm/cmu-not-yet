@@ -67,7 +67,7 @@ public class LoginPanel {
     }
 
     public void init() {
-        // mTfUserPassword.setText("");
+        mTfUserPassword.setText("");
     }
 
     public JPanel getRootPanel() {
@@ -111,61 +111,6 @@ public class LoginPanel {
         TaskManager.getInstance().runTask(LoginTask.getTask(userEmailAddress, userPassword, mLoginDoneCallback));
     }
 
-    /*
-    private ITaskDoneCallback mUpdateFacilityListCallback = new ITaskDoneCallback() {
-
-        @Override
-        public void onDone(int result, Object response) {
-
-            if (result == ITaskDoneCallback.FAIL) {
-                Log.log(LOG_TAG, "Failed to update facility list due to timeout");
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to update facility list.",
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-
-            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            Log.log(LOG_TAG, "Success to update facility list, response message=" + resMsg.getMessage());
-
-            int success = resMsg.getMessage().get("success").asInt();
-
-            if (success == 1) { // Success
-
-
-                if(resMsg.validate() == false) {
-                    Log.log(LOG_TAG, "Failed to validate response message");
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            "Failed to validate response message",
-                            "SurePark",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-
-                JsonArray facilities = resMsg.getMessage().get("facilities").asArray();
-                for (JsonValue facility : facilities.values()) {
-                    JsonObject fac = facility.asObject();
-                    int id = fac.get("id").asInt();
-                    String name = fac.get("name").asString();
-                    SessionManager.getInstance().addFacility(id, name);
-                }
-
-                TaskManager.getInstance().runTask(CheckReservationTask.getTask(SessionManager.getInstance().getKey(), mReservationCheckCallback));
-
-            } else if (success == 0) {
-                Log.log(LOG_TAG, "Failed update facility list, fail cause is " + resMsg.getMessage().get("cause").asString());
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Failed to update facility list, fail cause=" + resMsg.getMessage().get("cause").asString(),
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-            }
-        }
-    };
-    */
-
     private ITaskDoneCallback mLoginDoneCallback = new ITaskDoneCallback() {
 
         @Override
@@ -207,8 +152,6 @@ public class LoginPanel {
                     SessionManager.getInstance().setKey(session);
 
                     Log.log(LOG_TAG, "Success to make reservation, session key is " + resMsg.getMessage().get("session_key").asString());
-
-                    // TaskManager.getInstance().runTask(UpdateFacilityListTask.getTask(session, mUpdateFacilityListCallback));
 
                 } else if (success == 0) {
                     Log.log(LOG_TAG, "Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());
