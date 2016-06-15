@@ -9,10 +9,11 @@ import java.util.ArrayList;
 public class StateMachine {
     public static ArrayList<AbstractMap.SimpleEntry<String, String>> QUERY_LIST= new ArrayList();
     {
-        QUERY_LIST.add(new AbstractMap.SimpleEntry("Average Occupancy", "select custId from custTable"));
+        QUERY_LIST.add(new AbstractMap.SimpleEntry("Average Occupancy (in hours)", "select sum(end_ts-begin_ts) from transaction"));
         QUERY_LIST.add(new AbstractMap.SimpleEntry("Peak Usage Hours", "select custId from custTable"));
         QUERY_LIST.add(new AbstractMap.SimpleEntry("How much time cars were parked in each slot", "select custId from custTable"));
         QUERY_LIST.add(new AbstractMap.SimpleEntry("Revenue based on facility", "select custId from custTable"));
+        QUERY_LIST.add(new AbstractMap.SimpleEntry("Show transaction DB", "SELECT * FROM transaction"));
     }
 
     private static StateMachine ourInstance = new StateMachine();
@@ -27,11 +28,21 @@ public class StateMachine {
 
     private static States internalState= States.MAINUI;
 
+    private String query= null;
     public String getQuery() {
-        return query;
+        if(customQuery){
+            return query+" custom query selected";
+        }
+        else{
+            return query;
+        }
     }
 
-    private String query= null;
+    private String sqlQuery= null;
+    public String getSqlQuery() {
+        return sqlQuery;
+    }
+
     private static boolean customQuery= false;
 
     public static StateMachine getInstance() {
@@ -42,10 +53,11 @@ public class StateMachine {
     }
 
     public void setQuery(String selectedQuery, boolean customSelected) {
-        setInternalState(StateMachine.States.MAINUI);
+        setInternalState(States.SUBUI);
+        query= selectedQuery;
         for (AbstractMap.SimpleEntry queryMapping:QUERY_LIST) {
             if(queryMapping.getKey().equals(selectedQuery)){
-                query= queryMapping.getValue().toString();
+                sqlQuery= queryMapping.getValue().toString();
             }
         }
     }

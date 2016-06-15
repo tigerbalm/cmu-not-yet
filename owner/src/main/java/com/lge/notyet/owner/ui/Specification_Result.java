@@ -27,7 +27,8 @@ public class Specification_Result extends JDialog {
     }
 
     private void onOK() {
-        Networking.getInstance().queryServer(resultArea, StateMachine.getInstance().getQuery() );
+        resultArea.setText(StateMachine.getInstance().getQuery()+"\r\n");
+        Networking.getInstance().queryServer(resultArea, StateMachine.getInstance().getSqlQuery() );
     }
 
 
