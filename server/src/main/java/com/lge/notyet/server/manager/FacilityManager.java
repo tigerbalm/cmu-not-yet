@@ -1,6 +1,5 @@
 package com.lge.notyet.server.manager;
 
-import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkConnection;
@@ -39,7 +38,7 @@ public class FacilityManager {
 
         // new ReservableFacilitiesRequestChannel(networkConnection).request(ReservableFacilitiesRequestChannel.createRequestMessage("ssssss"));
         // new UpdateSlotStatusPublishChannel(networkConnection, "p1", 1).notify(new MqttNetworkMessage(new JsonObject().add("occupied", 1)));
-        new GetFacilitiesRequestChannel(networkConnection).request(GetFacilitiesRequestChannel.createRequestMessage("qqqqqq"));
+        // new GetFacilitiesRequestChannel(networkConnection).request(GetFacilitiesRequestChannel.createRequestMessage("qqqqqq"));
     }
 
     public static FacilityManager getInstance() {
@@ -79,6 +78,28 @@ public class FacilityManager {
         });
     }
 
+    private void getFacilitySlots(int facilityId, Handler<AsyncResult<List<JsonObject>>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectFacilitySlots(sqlConnection, facilityId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {
+                        });
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        handler.handle(Future.succeededFuture(objects));
+                        databaseProxy.closeConnection(sqlConnection, ar4 -> {
+                        });
+                    }
+                });
+            }
+        });
+    }
+
     private void getFacilities(int userId, Handler<AsyncResult<List<JsonObject>>> handler) {
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
@@ -91,8 +112,8 @@ public class FacilityManager {
                         databaseProxy.closeConnection(sqlConnection, ar3 -> {
                         });
                     } else {
-                        List<JsonObject> userObjects = ar2.result();
-                        handler.handle(Future.succeededFuture(userObjects));
+                        List<JsonObject> objects = ar2.result();
+                        handler.handle(Future.succeededFuture(objects));
                         databaseProxy.closeConnection(sqlConnection, ar4 -> {
                         });
                     }
