@@ -1,15 +1,20 @@
 package com.lge.notyet.owner.business;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+
 /**
  * Created by gladvin.durai on 15-Jun-2016.
  */
 public class StateMachine {
-    private static final String[] QUERY_LIST= {
-            "select custId from custTable",
-            "select custId from custTable",
-            "select custId from custTable",
-            "select custId from custTable"
-    } ;
+    private static ArrayList<AbstractMap.SimpleEntry<String, String>> QUERY_LIST= new ArrayList();
+    {
+        QUERY_LIST.add(new AbstractMap.SimpleEntry("Average Occupancy", "select custId from custTable"));
+        QUERY_LIST.add(new AbstractMap.SimpleEntry("Peak Usage Hours", "select custId from custTable"));
+        QUERY_LIST.add(new AbstractMap.SimpleEntry("How much time cars were parked in each slot", "select custId from custTable"));
+        QUERY_LIST.add(new AbstractMap.SimpleEntry("Revenue based on facility", "select custId from custTable"));
+    }
+
     private static StateMachine ourInstance = new StateMachine();
 
     public static States getInternalState() {
@@ -36,9 +41,13 @@ public class StateMachine {
     private StateMachine() {
     }
 
-    public void setQuery(int selectedQuery, boolean customSelected) {
+    public void setQuery(String selectedQuery, boolean customSelected) {
         setInternalState(StateMachine.States.MAINUI);
-        query= QUERY_LIST[selectedQuery];
+        for (AbstractMap.SimpleEntry queryMapping:QUERY_LIST) {
+            if(queryMapping.getKey().equals(selectedQuery)){
+                query= queryMapping.getValue().toString();
+            }
+        }
     }
 
 
