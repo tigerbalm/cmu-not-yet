@@ -86,6 +86,10 @@ public class NetworkConnectionManager {
         return new SignUpRequestChannel(mNc);
     }
 
+    public ModifyAccountRequestChannel createModifyAccountRequestChannel() {
+        return new ModifyAccountRequestChannel(mNc);
+    }
+
 
     public CancelReservationRequestChannel createCancelReservationRequestChannel(int reservationId) {
         return new CancelReservationRequestChannel(mNc, reservationId);

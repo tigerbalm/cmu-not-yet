@@ -64,7 +64,7 @@ public class ScreenManager {
     }
 
     public void showLoginScreen() {
-        mLastScreenName = mCurrentScreenName;
+        mLastScreenName = null;
         mMainCardLayout.show(mCards, mLoginPanel.getName());
         mCurrentScreenName = mLoginPanel.getName();
     }
