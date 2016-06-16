@@ -2,7 +2,6 @@ package com.lge.notyet.driver.business;
 
 import com.lge.notyet.channels.CancelReservationRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
-import com.lge.notyet.driver.ui.ITaskDoneCallback;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
