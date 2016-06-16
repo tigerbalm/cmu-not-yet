@@ -10,6 +10,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Created by sjun.lee on 2016-06-09.
@@ -44,9 +49,98 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
     SerialComm comm;
 
     private KioskGUI() {
-        comm = new SerialComm(this);
-        comm.connect();
+        initSerialComm();
 
+        initReservationNumberField();
+
+        initNumberButton();
+
+        initCheckReservation();
+
+        initSerialMonTextArea();
+
+        initSerialCommStatusText();
+
+        initConnectButton();
+    }
+
+    private void initSerialMonTextArea() {
+        DefaultCaret caret = (DefaultCaret)textSerialMonitor.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
+        resetMonitorArea(toReadableDate());
+    }
+
+    private void resetMonitorArea(String t) {
+        textSerialMonitor.setText(t);
+        textSerialMonitor.append("\n----------------------------------------------------\n");
+    }
+
+    private String toReadableDate() {
+        DateFormat format = SimpleDateFormat.getInstance();
+
+        return format.format(new Date());
+    }
+
+    private void initSerialCommStatusText() {
+        if (comm.isConnected()) {
+            btnConnect.setText("Disconnect");
+        } else {
+            btnConnect.setText("Connect");
+        }
+
+        labelSerialInfo.setText(comm.toString());
+    }
+
+    private void initConnectButton() {
+        btnConnect.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("btnConnect is clicked...");
+                if (comm.isConnected()) {
+                    comm.disconnect();
+                } else {
+                    resetMonitorArea(toReadableDate());
+                    comm.connect();
+                }
+
+                initSerialCommStatusText();
+            }
+        });
+    }
+
+    private void initCheckReservation() {
+        btnCheckReservation2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("you input : " + reservationNumber.get());
+                comm.send(reservationNumber.getAsString().getBytes());
+            }
+        });
+    }
+
+    private void initNumberButton() {
+        btnNumber0.addActionListener(new NumberListener());
+        btnNumber1.addActionListener(new NumberListener());
+        btnNumber2.addActionListener(new NumberListener());
+        btnNumber3.addActionListener(new NumberListener());
+        btnNumber4.addActionListener(new NumberListener());
+        btnNumber5.addActionListener(new NumberListener());
+        btnNumber6.addActionListener(new NumberListener());
+        btnNumber7.addActionListener(new NumberListener());
+        btnNumber8.addActionListener(new NumberListener());
+        btnNumber9.addActionListener(new NumberListener());
+        btnNumberC.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                reservationNumber.removeLast();
+
+                System.out.println("after remove : " + reservationNumber.get());
+            }
+        });
+    }
+
+    private void initReservationNumberField() {
         reservationNumber = new ReservationNumber();
         reservationNumber.setNumberTextChangedListener(new ReservationNumber.NumberTextChangedListener() {
             @Override
@@ -75,36 +169,11 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
                 btnCheckReservation2.setEnabled(false);
             }
         });
+    }
 
-        btnNumber0.addActionListener(new NumberListener());
-        btnNumber1.addActionListener(new NumberListener());
-        btnNumber2.addActionListener(new NumberListener());
-        btnNumber3.addActionListener(new NumberListener());
-        btnNumber4.addActionListener(new NumberListener());
-        btnNumber5.addActionListener(new NumberListener());
-        btnNumber6.addActionListener(new NumberListener());
-        btnNumber7.addActionListener(new NumberListener());
-        btnNumber8.addActionListener(new NumberListener());
-        btnNumber9.addActionListener(new NumberListener());
-        btnNumberC.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                reservationNumber.removeLast();
-
-                System.out.println("after remove : " + reservationNumber.get());
-            }
-        });
-
-        btnCheckReservation2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("you input : " + reservationNumber.get());
-                comm.send(reservationNumber.getAsString().getBytes());
-            }
-        });
-
-        DefaultCaret caret = (DefaultCaret)textSerialMonitor.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+    private void initSerialComm() {
+        comm = new SerialComm(this);
+        comm.connect();
     }
 
     @Override

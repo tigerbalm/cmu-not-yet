@@ -62,8 +62,8 @@ void NetworkManager::initWifiClient()
 	}
 	else
 	{
-		Serial.println("MQTT connect failed");
-		abort();
+		Serial.println("MQTT connect failed - just test mode");
+		//abort();
 	}
 }
 
@@ -93,4 +93,13 @@ void NetworkManager::send(String command, int number)
 	{
 		Serial.println("publish success");
 	}
+}
+
+bool NetworkManager::send(String topic, String body)
+{
+	Serial.println("NetworkManager::send()");
+	Serial.println(topic);
+	Serial.println(body);
+
+	return client->publish(topic.c_str(), body.c_str());
 }

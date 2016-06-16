@@ -4,6 +4,7 @@
 
 #include "WatingState.h"
 #include "CarDetectedListener.h"
+#include "CommandReportSlotStatus.h"
 
 WatingState::WatingState(StateChangeListener *listener, NetworkManager *manager) {
 	stateChangeListener = listener;
@@ -69,6 +70,9 @@ void WatingState::onSlotEmptified(int slotNum)
 	//		-> listner에서 controller 를 가지고 다니는 방식으로 변경
 	if (stateChangeListener != NULL)
 	{
+		CommandReportSlotStatus cmdStatus(networkManager, slotNum, 0);
+		cmdStatus.send();
+
 		stateChangeListener->onStateChanged(STATE_LEAVING);
 
 		// LeavingState *state = controller->getLeavingState();

@@ -37,7 +37,7 @@ State* Controller::getState()
 
 void Controller::loop()
 {
-	Serial.println("Controller::loop()");
+	//Serial.println("Controller::loop()");
 
 	networkManager->loop();
 	entryGateCarDetector->loop();

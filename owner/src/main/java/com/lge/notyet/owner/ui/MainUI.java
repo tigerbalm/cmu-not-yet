@@ -1,5 +1,6 @@
 package com.lge.notyet.owner.ui;
 
+import com.lge.notyet.owner.business.Query;
 import com.lge.notyet.owner.business.StateMachine;
 import jdk.nashorn.internal.scripts.JD;
 
@@ -32,11 +33,11 @@ public class MainUI extends JDialog {
 
     private void onOK() {
         //Find selected button
-        String selectedQuery= choiceGroup.getSelection().getActionCommand();
+
         if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
             JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
         else{
-            StateMachine.getInstance().setQuery(selectedQuery, customAdditionalDeveloperQueryRadioButton.isSelected());
+            StateMachine.getInstance().setQuery(choiceGroup.getSelection().getActionCommand(), customAdditionalDeveloperQueryRadioButton.isSelected());
             if(specialSettingAndResult==null) {
                 specialSettingAndResult = new Specification_Result();
             }
@@ -53,12 +54,6 @@ public class MainUI extends JDialog {
     public static void main(String[] args) {
         StateMachine.getInstance().setInternalState(StateMachine.States.MAINUI);
 
-        JDialog loginDialog = new JDialog();
-        loginDialog.add(new LoginPanel().getRootPanel());
-        loginDialog.pack();
-        loginDialog.setModal(true);
-        loginDialog.setVisible(true);
-
         MainUI dialog = new MainUI();
         dialog.pack();
         dialog.setVisible(true);
@@ -68,13 +63,12 @@ public class MainUI extends JDialog {
     private void createUIComponents() {
         choiceGroup= new ButtonGroup();
         choicePanel= new JPanel(new GridLayout(0,1));
-        boolean firstControl= true;
-        for (AbstractMap.SimpleEntry queryMapping:StateMachine.QUERY_LIST) {
-            String textToDisplay= queryMapping.getKey().toString();
+        String defaultQuery= Query.getDefaultQueryId();
+        for (String queryID: Query.getQueryIdList()) {
+            String textToDisplay= Query.getDisplayString(queryID);
             JRadioButton jb= new JRadioButton(textToDisplay);
-            jb.setActionCommand(textToDisplay);
-            if(firstControl){
-                firstControl= false;
+            jb.setActionCommand(queryID);
+            if(defaultQuery.equalsIgnoreCase(queryID)){
                 jb.setSelected(true);
             }
             choicePanel.add(jb);

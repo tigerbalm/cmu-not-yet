@@ -22,6 +22,14 @@ public class LoginPanel {
     private JPasswordField mTfUserPassword;
     private JPanel mForm;
 
+    public static void main(String[] args){
+        JDialog loginDialog = new JDialog();
+        loginDialog.add(new LoginPanel().getRootPanel());
+        loginDialog.pack();
+        loginDialog.setModal(true);
+        loginDialog.setVisible(true);
+        MainUI.main(new String[]{});
+    }
     public LoginPanel() {
 
         // Log In
@@ -152,6 +160,7 @@ public class LoginPanel {
                     SessionManager.getInstance().setKey(session);
 
                     Log.log(LOG_TAG, "Success to login, session key is " + resMsg.getMessage().get("session_key").asString());
+                    SwingUtilities.getWindowAncestor(getRootPanel()).dispose();
 
                 } else if (success == 0) {
                     Log.log(LOG_TAG, "Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());

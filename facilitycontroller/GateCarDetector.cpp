@@ -9,10 +9,12 @@
 
 void GateCarDetector::initPins()
 {
-	Serial.println("EntryGate::initPins");
+	Serial.print("GateCarDetector::initPins");
+	Serial.println(gatePin);
 
 	pinMode(gatePin, INPUT);     // Make entry IR rcvr an input
 	digitalWrite(gatePin, HIGH); // enable the built-in pullup
+
 }
 
 GateCarDetector::GateCarDetector(CarDetectedListener *listener, int pin)
@@ -35,7 +37,8 @@ void GateCarDetector::loop()
 		return;
 	}
 
-	Serial.println("start beam sensing...");
+	//Serial.print("start beam sensing... ");
+	//Serial.println(gatePin);
 
 	int state = digitalRead(gatePin);
 
@@ -44,7 +47,7 @@ void GateCarDetector::loop()
 	}
 
 	if (state == PIN_STATE_DETECTED) {
-		Serial.println("car is detected on entry.");
+		Serial.println("car is detected on gate.");
 		carDetectedListener->onCarChangeDetected(gatePin, CAR_DETECTED);
 	}
 	else 
