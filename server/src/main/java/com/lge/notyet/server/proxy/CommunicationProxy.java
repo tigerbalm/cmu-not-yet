@@ -37,8 +37,8 @@ public class CommunicationProxy {
 
     public Future<Void> start() {
         final Future<Void> future = Future.future();
-        networkConnection = new MqttNetworkConnection(null);
-        // networkConnection = new MqttPassiveRedundancyNetworkConnection("server", new MqttNetworkConnection(null));
+        // networkConnection = new MqttNetworkConnection(null);
+        networkConnection = new MqttPassiveRedundancyNetworkConnection("server", new MqttNetworkConnection(null));
         try {
             logger.info("making MQTT connection (" + HOST + ")");
             networkConnection.connect(InetAddress.getByName(HOST), new INetworkCallback() {
