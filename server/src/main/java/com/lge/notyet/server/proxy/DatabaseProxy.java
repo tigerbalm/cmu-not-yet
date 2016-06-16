@@ -124,6 +124,30 @@ public class DatabaseProxy {
         }));
     }
 
+    public void rawQuery(SQLConnection connection, String sql, Handler<AsyncResult<List<JsonArray>>> resultHandler) {
+        connection.query(sql, ar -> resultHandler.handle(new AsyncResult<List<JsonArray>>() {
+            @Override
+            public List<JsonArray> result() {
+                return ar.result().getResults().stream().map(row -> JsonArray.readFrom(row.toString())).collect(Collectors.toList());
+            }
+
+            @Override
+            public Throwable cause() {
+                return ar.cause();
+            }
+
+            @Override
+            public boolean succeeded() {
+                return ar.succeeded();
+            }
+
+            @Override
+            public boolean failed() {
+                return ar.failed();
+            }
+        }));
+    }
+
     private void queryWithParams(SQLConnection connection, String sql, io.vertx.core.json.JsonArray parameters, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         connection.queryWithParams(sql, parameters, ar -> resultHandler.handle(new AsyncResult<List<JsonObject>>() {
             @Override
