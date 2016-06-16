@@ -29,7 +29,11 @@ public class UpdateFacilityListTask implements Callable<Void> {
         ReservableFacilitiesRequestChannel reservableFacilitiesRequestChannel = ncm.createReservableFacilitiesRequestChannel();
         reservableFacilitiesRequestChannel.addObserver(mUpdateFacilityListResult);
         reservableFacilitiesRequestChannel.addTimeoutObserver(mUpdateFacilityListTimeout);
-        reservableFacilitiesRequestChannel.request(ReservableFacilitiesRequestChannel.createRequestMessage(mSessionKey));
+
+        boolean ret = reservableFacilitiesRequestChannel.request(ReservableFacilitiesRequestChannel.createRequestMessage(mSessionKey));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
         return null;
     }
 
@@ -41,11 +45,11 @@ public class UpdateFacilityListTask implements Callable<Void> {
 
             try {
                 Log.logd(LOG_TAG, "mUpdateFacilityListResult Result=" + message.getMessage());
-                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
             }
         }
     };
@@ -55,7 +59,7 @@ public class UpdateFacilityListTask implements Callable<Void> {
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
             Log.logd(LOG_TAG, "Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 

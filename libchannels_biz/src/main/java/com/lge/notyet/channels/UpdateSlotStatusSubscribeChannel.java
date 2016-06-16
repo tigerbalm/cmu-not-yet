@@ -10,14 +10,16 @@ public class UpdateSlotStatusSubscribeChannel extends SubscribeChannelRegistry {
     private static final String TOPIC = "/controller/+/slot/+";
     private static final String TOPIC_WITH_PHYSICAL_ID = "/controller/%d/slot/+";
 
-    private int mControllerId = -1;
+    private final int mControllerId;
 
     public UpdateSlotStatusSubscribeChannel(INetworkConnection networkConnection) {
         super(networkConnection);
+        mControllerId = -1;
     }
 
     public UpdateSlotStatusSubscribeChannel(INetworkConnection networkConnection, int controllerId) {
         super(networkConnection);
+        mControllerId = controllerId;
     }
 
     @Override

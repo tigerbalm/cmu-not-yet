@@ -5,7 +5,6 @@ import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.ServerChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
 import java.util.List;
@@ -25,9 +24,7 @@ public class ReservableFacilitiesResponseChannel extends ServerChannelRegistry {
 
     public static JsonObject createResponseObject(List<JsonObject> reservableFacilityObjects) {
         JsonArray array = new JsonArray();
-        for (JsonObject object : reservableFacilityObjects) {
-            array.add(object);
-        }
+        reservableFacilityObjects.forEach(array::add);
         return new JsonObject().add(KEY_FACILITIES, array);
     }
 }

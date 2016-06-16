@@ -6,10 +6,8 @@ abstract public class NotificationChannel extends NetworkChannel {
         super(networkConnection);
     }
 
-    public void notify(NetworkMessage message) {
-
-        if (!getNetworkConnection().isConnected()) return;
-        getNetworkConnection().send(this, message);
+    public boolean notify(NetworkMessage message) {
+        return getNetworkConnection().isConnected() && getNetworkConnection().send(this, message);
     }
 
     @Override

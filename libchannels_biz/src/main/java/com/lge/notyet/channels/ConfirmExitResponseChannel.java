@@ -1,15 +1,15 @@
 package com.lge.notyet.channels;
 
+import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.ServerChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
-public class ModifyAccountResponseChannel extends ServerChannelRegistry {
+public class ConfirmExitResponseChannel extends ServerChannelRegistry {
+    private static final String TOPIC = "/controller/+/confirm_exit/#";
 
-    private final static String TOPIC = "/modifyAccount/#";
-
-    public ModifyAccountResponseChannel(INetworkConnection networkConnection) {
+    public ConfirmExitResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
     }
 

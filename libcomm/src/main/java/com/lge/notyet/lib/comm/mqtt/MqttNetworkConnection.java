@@ -210,8 +210,9 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
     }
 
     @Override
-    public void send(NetworkChannel netChannel, NetworkMessage message) {
+    public boolean send(NetworkChannel netChannel, NetworkMessage message) {
 
+        boolean ret = true;
         MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
         mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_NOTIFICATION);
 
@@ -220,12 +221,15 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
+            ret = false;
         }
+        return ret;
     }
 
     @Override
-    public void request(NetworkChannel netChannel, NetworkMessage message) {
+    public boolean request(NetworkChannel netChannel, NetworkMessage message) {
 
+        boolean ret = true;
         int sequenceNumber = sRequestSequenceNumber.addAndGet(1);
         try {
             mRequestChannelMap.put(netChannel.getChannelDescription().getLocation() + MqttConstants.RESPONSE_MESSAGE_TOPIC+ sequenceNumber, netChannel);
@@ -233,6 +237,7 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
+            ret = false;
         }
 
         MqttNetworkMessage mqttNetworkMessage = (MqttNetworkMessage) message;
@@ -244,7 +249,10 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
+            ret = false;
         }
+
+        return ret;
     }
 
 

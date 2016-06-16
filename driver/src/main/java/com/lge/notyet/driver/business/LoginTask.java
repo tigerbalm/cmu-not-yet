@@ -4,7 +4,6 @@ import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -28,13 +27,16 @@ public class LoginTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
+
         LoginRequestChannel loginRequestChannel = ncm.createLoginChannel();
         loginRequestChannel.addObserver(mLoginResult);
         loginRequestChannel.addTimeoutObserver(mLoginTimeout);
 
-        MqttNetworkMessage requestMsg = LoginRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord);
-        Log.log(LOG_TAG, requestMsg.toString());
-        loginRequestChannel.request(requestMsg);
+        boolean ret = loginRequestChannel.request(LoginRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
+
         return null;
     }
 
@@ -46,11 +48,11 @@ public class LoginTask implements Callable<Void> {
 
             try {
                 Log.logd(LOG_TAG, "mLoginResult, result=" + message.getMessage());
-                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
             }
         }
     };
@@ -60,7 +62,7 @@ public class LoginTask implements Callable<Void> {
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
             Log.logd(LOG_TAG, "mLoginTimeout, Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 

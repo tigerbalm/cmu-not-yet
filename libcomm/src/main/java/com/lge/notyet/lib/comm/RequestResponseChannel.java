@@ -6,10 +6,8 @@ abstract public class RequestResponseChannel extends NetworkChannel {
         super(networkConnection);
     }
 
-    public void request(NetworkMessage message) {
-
-        if (!getNetworkConnection().isConnected()) return;
-        getNetworkConnection().request(this, message);
+    public boolean request(NetworkMessage message) {
+        return getNetworkConnection().isConnected() && getNetworkConnection().request(this, message);
     }
 
     @Override

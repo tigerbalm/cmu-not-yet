@@ -245,7 +245,7 @@ public class ReservationManager {
             } else {
                 final JsonObject reservationObject = ar1.result();
                 final int slotNumber = reservationObject.get("slot_no").asInt();
-                communicationProxy.responseSuccess(message, ConfirmReservationResponseChannel.createResponseOjbect(slotNumber));
+                communicationProxy.responseSuccess(message, ConfirmReservationResponseChannel.createResponseObject(slotNumber));
             }
         });
     }

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class DatabaseProxy {
     private static DatabaseProxy instance = null;
 
-    private static final String HOST = "127.0.0.1";
+    private static final String HOST = "128.237.175.140";
     private static final String USERNAME = "dba";
     private static final String PASSWORD = "dba";
     private static final String DATABASE = "sure-park";
@@ -207,6 +207,12 @@ public class DatabaseProxy {
         queryWithParams(connection, "select * from user where id=?", parameters, resultHandler);
     }
 
+    public void selectUserByEmail(SQLConnection connection, String email, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(email);
+        queryWithParams(connection, "select * from user where email=?", parameters, resultHandler);
+    }
+
     public void selectUser(SQLConnection connection, String email, String password, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectUser: email=" + email + ", password=" + password);
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
@@ -266,7 +272,7 @@ public class DatabaseProxy {
 
     public void selectFacilitySlots(SQLConnection connection, int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectFacilitySlots: facilityId=" + facilityId);
-        String sql = "select slot.id, number, occupied, occupied_ts, reserved, controller_id" +
+        String sql = "select slot.id, number, occupied, occupied_ts, reserved, controller_id, physical_id as controller_physical_id" +
                 " from facility inner join controller on facility.id=controller.facility_id" +
                 " inner join slot on controller.id=slot.controller_id" +
                 " where facility.id=?";
@@ -325,6 +331,19 @@ public class DatabaseProxy {
         queryWithParams(connection, sql, parameters, resultHandler);
     }
 
+    public void selectReservationBySlot(SQLConnection connection, String controllerPhysicalId, int slotNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        String sql ="select slot.id" +
+                " from reservation" +
+                " inner join slot on reservation.slot_id=slot.id" +
+                " inner join controller on controller.id=slot.controller_id" +
+                " where physical_id=?" +
+                " and number=?";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(controllerPhysicalId);
+        parameters.add(slotNumber);
+        queryWithParams(connection, sql, parameters, resultHandler);
+    }
+
     public void updateSlotOccupied(SQLConnection connection, int slotId, boolean occupied, int occupiedTs, Handler<AsyncResult<JsonArray>> resultHandler) {
         String sql = "update slot set occupied=?, occupied_ts=? where id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
@@ -357,12 +376,31 @@ public class DatabaseProxy {
     }
 
     public void insertReservation(SQLConnection connection, int userId, int slotId, int reservationTs, int confirmationNo, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "insert into reservation(user_id, slot_id, reservation_ts, confirmation_no) values (?,?,?,?)";
+        String sql = "insert into reservation(user_id,slot_id,reservation_ts,confirmation_no) values (?,?,?,?)";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(userId);
         parameters.add(slotId);
         parameters.add(reservationTs);
         parameters.add(confirmationNo);
+        updateWithParams(connection, sql, parameters, resultHandler);
+    }
+
+    public void insertUser(SQLConnection connection, String email, String password, String cardNumber, String cardExpiration, int userType, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "insert into user(email,password,card_number,card_expiration,type) values(?,?,?,?,?)";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(email);
+        parameters.add(password);
+        parameters.add(cardNumber);
+        parameters.add(cardExpiration);
+        parameters.add(userType);
+        updateWithParams(connection, sql, parameters, resultHandler);
+    }
+
+    public void insertSession(SQLConnection connection, int userId, String sessionKey, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "insert into session(user_id,session_key) values(?,?)";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(userId);
+        parameters.add(sessionKey);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
 }

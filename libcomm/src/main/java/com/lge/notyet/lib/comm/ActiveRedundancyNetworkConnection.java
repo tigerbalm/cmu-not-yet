@@ -111,13 +111,13 @@ class ActiveRedundancyNetworkConnection extends INetworkConnection {
     }
 
     @Override
-    protected void send(NetworkChannel networkChannel, NetworkMessage message) {
-        if (mBaseNetworkConnection != null) mBaseNetworkConnection.send(networkChannel, message);
+    protected boolean send(NetworkChannel networkChannel, NetworkMessage message) {
+        return mBaseNetworkConnection != null && mBaseNetworkConnection.send(networkChannel, message);
     }
 
     @Override
-    protected void request(NetworkChannel networkChannel, NetworkMessage message) {
-        if (mBaseNetworkConnection != null) mBaseNetworkConnection.request(networkChannel, message);
+    protected boolean request(NetworkChannel networkChannel, NetworkMessage message) {
+        return mBaseNetworkConnection != null && mBaseNetworkConnection.request(networkChannel, message);
     }
 
     void log (String log) {

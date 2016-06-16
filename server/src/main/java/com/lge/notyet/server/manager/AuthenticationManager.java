@@ -3,8 +3,11 @@ package com.lge.notyet.server.manager;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.channels.LoginResponseChannel;
+import com.lge.notyet.channels.SignUpRequestChannel;
+import com.lge.notyet.channels.SignUpResponseChannel;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
+import com.lge.notyet.server.model.User;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
@@ -15,6 +18,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 
 import java.util.List;
+import java.util.UUID;
 
 public class AuthenticationManager {
     private static AuthenticationManager instance = null;
@@ -30,7 +34,10 @@ public class AuthenticationManager {
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
         new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
+        new SignUpResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> signUp(message)).listen();
+
         // new LoginRequestChannel(networkConnection).request(LoginRequestChannel.createRequestMessage("owner@gmail.com", "password"));
+        // new SignUpRequestChannel(networkConnection).request(SignUpRequestChannel.createRequestMessage("beney@gmail.com", "password", "0000-1111-1111-1111", "00/00"));
     }
 
     public static AuthenticationManager getInstance() {
@@ -40,6 +47,51 @@ public class AuthenticationManager {
             }
             return instance;
         }
+    }
+
+    private String createSessionKey() {
+        return UUID.randomUUID().toString().substring(0, 30);
+    }
+
+    public void signUp(String email, String password, String cardNumber, String cardExpiration, int userType, Handler<AsyncResult<String>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectUserByEmail(sqlConnection, email, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                    } else {
+                        final boolean existentUser = ar2.result().size() > 0;
+                        if (existentUser) {
+                            handler.handle(Future.failedFuture("EXISTENT_USER"));
+                            databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                        } else {
+                            databaseProxy.insertUser(sqlConnection, email, password, cardNumber, cardExpiration, userType, ar3 -> {
+                                if (ar3.failed()) {
+                                    handler.handle(Future.failedFuture(ar3.cause()));
+                                    databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                                } else {
+                                    final String sessionKey = createSessionKey();
+                                    final int userId = ar3.result().get(0).asInt();
+                                    databaseProxy.insertSession(sqlConnection, userId, sessionKey, ar4 -> {
+                                        if (ar4.failed()) {
+                                            handler.handle(Future.failedFuture(ar4.cause()));
+                                            databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                                        } else {
+                                            handler.handle(Future.succeededFuture(sessionKey));
+                                            databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
     }
 
     public void getSessionUser(String sessionKey, Handler<AsyncResult<JsonObject>> handler) {
@@ -117,6 +169,21 @@ public class AuthenticationManager {
             } else {
                 JsonObject userObject = ar.result();
                 communicationProxy.responseSuccess(message, userObject);
+            }
+        });
+    }
+
+    private void signUp(NetworkMessage message) {
+        final String email = SignUpRequestChannel.getEmail(message);
+        final String password = SignUpRequestChannel.getPassword(message);
+        final String cardNumber = SignUpRequestChannel.getCardNumber(message);
+        final String cardExpiration = SignUpRequestChannel.getCardExpiration(message);
+
+        signUp(email, password, cardNumber, cardExpiration, User.USER_TYPE_DRIVER, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                communicationProxy.responseSuccess(message);
             }
         });
     }

@@ -9,13 +9,13 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
-public class ConfirmReservationRequestChannel extends ClientChannelRegistry {
-    private static final String TOPIC = "/controller/%s/confirm_reservation";
-    private static final String KEY_CONFIRMATION_NUMBER = "confirmation_no";
+public class ConfirmExitRequestChannel extends ClientChannelRegistry {
+    private static final String TOPIC = "/controller/%s/confirm_exit";
+    private static final String KEY_SLOT_NUMBER = "slot_no";
 
     private final String controllerPhysicalId;
 
-    public ConfirmReservationRequestChannel(INetworkConnection networkConnection, String controllerPhysicalId) {
+    public ConfirmExitRequestChannel(INetworkConnection networkConnection, String controllerPhysicalId) {
         super(networkConnection);
         this.controllerPhysicalId = controllerPhysicalId;
     }
@@ -29,13 +29,13 @@ public class ConfirmReservationRequestChannel extends ClientChannelRegistry {
         return (String) uri.getPathSegments().get(1);
     }
 
-    public static int getConfirmationNumber(NetworkMessage networkMessage) {
-        return ((JsonObject) networkMessage.getMessage()).get(KEY_CONFIRMATION_NUMBER).asInt();
+    public static int getSlotNumber(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_SLOT_NUMBER).asInt();
     }
 
-    public static MqttNetworkMessage createRequestMessage(int confirmationNumber) {
+    public static MqttNetworkMessage createRequestMessage(int slotNumber) {
         JsonObject requestObject = new JsonObject();
-        requestObject.add(KEY_CONFIRMATION_NUMBER, confirmationNumber);
+        requestObject.add(KEY_SLOT_NUMBER, slotNumber);
         return new MqttNetworkMessage(requestObject);
     }
 }

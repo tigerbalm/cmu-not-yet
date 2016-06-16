@@ -7,7 +7,7 @@ abstract public class SubscribeChannel extends NotificationChannel {
     }
 
     @Override
-    public final void notify(NetworkMessage message) {
-
+    public final boolean notify(NetworkMessage message) {
+        return false;
     }
 }

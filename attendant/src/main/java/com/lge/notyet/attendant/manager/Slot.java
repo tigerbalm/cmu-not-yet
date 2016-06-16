@@ -1,21 +1,26 @@
 package com.lge.notyet.attendant.manager;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
 public class Slot {
 
-    int mId;
-    int mNumber;
-    boolean mOccupied;
-    long mOccupiedTimeStamp;
+    private final int mId;
+    private final int mNumber;
+    private boolean mOccupied;
+    private boolean mReserved;
+    private long mOccupiedTimeStamp;
+    private long mReservedTimeStamp;
+    private final int mControllerId;
+    private final int mPhysicalId;
 
-    public Slot(int id, int number, boolean occupied, long occupiedTimeStamp) {
+    public Slot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, int physical_id) {
 
         mId = id;
         mNumber = number;
         mOccupied = occupied;
+        mReserved = reserved;
         mOccupiedTimeStamp = occupiedTimeStamp;
+        //mReservedTimeStamp =
+        mControllerId = controller_id;
+        mPhysicalId = physical_id;
     }
 
     public int getId() {
@@ -29,16 +34,28 @@ public class Slot {
     public boolean isOccupied() {
         return mOccupied;
     }
-
-    public long getOccupiedTimeStamp() {
-        return mOccupiedTimeStamp;
-    }
-
     public void setOccupied(boolean occupied) {
         mOccupied = occupied;
     }
 
+    public boolean isReserved() {
+        return mReserved;
+    }
+    public void setReserved(boolean reserved) {
+        mReserved = reserved;
+    }
+
+    public long getOccupiedTimeStamp() {
+        return mOccupiedTimeStamp;
+    }
     public void setOccupiedTimeStamp(long occupiedTimeStamp) {
         mOccupiedTimeStamp =occupiedTimeStamp;
+    }
+
+    public int getControllerId() {
+        return mControllerId;
+    }
+    public int getPhysicalId() {
+        return mPhysicalId;
     }
 }

@@ -38,7 +38,10 @@ public class SignUpTask implements Callable<Void> {
         sc.addObserver(mSignUpResult);
         sc.addTimeoutObserver(mSignUpTimeout);
 
-        sc.request(SignUpRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
+        boolean ret = sc.request(SignUpRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate/*, mCreditCardCvc*/));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
         return null;
     }
 
@@ -48,8 +51,14 @@ public class SignUpTask implements Callable<Void> {
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            Log.logd(LOG_TAG, "mSignUpResult Result=" + message.getMessage());
-            mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+            try {
+                Log.logd(LOG_TAG, "mSignUpResult Result=" + message.getMessage());
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            }
         }
     };
 
@@ -58,7 +67,7 @@ public class SignUpTask implements Callable<Void> {
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
             Log.logd(LOG_TAG, "Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 

@@ -101,7 +101,7 @@ public class ReservationHistoryPanel implements Screen {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 SessionManager.getInstance().clear(); // Log-out
-                NetworkConnectionManager.getInstance().close();
+                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });
@@ -112,7 +112,7 @@ public class ReservationHistoryPanel implements Screen {
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
                 SessionManager.getInstance().clear(); // Log-out
-                NetworkConnectionManager.getInstance().close();
+                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });
