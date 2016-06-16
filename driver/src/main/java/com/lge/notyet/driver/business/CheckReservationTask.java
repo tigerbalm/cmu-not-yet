@@ -25,10 +25,16 @@ public class CheckReservationTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
+
         GetReservationRequestChannel getReservationRequestChannel = ncm.createGetReservationRequestChannel();
         getReservationRequestChannel.addObserver(mReservationCheckResult);
         getReservationRequestChannel.addTimeoutObserver(mReservationTimeout);
-        getReservationRequestChannel.request(GetReservationRequestChannel.createRequestMessage(mSessionKey));
+
+        boolean ret = getReservationRequestChannel.request(GetReservationRequestChannel.createRequestMessage(mSessionKey));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
+
         return null;
     }
 
@@ -40,11 +46,11 @@ public class CheckReservationTask implements Callable<Void> {
 
             try {
                 Log.logd(LOG_TAG, "mReservationCheckResult Result=" + message.getMessage());
-                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
             }
         }
     };
@@ -54,7 +60,7 @@ public class CheckReservationTask implements Callable<Void> {
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
             Log.logd(LOG_TAG, "Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 
