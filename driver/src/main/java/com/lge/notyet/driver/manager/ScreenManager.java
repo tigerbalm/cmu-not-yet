@@ -18,7 +18,7 @@ public class ScreenManager {
     private String mLastScreenName;
     private String mCurrentScreenName;
 
-    private LoginPanel mLoginPanel;
+    private Screen mLoginPanel;
     private ReservationPanel mReservationPanel;
     private SignupPanel mSignupPanel;
     private ModifyAccountPanel mModifyAccountPanel;
@@ -65,7 +65,7 @@ public class ScreenManager {
 
     public void showLoginScreen() {
         mLastScreenName = null;
-        mLoginPanel.init();
+        mLoginPanel.initScreen();
         mMainCardLayout.show(mCards, mLoginPanel.getName());
         mCurrentScreenName = mLoginPanel.getName();
     }

@@ -18,7 +18,7 @@ public class LoginTask implements Callable<Void> {
     private String mPassWord;
     private ITaskDoneCallback mTaskDoneCallback;
 
-    public LoginTask(String userEmailAddress, String passWord, ITaskDoneCallback taskDoneCallback) {
+    private LoginTask(String userEmailAddress, String passWord, ITaskDoneCallback taskDoneCallback) {
         mUserEmailAddress = userEmailAddress;
         mPassWord = passWord;
         mTaskDoneCallback = taskDoneCallback;
@@ -46,7 +46,12 @@ public class LoginTask implements Callable<Void> {
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             // Need to parse
-            // ReservationResponseMessage result = (ReservationResponseMessage) message;
+            if (message == null) {
+                System.out.println("mLoginResult received null message");
+                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+                return;
+            }
+
             System.out.println("mLoginResult Result=" + message.getMessage());
             mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
         }
