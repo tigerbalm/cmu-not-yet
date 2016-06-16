@@ -7,20 +7,17 @@ import com.lge.notyet.lib.comm.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-/**
- * Created by beney.kim on 2016-06-15.
- */
 public class SignUpTask implements Callable<Void> {
 
 
-    private String mUserEmailAddress;
-    private String mPassWord;
-    private String mCreditCardNumber;
-    private String mCreditCardExpireDate;
-    private String mCreditCardCvc;
-    private ITaskDoneCallback mTaskDoneCallback;
+    private final String mUserEmailAddress;
+    private final String mPassWord;
+    private final String mCreditCardNumber;
+    private final String mCreditCardExpireDate;
+    private final String mCreditCardCvc;
+    private final ITaskDoneCallback mTaskDoneCallback;
 
-    public SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
+    private SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
         mUserEmailAddress = userEmailAddress;
         mPassWord = passWord;
         mCreditCardNumber = creditCardNumber;
@@ -39,12 +36,12 @@ public class SignUpTask implements Callable<Void> {
         sc.addObserver(mSignUpResult);
         sc.addTimeoutObserver(mSignUpTimeout);
 
-        sc.request(sc.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
+        sc.request(SignUpRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
         return null;
     }
 
     // Business Logic here, we have no time :(
-    private IOnResponse mSignUpResult = new IOnResponse() {
+    private final IOnResponse mSignUpResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
@@ -56,7 +53,7 @@ public class SignUpTask implements Callable<Void> {
         }
     };
 
-    private IOnTimeout mSignUpTimeout = new IOnTimeout() {
+    private final IOnTimeout mSignUpTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
