@@ -81,6 +81,10 @@ public class CommunicationProxy {
         message.responseFor(new MqttNetworkMessage(responseObject));
     }
 
+    public void responseSuccess(NetworkMessage message) {
+        responseSuccess(message, new JsonObject());
+    }
+
     public void responseFail(NetworkMessage message, String cause) {
         logger.info("responseFail: cause=" + cause);
         JsonObject responseObject = new JsonObject();

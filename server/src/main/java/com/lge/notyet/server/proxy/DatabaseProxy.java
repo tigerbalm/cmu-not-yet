@@ -207,6 +207,12 @@ public class DatabaseProxy {
         queryWithParams(connection, "select * from user where id=?", parameters, resultHandler);
     }
 
+    public void selectUserByEmail(SQLConnection connection, String email, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(email);
+        queryWithParams(connection, "select * from user where email=?", parameters, resultHandler);
+    }
+
     public void selectUser(SQLConnection connection, String email, String password, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectUser: email=" + email + ", password=" + password);
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
@@ -357,12 +363,31 @@ public class DatabaseProxy {
     }
 
     public void insertReservation(SQLConnection connection, int userId, int slotId, int reservationTs, int confirmationNo, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "insert into reservation(user_id, slot_id, reservation_ts, confirmation_no) values (?,?,?,?)";
+        String sql = "insert into reservation(user_id,slot_id,reservation_ts,confirmation_no) values (?,?,?,?)";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(userId);
         parameters.add(slotId);
         parameters.add(reservationTs);
         parameters.add(confirmationNo);
+        updateWithParams(connection, sql, parameters, resultHandler);
+    }
+
+    public void insertUser(SQLConnection connection, String email, String password, String cardNumber, String cardExpiration, int userType, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "insert into user(email,password,card_number,card_expiration,type) values(?,?,?,?,?)";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(email);
+        parameters.add(password);
+        parameters.add(cardNumber);
+        parameters.add(cardExpiration);
+        parameters.add(userType);
+        updateWithParams(connection, sql, parameters, resultHandler);
+    }
+
+    public void insertSession(SQLConnection connection, int userId, String sessionKey, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "insert into session(user_id,session_key) values(?,?)";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(userId);
+        parameters.add(sessionKey);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
 }

@@ -3,16 +3,17 @@ package com.lge.notyet.channels;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.ClientChannelRegistry;
 import com.lge.notyet.lib.comm.INetworkConnection;
+import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
-/**
- * Created by beney.kim on 2016-06-15.
- */
 public class SignUpRequestChannel extends ClientChannelRegistry {
-
-    private final static String TOPIC = "/signup";
+    private final static String TOPIC = "/user/sign_up";
+    private final static String KEY_EMAIL = "email";
+    private final static String KEY_PASSWORD = "password";
+    private final static String KEY_CARD_NUMBER = "card_number";
+    private final static String KEY_CARD_EXPIRATION = "card_expiration";
 
     public SignUpRequestChannel(INetworkConnection networkConnection) {
         super(networkConnection);
@@ -23,10 +24,26 @@ public class SignUpRequestChannel extends ClientChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-    public static MqttNetworkMessage createRequestMessage(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc) {
+    public static final String getEmail(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_EMAIL).asString();
+    }
+
+    public static final String getPassword(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_PASSWORD).asString();
+    }
+
+    public static final String getCardNumber(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_CARD_NUMBER).asString();
+    }
+
+    public static final String getCardExpiration(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_CARD_EXPIRATION).asString();
+    }
+
+    public static MqttNetworkMessage createRequestMessage(String email, String password, String cardNumber, String cardExpiration) {
         JsonObject requestObject = new JsonObject()
-                .add("user_email", userEmailAddress).add("password", passWord)
-                .add("card_number", creditCardNumber).add("card_expiration", creditCardExpireDate).add("card_cvc", creditCardCvc);
+                .add(KEY_EMAIL, email).add(KEY_PASSWORD, password)
+                .add(KEY_CARD_NUMBER, cardNumber).add(KEY_CARD_EXPIRATION, cardExpiration);
         return new MqttNetworkMessage(requestObject);
     }
 }
