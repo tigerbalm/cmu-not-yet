@@ -117,11 +117,14 @@ public class LoginPanel {
 
                 for (JsonValue aSlot : slots.values()) {
                     JsonObject slot = aSlot.asObject();
-                    int id = slot.get("id").asInt();
-                    int number = slot.get("number").asInt();
+                    int id = slot.get("id").asInt();  // Slot's Unique ID
+                    int number = slot.get("number").asInt(); //
                     int occupied = slot.get("occupied").asInt();
+                    int reserved = slot.get("reserved").asInt();
                     long occupied_ts = slot.get("occupied_ts").asLong();
-                    SessionManager.getInstance().addSlot(id, number, occupied == 1, occupied_ts);
+                    int controller_id = slot.get("controller_id").asInt();
+                    int physical_id = 0;//slot.get("physical_id").asInt();
+                    SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id);
                 }
 
                 ScreenManager.getInstance().showFacilityMonitorScreen();

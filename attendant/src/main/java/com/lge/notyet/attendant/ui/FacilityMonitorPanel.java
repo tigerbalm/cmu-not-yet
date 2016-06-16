@@ -60,7 +60,7 @@ public class FacilityMonitorPanel {
 
             Slot slot = SessionManager.getInstance().getSlot(slotId);
 
-            JLabel slotNumber = new JLabel(slot.getNumber() + "");
+            JLabel slotNumber = new JLabel(slot.getControllerId() + "-" + slot.getNumber());
             slotNumber.setHorizontalAlignment(SwingConstants.CENTER);
 
             /*
@@ -81,14 +81,34 @@ public class FacilityMonitorPanel {
 
             // Reserved Time Based [START]
 
-            JLabel strReservedFrom = new JLabel("Occupied Time");
+            JLabel strReservedFrom = new JLabel("Reserved Time");
             strReservedFrom.setHorizontalAlignment(SwingConstants.CENTER);
+
+            Calendar reservedTime = Calendar.getInstance();
+            reservedTime.setTimeInMillis(slot.getOccupiedTimeStamp()*1000);
+            reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm, MM/dd/yy");
+            sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+            String reservedTimeString = sdf.format(reservedTime.getTime());
+
+            JLabel reservedTimeL = new JLabel(reservedTimeString);
+            reservedTimeL.setHorizontalAlignment(SwingConstants.CENTER);
+
+
+
+
+
+            JLabel strOccupiedFrom = new JLabel("Occupying Time");
+            strOccupiedFrom.setHorizontalAlignment(SwingConstants.CENTER);
 
             long now = Calendar.getInstance().getTimeInMillis()/1000;
             long occupiedTimeSec = now - slot.getOccupiedTimeStamp();
 
-            JLabel reservedTimeL = new JLabel(occupiedTimeSec / 60 + " minute(s)");
-            reservedTimeL.setHorizontalAlignment(SwingConstants.CENTER);
+            JLabel strOccupiedTime = new JLabel(occupiedTimeSec / 60 + " minute(s)");
+            strOccupiedTime.setHorizontalAlignment(SwingConstants.CENTER);
+
+
 
             // Reserved Time Based [END]
 
@@ -97,6 +117,9 @@ public class FacilityMonitorPanel {
             slotPanel.add(new JSeparator());
 
             if(slot.isOccupied()) {
+                slotPanel.add(strOccupiedFrom);
+                slotPanel.add(strOccupiedTime);
+            } else if(slot.isReserved()) {
                 slotPanel.add(strReservedFrom);
                 slotPanel.add(reservedTimeL);
             } else {
@@ -109,8 +132,13 @@ public class FacilityMonitorPanel {
             if(slot.isOccupied()) {
                 slotPanel.setBackground(new Color(24, 27, 143));
                 slotNumber.setForeground(Color.white);
-                strReservedFrom.setForeground(Color.white);
-                reservedTimeL.setForeground(Color.white);
+                strOccupiedFrom.setForeground(Color.white);
+                strOccupiedTime.setForeground(Color.white);
+            } else if(slot.isReserved()) {
+                slotPanel.setBackground(new Color(255, 191, 245));
+                slotNumber.setForeground(new Color(24, 27, 143));
+                strReservedFrom.setForeground(new Color(24, 27, 143));
+                reservedTimeL.setForeground(new Color(24, 27, 143));
             }
             center.add(slotPanel);
         }
