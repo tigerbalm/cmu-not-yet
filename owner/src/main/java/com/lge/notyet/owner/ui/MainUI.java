@@ -31,20 +31,8 @@ public class MainUI extends JDialog {
     }
 
     private void onOK() {
-// add your code here
         //Find selected button
         String selectedQuery= choiceGroup.getSelection().getActionCommand();
-        //choiceGroup.getSelection().getSelectedObjects()[0].toString();
-        /*
-        for (Enumeration<AbstractButton> buttons = choiceGroup.getElements(); buttons.hasMoreElements();) {
-            AbstractButton button = buttons.nextElement();
-
-            if (button.isSelected()) {
-                selectedQuery= Integer.parseInt(button.getText());
-                break;
-            }
-        }
-        */
         if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
             JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
         else{
