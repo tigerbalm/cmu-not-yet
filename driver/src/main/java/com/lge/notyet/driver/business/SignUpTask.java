@@ -48,8 +48,6 @@ public class SignUpTask implements Callable<Void> {
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            // Need to parse
-            // ReservationResponseMessage result = (ReservationResponseMessage) message;
             Log.logd(LOG_TAG, "mSignUpResult Result=" + message.getMessage());
             mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
         }

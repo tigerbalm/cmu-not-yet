@@ -2,7 +2,6 @@ package com.lge.notyet.driver.test;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.channels.*;
-import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
 import com.lge.notyet.lib.comm.util.Log;
@@ -34,10 +33,7 @@ public class TestServer {
         }
     }
 
-    // Business Logic here, we have no time :(
     private final IOnRequest mGetReservationRequestReceived = (networkChannel, uri, message) -> {
-
-        // Need to parse
 
         MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
 
@@ -61,10 +57,7 @@ public class TestServer {
         message.responseFor(response);
     };
 
-    // Business Logic here, we have no time :(
     private final IOnRequest mUpdateFacilityListRequestReceived = (networkChannel, uri, message) -> {
-
-        // Need to parse
 
         List<JsonObject> facilityList = new ArrayList<>();
         facilityList.add(new JsonObject().add("id", 1).add("name", "Shadyside Parking Lot"));
@@ -75,47 +68,39 @@ public class TestServer {
         message.responseFor(response);
     };
 
-    // Business Logic here, we have no time :(
     private final IOnRequest mLoginRequestReceived = (networkChannel, uri, message) -> {
 
-        // Need to parse
         MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, 2, "1111-2222-3333-4444", "12/16", "12345678"));
         response.getMessage().add("success", 1);
         Log.logd(LOG_TAG, "Login Requested Received=" + message.getMessage());
-
         message.responseFor(response);
     };
 
-    // Business Logic here, we have no time :(
     private final IOnRequest mSignUpRequestReceived = (networkChannel, uri, message) -> {
 
-        // Need to parse
         MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
         response.getMessage().add("success", 1);
         Log.logd(LOG_TAG, "mSignUpRequestReceived Requested Received=" + message.getMessage());
-
         message.responseFor(response);
     };
 
-    // Business Logic here, we have no time :(
     private final IOnRequest mCancelReservationRequestReceived = (networkChannel, uri, message) -> {
 
-        // Need to parse
         MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
         response.getMessage().add("success", 1);
         Log.logd(LOG_TAG, "mCancelReservationRequestReceived Requested Received=" + message.getMessage());
-
         message.responseFor(response);
     };
 
-    // Business Logic here, we have no time :(
     private final IOnRequest mReservationRequestReceived = (networkChannel, uri, message) -> {
 
-        // Need to parse
+        MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
+        response.getMessage().add("success", 1);
+        response.getMessage().add("id", 1);
+        response.getMessage().add("confirmation_no", 10);
         Log.logd(LOG_TAG, "Reservation Requested Received=" + message.getMessage());
-        message.responseFor(new ReservationResponseMessage().setResult(1).setConfirmationNumber(10L).setReservationId(1));
+        message.responseFor(response);
     };
-
 
     private INetworkConnection mNc = null;
     private final INetworkCallback mNetworkCallback = new INetworkCallback() {

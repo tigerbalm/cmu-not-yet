@@ -317,6 +317,14 @@ public class LoginPanel implements Screen {
                             Strings.LOGIN_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
                             Strings.APPLICATION_NAME,
                             JOptionPane.WARNING_MESSAGE);
+                } else {
+
+                    Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
                 }
 
             } catch (Exception e) {

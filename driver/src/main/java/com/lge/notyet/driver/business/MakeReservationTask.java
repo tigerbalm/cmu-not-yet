@@ -5,6 +5,7 @@ import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -32,8 +33,9 @@ public class MakeReservationTask implements Callable<Void> {
         ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
         rc.addObserver(mMakeReservationResult);
         rc.addTimeoutObserver(mMakeReservationTimeout);
-        ReservationRequestMessage message = new ReservationRequestMessage().setSessionKey(SessionManager.getInstance().getKey()).setTimeStamp(mRequestTime);
-        rc.request(message);
+
+        MqttNetworkMessage requestMsg = ReservationRequestChannel.createRequestMessage(SessionManager.getInstance().getKey(), mRequestTime);
+        rc.request(requestMsg);
         return null;
     }
 

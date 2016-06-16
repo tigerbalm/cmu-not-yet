@@ -1,7 +1,6 @@
 package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ITaskDoneCallback;
-import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.MakeReservationTask;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
@@ -169,44 +168,43 @@ public class ReservationPanel implements Screen {
             return;
         }
 
-        ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
+        MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
 
         try {
 
             Log.logd(LOG_TAG, "Received response to MakeReservation, message=" + resMsg.getMessage());
 
-            if (resMsg.getResult() == 1) { // Success
+            int success = resMsg.getMessage().get("success").asInt();
 
-                if (!resMsg.validate()) {
+            if (success == 1) { // Success
 
-                    Log.logd(LOG_TAG, "Failed to validate response");
-
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.MAKE_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                            Strings.APPLICATION_NAME,
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                int confirmationNumber = resMsg.getConfirmationNumber();
-                int reservationId = resMsg.getReservationId();
+                int confirmationNumber = resMsg.getMessage().get("confirmation_no").asInt();
+                int reservationId = resMsg.getMessage().get("id").asInt();
                 SessionManager.getInstance().setReservationInformation(mRequestedTime, confirmationNumber, mRequestedFacilityId, reservationId);
 
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MAKE_RESERVATION_DONE + resMsg.getConfirmationNumber(),
+                        Strings.MAKE_RESERVATION_DONE + confirmationNumber,
                         Strings.APPLICATION_NAME,
                         JOptionPane.PLAIN_MESSAGE);
 
                 ScreenManager.getInstance().showReservationHistoryScreen();
 
-            } else if (resMsg.getResult() == 0) {
+            } else if (success == 0) {
 
-                Log.logd(LOG_TAG, "Failed to make reservation, with cause=" + resMsg.getFailCause());
+                Log.logd(LOG_TAG, "Failed to make reservation, with cause=" + resMsg.getMessage().get("cause").asString());
 
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MAKE_RESERVATION_FAILED + ":" + resMsg.getFailCause(),
+                        Strings.MAKE_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
                         Strings.APPLICATION_NAME,
                         JOptionPane.WARNING_MESSAGE);
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MAKE_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception e) {

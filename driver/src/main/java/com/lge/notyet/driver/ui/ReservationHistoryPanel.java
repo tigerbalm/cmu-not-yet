@@ -2,7 +2,6 @@ package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ITaskDoneCallback;
 import com.lge.notyet.driver.business.ReservationCancelTask;
-import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
@@ -143,23 +142,33 @@ public class ReservationHistoryPanel implements Screen {
             return;
         }
 
-        ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
+        MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
 
         try {
 
             Log.logd(LOG_TAG, "Received response to CancelReservation, message=" + resMsg.getMessage());
 
-            if (resMsg.getResult() == 1) { // Success
+            int success = resMsg.getMessage().get("success").asInt();
+
+            if (success == 1) { // Success
 
                 SessionManager.getInstance().clearReservationInformation();
                 ScreenManager.getInstance().showReservationRequestScreen();
 
-            } else if (resMsg.getResult() == 0) {
+            } else if (success == 0) {
 
-                Log.logd(LOG_TAG, "Failed to signup, with cause=" + resMsg.getFailCause());
+                Log.logd(LOG_TAG, "Failed to signup, with cause=" + resMsg.getMessage().get("cause").asString());
 
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.CANCEL_RESERVATION_FAILED + ":" + resMsg.getFailCause(),
+                        Strings.CANCEL_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
                         Strings.APPLICATION_NAME,
                         JOptionPane.ERROR_MESSAGE);
             }

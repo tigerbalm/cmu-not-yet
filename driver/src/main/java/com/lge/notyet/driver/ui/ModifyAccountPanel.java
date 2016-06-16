@@ -2,7 +2,6 @@ package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ITaskDoneCallback;
 import com.lge.notyet.driver.business.ModifyAccountTask;
-import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
@@ -111,25 +110,35 @@ public class ModifyAccountPanel implements Screen {
             return;
         }
 
-        ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
+        MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
 
         try {
 
             Log.logd(LOG_TAG, "Received response to ModifyAccount, message=" + resMsg.getMessage());
 
-            if (resMsg.getResult() == 1) { // Success
+            int success = resMsg.getMessage().get("success").asInt();
+
+            if (success == 1) { // Success
 
                 SessionManager.getInstance().clear();
                 ScreenManager.getInstance().showLoginScreen();
 
-            } else if (resMsg.getResult() == 0) {
+            } else if (success == 0) {
 
-                Log.logd(LOG_TAG, "Failed to modify account, with cause=" + resMsg.getFailCause());
+                Log.logd(LOG_TAG, "Failed to modify account, with cause=" + resMsg.getMessage().get("cause").asString());
 
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MODIFY_ACCOUNT_FAILED + ":" + resMsg.getFailCause(),
+                        Strings.MODIFY_ACCOUNT_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
                         Strings.APPLICATION_NAME,
                         JOptionPane.WARNING_MESSAGE);
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MODIFY_ACCOUNT_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception e) {
