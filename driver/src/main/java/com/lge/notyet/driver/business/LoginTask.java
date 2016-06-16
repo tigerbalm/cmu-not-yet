@@ -9,7 +9,6 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-
 public class LoginTask implements Callable<Void> {
 
     private static final String LOG_TAG = "LoginTask";
@@ -29,13 +28,13 @@ public class LoginTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
-        LoginRequestChannel lc = ncm.createLoginChannel();
-        lc.addObserver(mLoginResult);
-        lc.addTimeoutObserver(mLoginTimeout);
+        LoginRequestChannel loginRequestChannel = ncm.createLoginChannel();
+        loginRequestChannel.addObserver(mLoginResult);
+        loginRequestChannel.addTimeoutObserver(mLoginTimeout);
 
-        MqttNetworkMessage requestMsg = lc.createRequestMessage(mUserEmailAddress, mPassWord);
+        MqttNetworkMessage requestMsg = LoginRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord);
         Log.log(LOG_TAG, requestMsg.toString());
-        lc.request(requestMsg);
+        loginRequestChannel.request(requestMsg);
         return null;
     }
 
@@ -45,15 +44,14 @@ public class LoginTask implements Callable<Void> {
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            // Need to parse
-            if (message == null) {
-                System.out.println("mLoginResult received null message");
-                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
-                return;
-            }
+            try {
+                System.out.println("mLoginResult, result=" + message.getMessage());
+                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
-            System.out.println("mLoginResult Result=" + message.getMessage());
-            mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+            } catch (Exception e) {
+                e.printStackTrace();
+                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            }
         }
     };
 
@@ -61,7 +59,7 @@ public class LoginTask implements Callable<Void> {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
-            System.out.println("Failed to send Message=" + message);
+            System.out.println("mLoginTimeout, Failed to send Message=" + message);
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };

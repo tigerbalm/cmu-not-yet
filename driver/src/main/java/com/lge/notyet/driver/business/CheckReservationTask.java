@@ -12,7 +12,7 @@ public class CheckReservationTask implements Callable<Void> {
     private String mSessionKey;
     private ITaskDoneCallback mTaskDoneCallback;
 
-    public CheckReservationTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
+    private CheckReservationTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
         mSessionKey = sessionKey;
         mTaskDoneCallback = taskDoneCallback;
     }
@@ -25,7 +25,7 @@ public class CheckReservationTask implements Callable<Void> {
         GetReservationRequestChannel getReservationRequestChannel = ncm.createGetReservationRequestChannel();
         getReservationRequestChannel.addObserver(mReservationCheckResult);
         getReservationRequestChannel.addTimeoutObserver(mReservationTimeout);
-        getReservationRequestChannel.request(getReservationRequestChannel.createRequestMessage(mSessionKey));
+        getReservationRequestChannel.request(GetReservationRequestChannel.createRequestMessage(mSessionKey));
         return null;
     }
 
@@ -35,10 +35,14 @@ public class CheckReservationTask implements Callable<Void> {
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            // Need to parse
-            // ReservationResponseMessage result = (ReservationResponseMessage) message;
-            System.out.println("mReservationCheckResult Result=" + message.getMessage());
-            mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+            try {
+                System.out.println("mReservationCheckResult Result=" + message.getMessage());
+                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            }
         }
     };
 
