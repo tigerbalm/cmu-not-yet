@@ -7,7 +7,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
 public class SignUpResponseChannel extends ServerChannelRegistry {
 
-    private final static String TOPIC = "/signup/#";
+    private final static String TOPIC = "/user/sign_up/#";
 
     public SignUpResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
