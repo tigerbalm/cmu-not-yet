@@ -1,6 +1,12 @@
 package com.lge.notyet.attendant.ui;
 
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+import com.lge.notyet.attendant.business.GetFacilityTask;
+import com.lge.notyet.attendant.business.GetSlotListTask;
 import com.lge.notyet.attendant.business.LoginTask;
+import com.lge.notyet.attendant.manager.ScreenManager;
 import com.lge.notyet.attendant.manager.SessionManager;
 import com.lge.notyet.attendant.manager.TaskManager;
 import com.lge.notyet.attendant.util.Log;
@@ -85,6 +91,149 @@ public class LoginPanel {
         mBtnSignIn.setEnabled(enabled);
     }
 
+    private ITaskDoneCallback mGetSlotListCallback = new ITaskDoneCallback() {
+
+        @Override
+        public void onDone(int result, Object response) {
+
+            if (result == ITaskDoneCallback.FAIL) {
+                Log.log(LOG_TAG, "Failed to get slot list due to timeout");
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Network Connection Error: Failed to get slot list.",
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+
+            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+            Log.log(LOG_TAG, "Success to get slot list , response message=" + resMsg.getMessage());
+
+            int success = resMsg.getMessage().get("success").asInt();
+
+            if (success == 1) { // Success
+
+                JsonArray slots = resMsg.getMessage().get("slots").asArray();
+
+                for (JsonValue aSlot : slots.values()) {
+                    JsonObject slot = aSlot.asObject();
+                    int id = slot.get("id").asInt();
+                    int number = slot.get("number").asInt();
+                    int occupied = slot.get("occupied").asInt();
+                    long occupied_ts = slot.get("occupied_ts").asLong();
+                    SessionManager.getInstance().addSlot(id, number, occupied == 1, occupied_ts);
+                }
+
+                ScreenManager.getInstance().showFacilityMonitorScreen();
+
+            } else if (success == 0) {
+                Log.log(LOG_TAG, "Failed to get slot list, fail cause is " + resMsg.getMessage().get("cause").asString());
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Failed to get slot list, fail cause=" + resMsg.getMessage().get("cause").asString(),
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    };
+
+    private ITaskDoneCallback mGetFacilityCallback = new ITaskDoneCallback() {
+
+        @Override
+        public void onDone(int result, Object response) {
+
+            if (result == ITaskDoneCallback.FAIL) {
+                Log.log(LOG_TAG, "Failed to get facility information due to timeout");
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Network Connection Error: Failed to get facility information.",
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+
+            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+            Log.log(LOG_TAG, "Success to get facility information, response message=" + resMsg.getMessage());
+
+            int success = resMsg.getMessage().get("success").asInt();
+
+            if (success == 1) { // Success
+
+                JsonArray facilities = resMsg.getMessage().get("facilities").asArray();
+
+                if (facilities.size() != 1) {
+                    Log.log(LOG_TAG, "Wrong Information from server, attendant should have only one facility");
+                }
+
+                for (JsonValue facility : facilities.values()) {
+                    JsonObject fac = facility.asObject();
+                    int id = fac.get("id").asInt();
+                    String name = fac.get("name").asString();
+                    SessionManager.getInstance().setFacilityInformation(id, name);
+                    break;
+                }
+
+                TaskManager.getInstance().runTask(GetSlotListTask.getTask(
+                        SessionManager.getInstance().getKey(),
+                        SessionManager.getInstance().getFacilityId(),
+                        mGetSlotListCallback));
+
+            } else if (success == 0) {
+                Log.log(LOG_TAG, "Failed to get facility information, fail cause is " + resMsg.getMessage().get("cause").asString());
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Failed to get facility information, fail cause=" + resMsg.getMessage().get("cause").asString(),
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    };
+
+    private ITaskDoneCallback mLoginDoneCallback = new ITaskDoneCallback() {
+
+        @Override
+        public void onDone(int result, Object response) {
+
+            setUserInputEnabled(true);
+
+            if (result == ITaskDoneCallback.FAIL) {
+                Log.log(LOG_TAG, "Failed to login due to timeout");
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        "Network Connection Error: Failed to login.",
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+            Log.log(LOG_TAG, "Received login response, message=" + resMsg.getMessage());
+
+            try {
+
+                int success = resMsg.getMessage().get("success").asInt();
+
+                if (success == 1) { // Success
+
+                    String session = resMsg.getMessage().get("session_key").asString();
+                    SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
+                    SessionManager.getInstance().setKey(session);
+
+                    Log.log(LOG_TAG, "Success to login, session key is " + resMsg.getMessage().get("session_key").asString());
+
+                    TaskManager.getInstance().runTask(GetFacilityTask.getTask(session, mGetFacilityCallback));
+
+                } else if (success == 0) {
+                    Log.log(LOG_TAG, "Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            "Failed to login, fail cause=" + resMsg.getMessage().get("cause").asString(),
+                            "SurePark",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
     private void doLogin() {
         // Verify Inputs
         String userEmailAddress = mTfUserEmailAddress.getText();
@@ -112,116 +261,4 @@ public class LoginPanel {
         TaskManager.getInstance().runTask(LoginTask.getTask(userEmailAddress, userPassword, mLoginDoneCallback));
     }
 
-    /*
-    private ITaskDoneCallback mUpdateFacilityListCallback = new ITaskDoneCallback() {
-
-        @Override
-        public void onDone(int result, Object response) {
-
-            if (result == ITaskDoneCallback.FAIL) {
-                Log.log(LOG_TAG, "Failed to update facility list due to timeout");
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to update facility list.",
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-
-            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            Log.log(LOG_TAG, "Success to update facility list, response message=" + resMsg.getMessage());
-
-            int success = resMsg.getMessage().get("success").asInt();
-
-            if (success == 1) { // Success
-
-
-                if(resMsg.validate() == false) {
-                    Log.log(LOG_TAG, "Failed to validate response message");
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            "Failed to validate response message",
-                            "SurePark",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-
-                JsonArray facilities = resMsg.getMessage().get("facilities").asArray();
-                for (JsonValue facility : facilities.values()) {
-                    JsonObject fac = facility.asObject();
-                    int id = fac.get("id").asInt();
-                    String name = fac.get("name").asString();
-                    SessionManager.getInstance().addFacility(id, name);
-                }
-
-                TaskManager.getInstance().runTask(CheckReservationTask.getTask(SessionManager.getInstance().getKey(), mReservationCheckCallback));
-
-            } else if (success == 0) {
-                Log.log(LOG_TAG, "Failed update facility list, fail cause is " + resMsg.getMessage().get("cause").asString());
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Failed to update facility list, fail cause=" + resMsg.getMessage().get("cause").asString(),
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-            }
-        }
-    };
-    */
-
-    private ITaskDoneCallback mLoginDoneCallback = new ITaskDoneCallback() {
-
-        @Override
-        public void onDone(int result, Object response) {
-
-            setUserInputEnabled(true);
-
-            if (result == ITaskDoneCallback.FAIL) {
-                Log.log(LOG_TAG, "Failed to login due to timeout");
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to login.",
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            Log.log(LOG_TAG, "Received login response, message=" + resMsg.getMessage());
-
-            try {
-
-                int success = resMsg.getMessage().get("success").asInt();
-
-                if (success == 1) { // Success
-
-                /*
-                if(resMsg.validate() == false) {
-                    Log.log(LOG_TAG, "Failed to validate response message");
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            "Failed to validate response message",
-                            "SurePark",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                */
-
-                    String session = resMsg.getMessage().get("session_key").asString();
-                    SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
-                    SessionManager.getInstance().setKey(session);
-
-                    Log.log(LOG_TAG, "Success to login, session key is " + resMsg.getMessage().get("session_key").asString());
-
-                    // TaskManager.getInstance().runTask(UpdateFacilityListTask.getTask(session, mUpdateFacilityListCallback));
-
-                } else if (success == 0) {
-                    Log.log(LOG_TAG, "Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            "Failed to login, fail cause=" + resMsg.getMessage().get("cause").asString(),
-                            "SurePark",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    };
 }

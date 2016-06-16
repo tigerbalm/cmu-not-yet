@@ -4,6 +4,7 @@ import com.lge.notyet.attendant.manager.NetworkConnectionManager;
 import com.lge.notyet.attendant.ui.ITaskDoneCallback;
 import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.channels.GetFacilitiesRequestChannel;
+import com.lge.notyet.channels.GetSlotsRequestChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
@@ -13,17 +14,17 @@ import java.util.concurrent.FutureTask;
 /**
  * Created by beney.kim on 2016-06-16.
  */
+public class GetSlotListTask implements Callable<Void> {
 
-public class GetFacilityTask implements Callable<Void> {
-
-
-    private static final String LOG_TAG = "GetFacilityTask";
+    private static final String LOG_TAG = "GetSlotListTask";
 
     private String mSessionKey;
+    private int mFacilityId;
     private ITaskDoneCallback mTaskDoneCallback;
 
-    public GetFacilityTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
+    public GetSlotListTask(String sessionKey, int facilityId, ITaskDoneCallback taskDoneCallback) {
         mSessionKey = sessionKey;
+        mFacilityId = facilityId;
         mTaskDoneCallback = taskDoneCallback;
     }
 
@@ -32,18 +33,18 @@ public class GetFacilityTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
-        GetFacilitiesRequestChannel fc = ncm.createGetFacilitiesRequestChannel();
-        fc.addObserver(mGetFacilityResult);
-        fc.addTimeoutObserver(mGetFacilityTimeout);
+        GetSlotsRequestChannel sc = ncm.createGetSlotsRequestChannel(mFacilityId);
+        sc.addObserver(mGetSlotsResult);
+        sc.addTimeoutObserver(mGetSlotsTimeout);
 
-        MqttNetworkMessage requestMsg = fc.createRequestMessage(mSessionKey);
+        MqttNetworkMessage requestMsg = sc.createRequestMessage(mSessionKey);
         Log.log(LOG_TAG, requestMsg.toString());
-        fc.request(requestMsg);
+        sc.request(requestMsg);
         return null;
     }
 
     // Business Logic here, we have no time :(
-    private IOnResponse mGetFacilityResult = new IOnResponse() {
+    private IOnResponse mGetSlotsResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
@@ -55,7 +56,7 @@ public class GetFacilityTask implements Callable<Void> {
         }
     };
 
-    private IOnTimeout mGetFacilityTimeout = new IOnTimeout() {
+    private IOnTimeout mGetSlotsTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
@@ -64,8 +65,7 @@ public class GetFacilityTask implements Callable<Void> {
         }
     };
 
-    public static FutureTask<Void> getTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
-        return new FutureTask<>(new GetFacilityTask(sessionKey, taskDoneCallback));
+    public static FutureTask<Void> getTask(String sessionKey, int facilityId, ITaskDoneCallback taskDoneCallback) {
+        return new FutureTask<>(new GetSlotListTask(sessionKey, facilityId, taskDoneCallback));
     }
-
 }

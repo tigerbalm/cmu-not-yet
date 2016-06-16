@@ -1,6 +1,9 @@
 package com.lge.notyet.attendant.manager;
 
+import com.lge.notyet.channels.GetFacilitiesRequestChannel;
+import com.lge.notyet.channels.GetSlotsRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
+import com.lge.notyet.channels.UpdateSlotStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
@@ -46,9 +49,9 @@ public class NetworkConnectionManager {
         if (!mNc.isConnected()) {
             try {
                 mNc.connect(
-                        //InetAddress.getLoopbackAddress(),
+                        InetAddress.getLoopbackAddress(),
                         //InetAddress.getByName("192.168.1.20"),
-                        InetAddress.getByName("192.168.1.21"),
+                        //InetAddress.getByName("192.168.1.21"),
                         //InetAddress.getByName("128.237.212.113"),
                         //InetAddress.getByName("128.237.206.5"),
                         //InetAddress.getByName("10.245.148.224"),
@@ -67,5 +70,17 @@ public class NetworkConnectionManager {
 
     public LoginRequestChannel createLoginChannel() {
         return new LoginRequestChannel(mNc);
+    }
+
+    public GetFacilitiesRequestChannel createGetFacilitiesRequestChannel() {
+        return new GetFacilitiesRequestChannel(mNc);
+    }
+
+    public GetSlotsRequestChannel createGetSlotsRequestChannel(int facilityId) {
+        return new GetSlotsRequestChannel(mNc, facilityId);
+    }
+
+    public UpdateSlotStatusSubscribeChannel createUpdateSlotStatusSubscribeChannel(int physicalId) {
+        return new UpdateSlotStatusSubscribeChannel(mNc, physicalId);
     }
 }
