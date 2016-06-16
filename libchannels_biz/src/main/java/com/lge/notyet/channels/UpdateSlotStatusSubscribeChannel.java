@@ -8,7 +8,7 @@ import com.sun.javafx.binding.StringFormatter;
 
 public class UpdateSlotStatusSubscribeChannel extends SubscribeChannelRegistry {
     private static final String TOPIC = "/controller/+/slot/+";
-    private static final String TOPIC_WITH_PHYSICAL_ID = "/controller/%d/slot/+";
+    private static final String TOPIC_WITH_PHYSICAL_ID = "/controller/%d/slot/#";
 
     private final int mControllerId;
 

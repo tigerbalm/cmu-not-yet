@@ -55,7 +55,7 @@ public class FacilityMonitorPanel {
 
         Set<Integer> slotIds = SessionManager.getInstance().getSlotIds();
         JPanel center = new JPanel();
-        center.setLayout(new GridLayout(0, 2, 5, 5));
+        center.setLayout(new GridLayout(0, 4, 5, 5));
         for (int slotId : slotIds) {
 
             Slot slot = SessionManager.getInstance().getSlot(slotId);
@@ -175,7 +175,7 @@ public class FacilityMonitorPanel {
 
             MqttNetworkMessage notificationMessage = (MqttNetworkMessage)message;
 
-            System.out.println("mSlotStatusChanged Result=" + notificationMessage.getMessage());
+            System.out.println("mSlotStatusChanged Result=" + notificationMessage.getMessage() + " on topic=" + uri.getLocation());
 
             String topic = (String) uri.getLocation();
             StringTokenizer topicTokenizer = new StringTokenizer(topic, "/");
