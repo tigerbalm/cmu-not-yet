@@ -30,7 +30,7 @@ public class AuthenticationManager {
 
         INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
         new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
-        // new LoginRequestChannel(networkConnection).request(LoginRequestChannel.createRequestMessage("reshout@gmail.com", "password"));
+        // new LoginRequestChannel(networkConnection).request(LoginRequestChannel.createRequestMessage("owner@gmail.com", "password"));
     }
 
     public static AuthenticationManager getInstance() {
