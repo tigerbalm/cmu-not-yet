@@ -36,11 +36,6 @@ public class ReservationResponseMessage extends MqttNetworkMessage {
         return this;
     }
 
-    public ReservationResponseMessage setFailCause(String cause) {
-        mMessage.add(FAIL_CAUSE, cause);
-        return this;
-    }
-
     public int getResult() {
         return mMessage.get(RESULT).asInt();
     }

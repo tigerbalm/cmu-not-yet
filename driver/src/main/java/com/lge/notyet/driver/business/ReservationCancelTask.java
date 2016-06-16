@@ -9,19 +9,15 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
-
 public class ReservationCancelTask implements Callable<Void> {
 
     private static final String LOG_TAG = "ReservationCancelTask";
 
-    private String mSessionKey;
-    private int mReservationId;
-    private ITaskDoneCallback mTaskDoneCallback;
+    private final String mSessionKey;
+    private final int mReservationId;
+    private final ITaskDoneCallback mTaskDoneCallback;
 
-    public ReservationCancelTask(String sessionKey, int reservationId, ITaskDoneCallback taskDoneCallback) {
+    private ReservationCancelTask(String sessionKey, int reservationId, ITaskDoneCallback taskDoneCallback) {
         mSessionKey = sessionKey;
         mReservationId = reservationId;
         mTaskDoneCallback = taskDoneCallback;
@@ -36,7 +32,7 @@ public class ReservationCancelTask implements Callable<Void> {
         cancelReservationRequestChannel.addObserver(mCancelReservationResult);
         cancelReservationRequestChannel.addTimeoutObserver(mCancelReservationTimeout);
 
-        MqttNetworkMessage requestMsg = cancelReservationRequestChannel.createRequestMessage(mSessionKey);
+        MqttNetworkMessage requestMsg = CancelReservationRequestChannel.createRequestMessage(mSessionKey);
         Log.log(LOG_TAG, requestMsg.toString());
 
         cancelReservationRequestChannel.request(requestMsg);
@@ -44,7 +40,7 @@ public class ReservationCancelTask implements Callable<Void> {
     }
 
     // Business Logic here, we have no time :(
-    private IOnResponse mCancelReservationResult = new IOnResponse() {
+    private final IOnResponse mCancelReservationResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
@@ -56,7 +52,7 @@ public class ReservationCancelTask implements Callable<Void> {
         }
     };
 
-    private IOnTimeout mCancelReservationTimeout = new IOnTimeout() {
+    private final IOnTimeout mCancelReservationTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {

@@ -13,9 +13,9 @@ public class LoginTask implements Callable<Void> {
 
     private static final String LOG_TAG = "LoginTask";
 
-    private String mUserEmailAddress;
-    private String mPassWord;
-    private ITaskDoneCallback mTaskDoneCallback;
+    private final String mUserEmailAddress;
+    private final String mPassWord;
+    private final ITaskDoneCallback mTaskDoneCallback;
 
     private LoginTask(String userEmailAddress, String passWord, ITaskDoneCallback taskDoneCallback) {
         mUserEmailAddress = userEmailAddress;
@@ -39,13 +39,13 @@ public class LoginTask implements Callable<Void> {
     }
 
     // Business Logic here, we have no time :(
-    private IOnResponse mLoginResult = new IOnResponse() {
+    private final IOnResponse mLoginResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             try {
-                System.out.println("mLoginResult, result=" + message.getMessage());
+                Log.logd(LOG_TAG, "mLoginResult, result=" + message.getMessage());
                 mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {
@@ -55,11 +55,11 @@ public class LoginTask implements Callable<Void> {
         }
     };
 
-    private IOnTimeout mLoginTimeout = new IOnTimeout() {
+    private final IOnTimeout mLoginTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
-            System.out.println("mLoginTimeout, Failed to send Message=" + message);
+            Log.logd(LOG_TAG, "mLoginTimeout, Failed to send Message=" + message);
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };

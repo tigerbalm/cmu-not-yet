@@ -19,7 +19,7 @@ public class ScreenManager {
     private String mCurrentScreenName;
 
     private Screen mLoginPanel;
-    private ReservationPanel mReservationPanel;
+    private Screen mReservationPanel;
     private SignupPanel mSignupPanel;
     private ModifyAccountPanel mModifyAccountPanel;
     private ReservationHistoryPanel mReservationHistoryPanel;
@@ -72,7 +72,7 @@ public class ScreenManager {
 
     public void showReservationRequestScreen() {
         mLastScreenName = mCurrentScreenName;
-        mReservationPanel.init();
+        mReservationPanel.initScreen();
         mMainCardLayout.show(mCards, mReservationPanel.getName());
         mCurrentScreenName = mReservationPanel.getName();
     }
