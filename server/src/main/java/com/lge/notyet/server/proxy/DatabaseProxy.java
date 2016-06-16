@@ -331,6 +331,19 @@ public class DatabaseProxy {
         queryWithParams(connection, sql, parameters, resultHandler);
     }
 
+    public void selectReservationBySlot(SQLConnection connection, String controllerPhysicalId, int slotNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        String sql ="select slot.id" +
+                " from reservation" +
+                " inner join slot on reservation.slot_id=slot.id" +
+                " inner join controller on controller.id=slot.controller_id" +
+                " where physical_id=?" +
+                " and number=?";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(controllerPhysicalId);
+        parameters.add(slotNumber);
+        queryWithParams(connection, sql, parameters, resultHandler);
+    }
+
     public void updateSlotOccupied(SQLConnection connection, int slotId, boolean occupied, int occupiedTs, Handler<AsyncResult<JsonArray>> resultHandler) {
         String sql = "update slot set occupied=?, occupied_ts=? where id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
