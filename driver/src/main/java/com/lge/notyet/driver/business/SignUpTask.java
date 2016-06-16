@@ -38,7 +38,7 @@ public class SignUpTask implements Callable<Void> {
         sc.addObserver(mSignUpResult);
         sc.addTimeoutObserver(mSignUpTimeout);
 
-        boolean ret = sc.request(SignUpRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
+        boolean ret = sc.request(SignUpRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate/*, mCreditCardCvc*/));
         if (mTaskDoneCallback != null && !ret) {
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
