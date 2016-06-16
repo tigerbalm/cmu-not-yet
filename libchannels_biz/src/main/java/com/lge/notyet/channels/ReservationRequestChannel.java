@@ -21,15 +21,15 @@ public class ReservationRequestChannel extends ClientChannelRegistry {
         return new MqttUri(StringFormatter.format(TOPIC, facilityId).getValue());
     }
 
-    public static final int getFacilityId(Uri uri) {
+    public static int getFacilityId(Uri uri) {
         return Integer.parseInt((String) uri.getPathSegments().get(2));
     }
 
-    public static final String getSessionKey(NetworkMessage networkMessage) {
+    public static String getSessionKey(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get("session_key").asString();
     }
 
-    public static final int getReservationTimestamp(NetworkMessage networkMessage) {
+    public static int getReservationTimestamp(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get("reservation_ts").asInt();
     }
 

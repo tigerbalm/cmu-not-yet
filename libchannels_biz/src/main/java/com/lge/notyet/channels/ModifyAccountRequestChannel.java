@@ -7,9 +7,6 @@ import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
 public class ModifyAccountRequestChannel extends ClientChannelRegistry {
 
     private final static String TOPIC = "/modifyAccount";

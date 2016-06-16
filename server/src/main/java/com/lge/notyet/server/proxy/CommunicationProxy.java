@@ -14,8 +14,8 @@ import java.net.UnknownHostException;
 public class CommunicationProxy {
     private static CommunicationProxy instance = null;
 
-    // private static final String HOST = "192.168.1.21";
-    private static final String HOST = "localhost";
+    private static final String HOST = "192.168.1.21";
+    //private static final String HOST = "localhost";
 
     private Vertx vertx;
     private Logger logger;

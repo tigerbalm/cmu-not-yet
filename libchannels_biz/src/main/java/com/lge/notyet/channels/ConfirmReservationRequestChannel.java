@@ -25,11 +25,11 @@ public class ConfirmReservationRequestChannel extends ClientChannelRegistry {
         return new MqttUri(StringFormatter.format(TOPIC, controllerPhysicalId).getValue());
     }
 
-    public static final String getControllerPhysicalId(Uri uri) {
+    public static String getControllerPhysicalId(Uri uri) {
         return (String) uri.getPathSegments().get(1);
     }
 
-    public static final int getConfirmationNumber(NetworkMessage networkMessage) {
+    public static int getConfirmationNumber(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_CONFIRMATION_NUMBER).asInt();
     }
 

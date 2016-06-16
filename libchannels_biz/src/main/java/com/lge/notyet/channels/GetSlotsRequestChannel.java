@@ -13,7 +13,7 @@ public class GetSlotsRequestChannel extends ClientChannelRegistry {
     private final static String TOPIC = "/facility/%d/slots/get";
     private final static String KEY_SESSION_KEY = "session_key";
 
-    private int facilityId;
+    private final int facilityId;
 
     public GetSlotsRequestChannel(INetworkConnection networkConnection, int facilityId) {
         super(networkConnection);
@@ -25,7 +25,7 @@ public class GetSlotsRequestChannel extends ClientChannelRegistry {
         return new MqttUri(StringFormatter.format(TOPIC, facilityId).getValue());
     }
 
-    public static final int getFacilityId(Uri uri) {
+    public static int getFacilityId(Uri uri) {
         return Integer.parseInt((String) uri.getPathSegments().get(2));
     }
 

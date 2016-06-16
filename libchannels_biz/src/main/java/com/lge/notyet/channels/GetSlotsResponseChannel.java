@@ -24,9 +24,7 @@ public class GetSlotsResponseChannel extends ServerChannelRegistry {
     public static JsonObject createResponseObject(List<JsonObject> slotObjectList) {
         JsonObject responseObject = new JsonObject();
         JsonArray slotObjectArray = new JsonArray();
-        for (JsonObject slotObject : slotObjectList) {
-            slotObjectArray.add(slotObject);
-        }
+        slotObjectList.forEach(slotObjectArray::add);
         responseObject.add("slots", slotObjectArray);
         return responseObject;
     }

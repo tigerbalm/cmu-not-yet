@@ -12,7 +12,7 @@ import com.sun.javafx.binding.StringFormatter;
 public class GetDBQueryRequestChannel extends ClientChannelRegistry {
     private final static String TOPIC = "/facility/dbquery/get";
     private final static String KEY_SESSION_KEY = "session_key";
-    private final static String KEY_DBQUERY_KEY = "dbquery_key";
+    private final static String KEY_DB_QUERY_KEY = "dbquery_key";
 
     public GetDBQueryRequestChannel(INetworkConnection networkConnection) {
         super(networkConnection);
@@ -28,13 +28,13 @@ public class GetDBQueryRequestChannel extends ClientChannelRegistry {
     }
 
     public static String getKeyDbqueryKey(NetworkMessage networkMessage) {
-        return ((JsonObject) networkMessage.getMessage()).get(KEY_DBQUERY_KEY).asString();
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_DB_QUERY_KEY).asString();
     }
 
     public static MqttNetworkMessage createRequestMessage(String sessionKey, String dbQueryKey) {
         JsonObject requestObject = new JsonObject();
         requestObject.add(KEY_SESSION_KEY, sessionKey);
-        requestObject.add(KEY_DBQUERY_KEY, dbQueryKey);
+        requestObject.add(KEY_DB_QUERY_KEY, dbQueryKey);
         return new MqttNetworkMessage(requestObject);
     }
 }

@@ -19,7 +19,7 @@ public class ConfirmReservationResponseChannel extends ServerChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-    public static JsonObject createResponseOjbect(int slotNumber) {
+    public static JsonObject createResponseObject(int slotNumber) {
         JsonObject responseObject = new JsonObject();
         responseObject.add(KEY_SLOT_NUMBER, slotNumber);
         return responseObject;
