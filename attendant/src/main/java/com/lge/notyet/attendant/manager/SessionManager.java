@@ -67,8 +67,9 @@ public class SessionManager {
         mFacilityName = null;
     }
 
-    public void addSlot(int id, int number, boolean occupied, long occupiedTimeStamp) {
-        mSlots.put(id, new Slot(id, number, occupied, occupiedTimeStamp));
+    public void addSlot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, int physical_id) {
+
+        mSlots.put(id, new Slot(id, number, occupied, reserved, occupiedTimeStamp, controller_id, physical_id));
     }
 
     public Set<Integer> getSlotIds() {
