@@ -1,9 +1,10 @@
 package com.lge.notyet.owner.business;
 
-import com.lge.notyet.channels.LoginRequestChannel;
+import com.lge.notyet.channels.GetDBQueryRequestChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.owner.manager.NetworkConnectionManager;
+import com.lge.notyet.owner.manager.SessionManager;
 import com.lge.notyet.owner.ui.ITaskDoneCallback;
 import com.lge.notyet.owner.util.Log;
 
@@ -15,13 +16,11 @@ public class dbQueryTask implements Callable<Void> {
 
     private static final String LOG_TAG = "dbQueryTask";
 
-    private String mUserEmailAddress;
-    private String mPassWord;
+    private String mQueryString;
     private ITaskDoneCallback mTaskDoneCallback;
 
-    public dbQueryTask(String userEmailAddress, String passWord, ITaskDoneCallback taskDoneCallback) {
-        mUserEmailAddress = userEmailAddress;
-        mPassWord = passWord;
+    public dbQueryTask(String queryString, ITaskDoneCallback taskDoneCallback) {
+        mQueryString = queryString;
         mTaskDoneCallback = taskDoneCallback;
     }
 
@@ -30,30 +29,30 @@ public class dbQueryTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
-        LoginRequestChannel lc = ncm.createLoginChannel();
-        lc.addObserver(mLoginResult);
-        lc.addTimeoutObserver(mLoginTimeout);
+        GetDBQueryRequestChannel lc = ncm.createGetDBQueryRequestChannel();
+        lc.addObserver(mQueryResult);
+        lc.addTimeoutObserver(mQueryTimeout);
 
-        MqttNetworkMessage requestMsg = lc.createRequestMessage(mUserEmailAddress, mPassWord);
+        MqttNetworkMessage requestMsg = lc.createRequestMessage(SessionManager.getInstance().getKey(), mQueryString);
         Log.log(LOG_TAG, requestMsg.toString());
         lc.request(requestMsg);
         return null;
     }
 
-    // Business Logic here, we have no time :(
-    private IOnResponse mLoginResult = new IOnResponse() {
+    // Business Logic here,
+    private IOnResponse mQueryResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             // Need to parse
             // ReservationResponseMessage result = (ReservationResponseMessage) message;
-            System.out.println("mLoginResult Result=" + message.getMessage());
+            System.out.println("mQueryResult Result=" + message.getMessage());
             mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
         }
     };
 
-    private IOnTimeout mLoginTimeout = new IOnTimeout() {
+    private IOnTimeout mQueryTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
@@ -62,7 +61,7 @@ public class dbQueryTask implements Callable<Void> {
         }
     };
 
-    public static FutureTask<Void> getTask(String userEmailAddress, String passWord, ITaskDoneCallback taskDoneCallback) {
-        return new FutureTask<>(new dbQueryTask(userEmailAddress, passWord, taskDoneCallback));
+    public static FutureTask<Void> getTask(String queryString, ITaskDoneCallback taskDoneCallback) {
+        return new FutureTask<>(new dbQueryTask(queryString, taskDoneCallback));
     }
 }

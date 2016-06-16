@@ -1,5 +1,6 @@
 package com.lge.notyet.owner.manager;
 
+import com.lge.notyet.channels.GetDBQueryRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
@@ -67,5 +68,9 @@ public class NetworkConnectionManager {
 
     public LoginRequestChannel createLoginChannel() {
         return new LoginRequestChannel(mNc);
+    }
+
+    public GetDBQueryRequestChannel createGetDBQueryRequestChannel() {
+        return new GetDBQueryRequestChannel(mNc);
     }
 }

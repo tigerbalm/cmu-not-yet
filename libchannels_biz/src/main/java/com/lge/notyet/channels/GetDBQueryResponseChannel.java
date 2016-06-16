@@ -7,6 +7,9 @@ import com.lge.notyet.lib.comm.ServerChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.List;
 
 public class GetDBQueryResponseChannel extends ServerChannelRegistry {
@@ -21,13 +24,40 @@ public class GetDBQueryResponseChannel extends ServerChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-    public static JsonObject createResponseObject(List<JsonObject> metaAndResultSetObjectList) {
+//    public static JsonObject createResponseObject(String[][] metaAndResultSetObjectTable) {
+//        JsonObject responseObject = new JsonObject();
+//        JsonArray metaAndResultSetTable = new JsonArray();
+//        JsonArray metaAndResultSetArray;
+//        for (String[] metaAndResultSetObjectArray : metaAndResultSetObjectTable) {
+//            metaAndResultSetArray = new JsonArray();
+//            for(String metaAndResultSetObject: metaAndResultSetObjectArray) {
+//                metaAndResultSetArray.add(metaAndResultSetObject);
+//            }
+//            metaAndResultSetTable.add(metaAndResultSetArray);
+//        }
+//        responseObject.add("metaAndResultSet", metaAndResultSetTable);
+//        return responseObject;
+//    }
+
+    public static JsonObject createResponseObject(ResultSet rs) throws SQLException {
         JsonObject responseObject = new JsonObject();
-        JsonArray metaAndResultSetObjectArray = new JsonArray();
-        for (JsonObject metaAndResultSetObject : metaAndResultSetObjectList) {
-            metaAndResultSetObjectArray.add(metaAndResultSetObject);
+        JsonArray resultSetTable = new JsonArray();
+        JsonArray resultSetArray;
+
+        ResultSetMetaData columns= rs.getMetaData();
+        int columnCount= columns.getColumnCount();
+
+        while (rs.next()) {
+            resultSetArray = new JsonArray();
+            for (int i=1;i<=columnCount;i++) {
+                resultSetArray.add(rs.getString(i));
+            }
+            resultSetTable.add(resultSetArray);
         }
-        responseObject.add("metaAndResultSet", metaAndResultSetObjectArray);
+
+
+        responseObject.add("resultSet", resultSetTable);
         return responseObject;
     }
+
 }
