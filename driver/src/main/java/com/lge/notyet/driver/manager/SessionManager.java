@@ -13,6 +13,7 @@ public class SessionManager {
     private final static String CREDIT_CARD_EXPIRE = "credit_card_expire";
 
     private HashMap<String, String> mSession;
+
     private HashMap<Integer, String> mFacilityList;
 
     // Reservation Information
