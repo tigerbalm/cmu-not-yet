@@ -21,7 +21,7 @@ public class AttendantTestServer {
         public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             // Need to parse
-            System.out.println("mGetSlotsRequestReceived Requested Received=" + message.getMessage());
+            System.out.println("mGetSlotsRequestReceived Requested Received=" + message.getMessage() + ", topic=" + uri.getLocation().toString());
 
             List<JsonObject> slotList = new ArrayList<>();
             slotList.add(new JsonObject().add("id", 1).add("number", 1).add("occupied", 1).add("occupied_ts", 1000L));
@@ -47,7 +47,7 @@ public class AttendantTestServer {
             // Need to parse
             System.out.println("mGetFacilitiesRequestReceived Requested Received=" + message.getMessage());
             List<JsonObject> facilityList = new ArrayList<>();
-            facilityList.add(new JsonObject().add("id", 1).add("name", "Shadyside Parking Lot"));
+            facilityList.add(new JsonObject().add("id", 3).add("name", "Shadyside Parking Lot"));
             MqttNetworkMessage response = new MqttNetworkMessage(mGetFacilitiesResponseChannel.createResponseObject(facilityList));
             response.getMessage().add("success", 1);
             System.out.println("mGetFacilitiesRequestReceived send Response=" + response.getMessage());

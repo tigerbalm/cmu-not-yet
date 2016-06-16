@@ -1,6 +1,7 @@
 package com.lge.notyet.attendant.manager;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by beney.kim on 2016-06-15.
@@ -20,6 +21,7 @@ public class SessionManager {
 
     private SessionManager () {
         mSession = new HashMap<>();
+        mSlots = new HashMap<>();
     }
 
     public static SessionManager getInstance() {
@@ -69,8 +71,16 @@ public class SessionManager {
         mSlots.put(id, new Slot(id, number, occupied, occupiedTimeStamp));
     }
 
-    public Slot addSlot(int id) {
+    public Set<Integer> getSlotIds() {
+        return mSlots.keySet();
+    }
+
+    public Slot getSlot(int id) {
         return mSlots.get(id);
+    }
+
+    public int getSlotSize() {
+        return mSlots.size();
     }
 
     public void clear() {

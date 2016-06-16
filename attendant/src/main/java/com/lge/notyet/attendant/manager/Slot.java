@@ -38,7 +38,7 @@ public class Slot {
         mOccupied = occupied;
     }
 
-    public void getOccupiedTimeStamp(long occupiedTimeStamp) {
+    public void setOccupiedTimeStamp(long occupiedTimeStamp) {
         mOccupiedTimeStamp =occupiedTimeStamp;
     }
 }
