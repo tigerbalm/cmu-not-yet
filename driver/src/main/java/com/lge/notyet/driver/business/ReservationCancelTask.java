@@ -45,10 +45,14 @@ public class ReservationCancelTask implements Callable<Void> {
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            // Need to parse
-            // ReservationResponseMessage result = (ReservationResponseMessage) message;
-            System.out.println("mCancelReservationResult Result=" + message.getMessage());
-            mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+            try {
+                Log.logd(LOG_TAG, "mCancelReservationResult Result=" + message.getMessage());
+                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            }
         }
     };
 
@@ -56,7 +60,7 @@ public class ReservationCancelTask implements Callable<Void> {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
-            System.out.println("Failed to send Message=" + message);
+            Log.logd(LOG_TAG, "Failed to send Message=" + message);
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };

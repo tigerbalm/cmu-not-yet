@@ -1,9 +1,5 @@
 package com.lge.notyet.driver.manager;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 import com.lge.notyet.driver.ui.*;
 
 import javax.swing.*;
@@ -20,9 +16,10 @@ public class ScreenManager {
 
     private Screen mLoginPanel;
     private Screen mReservationPanel;
+    private Screen mReservationHistoryPanel;
+
     private SignupPanel mSignupPanel;
     private ModifyAccountPanel mModifyAccountPanel;
-    private ReservationHistoryPanel mReservationHistoryPanel;
 
     private ScreenManager () {
         mMainCardLayout = new CardLayout();
@@ -85,7 +82,7 @@ public class ScreenManager {
 
     public void showReservationHistoryScreen() {
         mLastScreenName = mCurrentScreenName;
-        mReservationHistoryPanel.init();
+        mReservationHistoryPanel.initScreen();
         mMainCardLayout.show(mCards, mReservationHistoryPanel.getName());
         mCurrentScreenName = mReservationHistoryPanel.getName();
     }

@@ -172,7 +172,8 @@ public class ReservationPanel implements Screen {
         ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
 
         try {
-            System.out.println("Success to make reservation, response message=" + resMsg.getMessage());
+
+            Log.logd(LOG_TAG, "Received response to MakeReservation, message=" + resMsg.getMessage());
 
             if (resMsg.getResult() == 1) { // Success
 

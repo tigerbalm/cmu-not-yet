@@ -13,6 +13,8 @@ public class Strings {
     public static final String UPDATE_FACILITY_LIST_FAILED = "Failed to update parking location list";
     public static final String GET_RESERVATION_INFO_FAILED = "Failed to get reservation information";
     public static final String MAKE_RESERVATION_FAILED = "Failed to make reservation";
+    public static final String CANCEL_RESERVATION_FAILED = "Failed to cancel reservation";
+
 
     public static final String WRONG_ACCOUNT = "You tried to access with wrong account";
     public static final String SERVER_ERROR = "Server error";
