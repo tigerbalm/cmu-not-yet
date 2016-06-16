@@ -90,7 +90,6 @@ public class ScreenManager {
     }
 
     public void showPreviousScreen() {
-
         if (mLastScreenName == null || mLastScreenName.length() == 0) return;
         mCurrentScreenName = mLastScreenName;
         mMainCardLayout.show(mCards, mLastScreenName);

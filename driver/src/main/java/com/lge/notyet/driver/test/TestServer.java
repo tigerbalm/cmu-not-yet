@@ -57,7 +57,7 @@ public class TestServer {
             response.getMessage().add("facility_id", 1);
         }
 
-        System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
+        Log.logd(LOG_TAG, "UpdateFacilityList Requested Received=" + message.getMessage());
         message.responseFor(response);
     };
 
@@ -71,7 +71,7 @@ public class TestServer {
         facilityList.add(new JsonObject().add("id", 7).add("name", "CMU Parking Lot"));
         MqttNetworkMessage response = new MqttNetworkMessage(ReservableFacilitiesResponseChannel.createResponseObject(facilityList));
         response.getMessage().add("success", 1);
-        System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
+        Log.logd(LOG_TAG, "UpdateFacilityList Requested Received=" + message.getMessage());
         message.responseFor(response);
     };
 
@@ -81,7 +81,7 @@ public class TestServer {
         // Need to parse
         MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, 2, "1111-2222-3333-4444", "12/16", "12345678"));
         response.getMessage().add("success", 1);
-        System.out.println("Login Requested Received=" + message.getMessage());
+        Log.logd(LOG_TAG, "Login Requested Received=" + message.getMessage());
 
         message.responseFor(response);
     };
@@ -92,7 +92,7 @@ public class TestServer {
         // Need to parse
         MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
         response.getMessage().add("success", 1);
-        System.out.println("mSignUpRequestReceived Requested Received=" + message.getMessage());
+        Log.logd(LOG_TAG, "mSignUpRequestReceived Requested Received=" + message.getMessage());
 
         message.responseFor(response);
     };
@@ -103,7 +103,7 @@ public class TestServer {
         // Need to parse
         MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
         response.getMessage().add("success", 1);
-        System.out.println("mCancelReservationRequestReceived Requested Received=" + message.getMessage());
+        Log.logd(LOG_TAG, "mCancelReservationRequestReceived Requested Received=" + message.getMessage());
 
         message.responseFor(response);
     };
@@ -112,7 +112,7 @@ public class TestServer {
     private final IOnRequest mReservationRequestReceived = (networkChannel, uri, message) -> {
 
         // Need to parse
-        System.out.println("Reservation Requested Received=" + message.getMessage());
+        Log.logd(LOG_TAG, "Reservation Requested Received=" + message.getMessage());
         message.responseFor(new ReservationResponseMessage().setResult(1).setConfirmationNumber(10L).setReservationId(1));
     };
 

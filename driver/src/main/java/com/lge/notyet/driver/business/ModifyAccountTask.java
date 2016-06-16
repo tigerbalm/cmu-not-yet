@@ -2,12 +2,15 @@ package com.lge.notyet.driver.business;
 
 import com.lge.notyet.channels.ModifyAccountRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
+import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 public class ModifyAccountTask implements Callable<Void>  {
+
+    private static final String LOG_TAG = "ModifyAccountTask";
 
     private final String mSessionKey;
     private final String mUserEmailAddress;
@@ -49,7 +52,7 @@ public class ModifyAccountTask implements Callable<Void>  {
 
             // Need to parse
             // ReservationResponseMessage result = (ReservationResponseMessage) message;
-            System.out.println("mModifyAccountResult Result=" + message.getMessage());
+            Log.logd(LOG_TAG, "mModifyAccountResult Result=" + message.getMessage());
             mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
         }
     };
@@ -58,7 +61,7 @@ public class ModifyAccountTask implements Callable<Void>  {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
-            System.out.println("Failed to send Message=" + message);
+            Log.logd(LOG_TAG, "Failed to send Message=" + message);
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };

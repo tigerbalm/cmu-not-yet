@@ -3,7 +3,6 @@ package com.lge.notyet.driver.business;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
-
 public class ReservationResponseMessage extends MqttNetworkMessage {
 
     private static final String RESULT = "success";

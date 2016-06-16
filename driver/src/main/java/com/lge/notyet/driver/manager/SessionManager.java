@@ -38,15 +38,12 @@ public class SessionManager {
     public String getUserEmail() {
         return mSession.get(EMAIL);
     }
-
     public String getKey() {
         return mSession.get(KEY);
     }
-
     public String getCreditCardNumber() {
         return mSession.get(CREDIT_CARD_NUMBER);
     }
-
     public String getCreditCardExpireDate() {
         return mSession.get(CREDIT_CARD_EXPIRE);
     }
@@ -54,15 +51,12 @@ public class SessionManager {
     public void setUserEmail(String email) {
         mSession.put(EMAIL, email);
     }
-
     public void setKey(String key) {
         mSession.put(KEY, key);
     }
-
     public void setCreditCardNumber(String credit_card_number) {
         mSession.put(CREDIT_CARD_NUMBER, credit_card_number);
     }
-
     public void setCreditCardExpireDate(String credit_card_expire) {
         mSession.put(CREDIT_CARD_EXPIRE, credit_card_expire);
     }
@@ -77,15 +71,12 @@ public class SessionManager {
     public long getReservationTime() {
         return mReservedTime;
     }
-
     public int getReservationConfirmationNumber() {
         return mReservedConfirmationNumber;
     }
-
     public int getReservationFacilityId() {
         return mReservedFacilityId;
     }
-
     public int getReservationId() {
         return mReservedId;
     }
@@ -106,8 +97,7 @@ public class SessionManager {
     }
 
     public int getFacilityId(String name) {
-        for (int id : mFacilityList.keySet())
-        {
+        for (int id : mFacilityList.keySet()) {
             if (mFacilityList.get(id).equals(name)) return id;
         }
 
@@ -116,8 +106,7 @@ public class SessionManager {
 
     public String getFacilityByIndex(int index) {
         int i = 0;
-        for (int id : mFacilityList.keySet())
-        {
+        for (int id : mFacilityList.keySet()) {
             if (i == index) return mFacilityList.get(id);
             i++;
         }
