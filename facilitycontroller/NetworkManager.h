@@ -36,6 +36,7 @@ public:
 
 	void loop();
 	void send(String command, int number);
+	bool send(String topic, String body);
 };
 
 #endif

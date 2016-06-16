@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{475A5BA8-0FBE-4D09-ACCF-731DAB269EC5}</ProjectGuid>
-    <RootNamespace>SureParkFacility2</RootNamespace>
+    <ProjectGuid>{06CA7C36-E3C1-4355-AE70-72E6BD9DB1D1}</ProjectGuid>
+    <RootNamespace>facilitycontroller</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -74,8 +74,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\mydocuments\Arduino\libraries\ArduinoJson\src;D:\mydocuments\Arduino\libraries\ArduinoJson\src\utility;D:\mydocuments\Arduino\libraries\PubSubClient\src;D:\mydocuments\Arduino\libraries\PubSubClient\src\utility;C:\Program Files (x86)\Arduino\libraries\Servo\src;C:\Program Files (x86)\Arduino\libraries\Servo\src\utility;C:\Program Files (x86)\Arduino\libraries\WiFi\src;C:\Program Files (x86)\Arduino\libraries\WiFi\src\utility;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\glqcbu0s.rsa\Micro Platforms\default\debuggers;D:\mydocuments\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;D:\mydocuments\Arduino\SureParkFacility2;C:\Program Files (x86)\Arduino\hardware\tools\avr/avr/include/;C:\Program Files (x86)\Arduino\hardware\tools\avr//avr/include/avr/;C:\Program Files (x86)\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>D:\mydocuments\Arduino\SureParkFacility2\__vm\.SureParkFacility2.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>D:\mydocuments\Arduino\libraries\ArduinoJson\src;D:\mydocuments\Arduino\libraries\ArduinoJson\src\utility;D:\mydocuments\Arduino\libraries\PubSubClient\src;D:\mydocuments\Arduino\libraries\PubSubClient\src\utility;C:\Program Files (x86)\Arduino\libraries\Servo\src;C:\Program Files (x86)\Arduino\libraries\Servo\src\utility;C:\Program Files (x86)\Arduino\libraries\WiFi\src;C:\Program Files (x86)\Arduino\libraries\WiFi\src\utility;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\glqcbu0s.rsa\Micro Platforms\default\debuggers;D:\mydocuments\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;D:\workspace4\cmu-not-yet\facilitycontroller;C:\Program Files (x86)\Arduino\hardware\tools\avr/avr/include/;C:\Program Files (x86)\Arduino\hardware\tools\avr//avr/include/avr/;C:\Program Files (x86)\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>D:\workspace4\cmu-not-yet\facilitycontroller\__vm\.facilitycontroller.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>__AVR_ATmega2560__;F_CPU=16000000L;ARDUINO=10609;ARDUINO_AVR_MEGA2560;ARDUINO_ARCH_AVR;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -113,36 +113,92 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="SureParkFacility2.ino">
+    <None Include="facilitycontroller.ino">
       <FileType>CppCode</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClientApi.h" />
-    <ClInclude Include="Controller.h" />
-    <ClInclude Include="Detectable.h" />
-    <ClInclude Include="EntryGate.h" />
-    <ClInclude Include="EntryGateHelper.h" />
-    <ClInclude Include="LeavingState.h" />
-    <ClInclude Include="NetworkManager.h" />
-    <ClInclude Include="NetworkManagerListener.h" />
-    <ClInclude Include="ParkingState.h" />
-    <ClInclude Include="State.h" />
-    <ClInclude Include="StateChangeListener.h" />
-    <ClInclude Include="SureParkPinHeader.h" />
-    <ClInclude Include="WatingState.h" />
-    <ClInclude Include="__vm\.SureParkFacility2.vsarduino.h" />
+    <ClInclude Include="CarDetectedListener.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="ClientApi.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="CmdVerifyReservationRes.h" />
+    <ClInclude Include="Command.h" />
+    <ClInclude Include="CommandFactory.h" />
+    <ClInclude Include="CommandReportSlotStatus.h" />
+    <ClInclude Include="CommandRequestPayment.h" />
+    <ClInclude Include="CommandVerifyReservation.h" />
+    <ClInclude Include="Controller.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="EntryGateHelper.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="ExitGateHelper.h" />
+    <ClInclude Include="FacilityConfiguration.h" />
+    <ClInclude Include="GateCarDetector.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="LeavingState.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="NetworkManager.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="NetworkManagerListener.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="ParkingState.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="Slot.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="SlotConfiguration.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="SlotStatusChangeDetector.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="SlotStatusChangeListener.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="StateChangeListener.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="SureParkPinHeader.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="WatingState.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="__vm\.facilitycontroller.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CarDetectedListener.cpp" />
     <ClCompile Include="ClientApi.cpp" />
+    <ClCompile Include="CmdVerifyReservationRes.cpp" />
+    <ClCompile Include="Command.cpp" />
+    <ClCompile Include="CommandFactory.cpp" />
+    <ClCompile Include="CommandReportSlotStatus.cpp" />
+    <ClCompile Include="CommandRequestPayment.cpp" />
+    <ClCompile Include="CommandVerifyReservation.cpp" />
     <ClCompile Include="Controller.cpp" />
-    <ClCompile Include="Detectable.cpp" />
-    <ClCompile Include="EntryGate.cpp" />
     <ClCompile Include="EntryGateHelper.cpp" />
+    <ClCompile Include="ExitGateHelper.cpp" />
+    <ClCompile Include="GateCarDetector.cpp" />
     <ClCompile Include="LeavingState.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="NetworkManagerListener.cpp" />
     <ClCompile Include="ParkingState.cpp" />
+    <ClCompile Include="Slot.cpp" />
+    <ClCompile Include="SlotStatusChangeDetector.cpp" />
+    <ClCompile Include="SlotStatusChangeListener.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="StateChangeListener.cpp" />
     <ClCompile Include="WatingState.cpp" />

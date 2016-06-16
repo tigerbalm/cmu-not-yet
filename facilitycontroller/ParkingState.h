@@ -22,8 +22,7 @@ private:
 public:
 	void loop();
 	void waitingNumberInput();
-	void verifyReservation(int number);
-	void scanSlots();
+	void verifyReservation(int number);	
 
 	ParkingState(StateChangeListener *listener, NetworkManager *manager);
 

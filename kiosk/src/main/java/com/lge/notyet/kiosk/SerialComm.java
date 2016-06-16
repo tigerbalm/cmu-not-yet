@@ -77,7 +77,7 @@ public class SerialComm {
         //serialCommMonitorThread.interrupt();
     }
 
-    private static SerialPort findPort(final String descriptor) {
+    private SerialPort findPort(final String descriptor) {
         SerialPort[] ports = SerialPort.getCommPorts();
 
         for (SerialPort port: ports) {
@@ -87,5 +87,32 @@ public class SerialComm {
         }
 
         return SerialPort.getCommPorts()[0];
+    }
+
+    public boolean isConnected() {
+        return comPort.isOpen();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        SerialPort port = comPort;
+        if (port == null) {
+            port = findPort("Arduino");
+        }
+
+        builder.append(port.getSystemPortName())
+                .append("(")
+                .append(port.getBaudRate())
+                .append(") ");
+
+        if (port.isOpen()) {
+            builder.append("connected.");
+        } else {
+            builder.append("disconnected.");
+        }
+
+        return builder.toString();
     }
 }

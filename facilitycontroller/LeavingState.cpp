@@ -3,6 +3,8 @@
 // 
 
 #include "LeavingState.h"
+#include "ExitGateHelper.h"
+#include "CarDetectedListener.h"
 
 // LEAVING 에 처음 진입하면 차가 EXIT GATE 에 도착하길 기다리는 상태
 // 도착하면, 결제 요청
@@ -41,7 +43,18 @@ void LeavingState::carDetectedOnEntry(int status)
 
 void LeavingState::carDetectedOnExit(int status)
 {
-	// 당분간 igrnore
+	if (status == CAR_DETECTED)
+	{
+		ExitGateHelper::ledOn();
+		ExitGateHelper::open();	
+	}
+	else
+	{
+		ExitGateHelper::ledOff();
+		ExitGateHelper::close();
+
+		stateChangeListener->onStateChanged(STATE_WAITING);
+	}
 }
 
 void LeavingState::onSlotOccupied(int slotNum)

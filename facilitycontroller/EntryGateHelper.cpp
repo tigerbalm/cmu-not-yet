@@ -10,7 +10,7 @@
 #define EntryGateServoPin 5
 #define ExitGateServoPin 6
 #define Open  90
-#define Close 0
+#define Close 5
 
 int delayvalue = 500;
 
@@ -34,6 +34,9 @@ void EntryGateHelper::close()
 
 void EntryGateHelper::ledOn()
 {
+	pinMode(EntryGateRedLED, OUTPUT);
+	digitalWrite(EntryGateRedLED, HIGH);
+
 	pinMode(EntryGateGreenLED, OUTPUT);
 	//digitalWrite(EntryGateGreenLED, HIGH);
 
@@ -43,6 +46,9 @@ void EntryGateHelper::ledOn()
 
 void EntryGateHelper::ledOff()
 {
+	pinMode(EntryGateGreenLED, OUTPUT);
+	digitalWrite(EntryGateGreenLED, HIGH);
+
 	pinMode(EntryGateRedLED, OUTPUT);
 	digitalWrite(EntryGateRedLED, LOW);
 }

@@ -1,8 +1,16 @@
+#include "CmdVerifyReservationRes.h"
+#include "FacilityConfiguration.h"
+#include "CommandRequestPayment.h"
+#include "CommandReportSlotStatus.h"
+#include "CommandVerifyReservation.h"
+#include "CommandFactory.h"
+#include "Command.h"
 #include "Slot.h"
 #include "SlotStatusChangeListener.h"
 #include "SlotStatusChangeDetector.h"
 #include "CarDetectedListener.h"
 #include <Servo.h>
+#include "ExitGateHelper.h"
 #include "EntryGateHelper.h"
 #include <ArduinoJson.h>
 #include <WiFi.h>
@@ -18,6 +26,7 @@
 #include "Controller.h"
 
 #define EntryGateServoPin 5
+#define ExitGateServoPin 6
 
 Controller controller;
 
@@ -30,9 +39,15 @@ void setup()
 
 	controller.setup();
 
-	entryGateServo.attach(EntryGateServoPin);
-	entryGateServo.write(0);
+	entryGateServo.attach(EntryGateServoPin);	
 	EntryGateHelper::attach(entryGateServo);
+	EntryGateHelper::close();
+	EntryGateHelper::ledOff();
+
+	exitGateServo.attach(ExitGateServoPin);	
+	ExitGateHelper::attach(exitGateServo);
+	ExitGateHelper::close();
+	ExitGateHelper::ledOff();
 }
 
 void loop()

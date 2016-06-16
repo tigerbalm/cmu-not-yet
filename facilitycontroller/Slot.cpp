@@ -10,8 +10,10 @@ Slot::Slot(int pin)
 }
 
 bool Slot::changed()
-{
-	return prevStatus != currStatus;
+{	
+	// prvent state change to leaving because of slot emptified message at initial time
+	return prevStatus != SLOT_UNDEFINED 
+				&& prevStatus != currStatus;
 }
 
 void Slot::refresh()

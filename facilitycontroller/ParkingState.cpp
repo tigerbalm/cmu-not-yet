@@ -5,6 +5,10 @@
 #include "ParkingState.h"
 #include "EntryGateHelper.h"
 #include "CarDetectedListener.h"
+#include "CommandVerifyReservation.h"
+#include "CmdVerifyReservationRes.h"
+#include "CommandFactory.h"
+#include "CommandReportSlotStatus.h"
 
 #define MODE_WAITING_NUMBER		1
 #define MODE_WAITING_CONFIRM	2
@@ -25,11 +29,28 @@ void ParkingState::onMessageReceived(String message)
 
 	if (mode == MODE_WAITING_CONFIRM)
 	{
-		// door open??
-		EntryGateHelper::open();
-		EntryGateHelper::ledOn();
+		Command command = CommandFactory::get("confirm_reservation");
+		command.setBody(message);
 
-		mode = MODE_WAITING_PLACING;
+		CmdVerifyReservationRes &response = (CmdVerifyReservationRes &)command;
+
+		if (response.isSuccess())
+		{
+			Serial.print("confirm_reservation success : ");
+			Serial.println(response.getSlotNumber());
+
+			EntryGateHelper::open();
+			EntryGateHelper::ledOn();
+
+			mode = MODE_WAITING_PLACING;
+		}
+		else
+		{
+			Serial.print("confirm_reservation fail : ");
+			Serial.println(response.getSlotNumber());
+
+			mode = MODE_WAITING_NUMBER;
+		}		
 	}
 }
 
@@ -42,7 +63,13 @@ void ParkingState::loop()
 		case MODE_WAITING_NUMBER :
 			waitingNumberInput();
 			break;
-		case MODE_WAITING_CONFIRM :			
+		case MODE_WAITING_CONFIRM :	
+			/*
+		{
+			String msg = "{ 'success':1, 'slot_no':3 }";
+			onMessageReceived(msg);
+		}
+		*/
 			break;
 		case MODE_WAITING_PLACING :			
 			break;
@@ -66,7 +93,11 @@ void ParkingState::waitingNumberInput()
 void ParkingState::verifyReservation(int number)
 {
 	// send to server with number
-	networkManager->send("verify", number);
+	CommandVerifyReservation verifyCmd(networkManager);
+	verifyCmd.setReservationNumber(number);
+	verifyCmd.send();
+
+	//networkManager->send("verify", number);
 	mode = MODE_WAITING_CONFIRM;
 }
 
@@ -84,6 +115,7 @@ void ParkingState::carDetectedOnEntry(int status)
 		if (stateChangeListener != NULL)
 		{
 			stateChangeListener->onStateChanged(STATE_WAITING);
+			mode = MODE_WAITING_NUMBER;
 		}
 	}
 }
@@ -104,12 +136,16 @@ void ParkingState::onSlotOccupied(int slotNum)
 		// 1. server 에 slot 상태 보낸다.
 		// 2. 특별한 경우이므로 보낼때 예약 번호를 같이 보낼 지 결정 필요
 
+		CommandReportSlotStatus cmdStatus(networkManager, slotNum, 1);
+		cmdStatus.send();
+
 		EntryGateHelper::ledOff();
 		EntryGateHelper::close();
 
 		if (stateChangeListener != NULL)
 		{
 			stateChangeListener->onStateChanged(STATE_WAITING);
+			mode = MODE_WAITING_NUMBER;
 		}
 	}
 }
