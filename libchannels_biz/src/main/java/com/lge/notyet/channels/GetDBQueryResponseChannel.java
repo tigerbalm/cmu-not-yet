@@ -11,7 +11,7 @@ import java.util.List;
 
 public class GetDBQueryResponseChannel extends ServerChannelRegistry {
     private final static String TOPIC = "/facility/dbquery/get/#";
-    private final static String KEY_RESULT = "result";
+    public final static String KEY_RESULT = "result";
 
     public GetDBQueryResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
