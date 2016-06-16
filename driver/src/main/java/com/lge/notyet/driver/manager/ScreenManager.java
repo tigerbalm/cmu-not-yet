@@ -1,9 +1,5 @@
 package com.lge.notyet.driver.manager;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 import com.lge.notyet.driver.ui.*;
 
 import javax.swing.*;
@@ -11,18 +7,19 @@ import java.awt.*;
 
 public class ScreenManager {
 
-    private static ScreenManager sScreenManager = null;
-    private CardLayout mMainCardLayout;
     private JPanel mCards;
+    private final CardLayout mMainCardLayout;
 
     private String mLastScreenName;
     private String mCurrentScreenName;
 
     private Screen mLoginPanel;
     private Screen mReservationPanel;
-    private SignupPanel mSignupPanel;
-    private ModifyAccountPanel mModifyAccountPanel;
-    private ReservationHistoryPanel mReservationHistoryPanel;
+    private Screen mReservationHistoryPanel;
+    private Screen mSignupPanel;
+    private Screen mModifyAccountPanel;
+
+    private static ScreenManager sScreenManager = null;
 
     private ScreenManager () {
         mMainCardLayout = new CardLayout();
@@ -53,14 +50,8 @@ public class ScreenManager {
         mCards.add(mReservationHistoryPanel.getRootPanel(), mReservationHistoryPanel.getName());
         mCards.add(mModifyAccountPanel.getRootPanel(), mModifyAccountPanel.getName());
 
-
         showLoginScreen();
-
         return mCards;
-    }
-
-    public CardLayout getLayout() {
-        return mMainCardLayout;
     }
 
     public void showLoginScreen() {
@@ -79,29 +70,27 @@ public class ScreenManager {
 
     public void showSignUpScreen() {
         mLastScreenName = mCurrentScreenName;
+        mSignupPanel.initScreen();
         mMainCardLayout.show(mCards, mSignupPanel.getName());
         mCurrentScreenName = mSignupPanel.getName();
     }
 
     public void showReservationHistoryScreen() {
         mLastScreenName = mCurrentScreenName;
-        mReservationHistoryPanel.init();
+        mReservationHistoryPanel.initScreen();
         mMainCardLayout.show(mCards, mReservationHistoryPanel.getName());
         mCurrentScreenName = mReservationHistoryPanel.getName();
     }
 
     public void showModifyAccountPanelScreen() {
         mLastScreenName = mCurrentScreenName;
-        mModifyAccountPanel.init();
+        mModifyAccountPanel.initScreen();
         mMainCardLayout.show(mCards, mModifyAccountPanel.getName());
         mCurrentScreenName = mModifyAccountPanel.getName();
     }
 
-
     public void showPreviousScreen() {
-
         if (mLastScreenName == null || mLastScreenName.length() == 0) return;
-
         mCurrentScreenName = mLastScreenName;
         mMainCardLayout.show(mCards, mLastScreenName);
         mLastScreenName = null;

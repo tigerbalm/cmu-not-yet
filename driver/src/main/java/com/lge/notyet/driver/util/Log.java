@@ -13,7 +13,8 @@ public class Log {
     }
 
     public static void logv(String tag, String log) {
-        if (!LOGV) return;
-        System.out.println(System.currentTimeMillis() + " [" + tag + "] " + log);
+        if (!LOGV) {
+            System.out.println(System.currentTimeMillis() + " [" + tag + "] " + log);
+        }
     }
 }

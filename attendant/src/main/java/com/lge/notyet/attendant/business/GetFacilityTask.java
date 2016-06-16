@@ -48,8 +48,6 @@ public class GetFacilityTask implements Callable<Void> {
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            // Need to parse
-            // ReservationResponseMessage result = (ReservationResponseMessage) message;
             System.out.println("mLoginResult Result=" + message.getMessage());
             mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
         }

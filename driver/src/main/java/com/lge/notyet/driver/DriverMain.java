@@ -1,25 +1,19 @@
 package com.lge.notyet.driver;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 import com.lge.notyet.driver.manager.ScreenManager;
 
 import javax.swing.*;
 
 public class DriverMain {
 
-    private final ScreenManager mScreenManager;
+    private DriverMain() {
 
-    public DriverMain() {
-
-        mScreenManager = ScreenManager.getInstance();
+        ScreenManager mScreenManager = ScreenManager.getInstance();
         JFrame frame = new JFrame("SurePark");
 
         frame.getContentPane().add(mScreenManager.init());
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

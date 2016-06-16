@@ -2,9 +2,6 @@ package com.lge.notyet.driver.manager;
 
 import java.util.HashMap;
 
-/**
- * Created by beney.kim on 2016-06-15.
- */
 public class SessionManager {
 
     private final static String EMAIL = "email";
@@ -12,9 +9,9 @@ public class SessionManager {
     private final static String CREDIT_CARD_NUMBER = "credit_card_number";
     private final static String CREDIT_CARD_EXPIRE = "credit_card_expire";
 
-    private HashMap<String, String> mSession;
+    private final HashMap<String, String> mSession;
 
-    private HashMap<Integer, String> mFacilityList;
+    private final HashMap<Integer, String> mFacilityList;
 
     // Reservation Information
     private long mReservedTime = 0L;
@@ -41,15 +38,12 @@ public class SessionManager {
     public String getUserEmail() {
         return mSession.get(EMAIL);
     }
-
     public String getKey() {
         return mSession.get(KEY);
     }
-
     public String getCreditCardNumber() {
         return mSession.get(CREDIT_CARD_NUMBER);
     }
-
     public String getCreditCardExpireDate() {
         return mSession.get(CREDIT_CARD_EXPIRE);
     }
@@ -57,38 +51,32 @@ public class SessionManager {
     public void setUserEmail(String email) {
         mSession.put(EMAIL, email);
     }
-
     public void setKey(String key) {
         mSession.put(KEY, key);
     }
-
     public void setCreditCardNumber(String credit_card_number) {
         mSession.put(CREDIT_CARD_NUMBER, credit_card_number);
     }
-
     public void setCreditCardExpireDate(String credit_card_expire) {
         mSession.put(CREDIT_CARD_EXPIRE, credit_card_expire);
     }
 
-    public void setReservationInformation(long reservedTime, int reservedConfirmationNumber, int reservedFacilityId, int reservatoinId) {
+    public void setReservationInformation(long reservedTime, int reservedConfirmationNumber, int reservedFacilityId, int reservationId) {
         mReservedTime = reservedTime;
         mReservedConfirmationNumber = reservedConfirmationNumber;
         mReservedFacilityId = reservedFacilityId;
-        mReservedId = reservatoinId;
+        mReservedId = reservationId;
     }
 
     public long getReservationTime() {
         return mReservedTime;
     }
-
     public int getReservationConfirmationNumber() {
         return mReservedConfirmationNumber;
     }
-
     public int getReservationFacilityId() {
         return mReservedFacilityId;
     }
-
     public int getReservationId() {
         return mReservedId;
     }
@@ -109,8 +97,7 @@ public class SessionManager {
     }
 
     public int getFacilityId(String name) {
-        for (int id : mFacilityList.keySet())
-        {
+        for (int id : mFacilityList.keySet()) {
             if (mFacilityList.get(id).equals(name)) return id;
         }
 
@@ -119,8 +106,7 @@ public class SessionManager {
 
     public String getFacilityByIndex(int index) {
         int i = 0;
-        for (int id : mFacilityList.keySet())
-        {
+        for (int id : mFacilityList.keySet()) {
             if (i == index) return mFacilityList.get(id);
             i++;
         }
