@@ -4,6 +4,7 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.driver.business.CheckReservationTask;
+import com.lge.notyet.driver.business.ITaskDoneCallback;
 import com.lge.notyet.driver.business.LoginTask;
 import com.lge.notyet.driver.business.UpdateFacilityListTask;
 import com.lge.notyet.driver.manager.ScreenManager;
@@ -33,28 +34,11 @@ public class LoginPanel {
         mBtnSignIn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
                 doLogin();
             }
         });
 
-        mLabelCreateAccount.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                // Sign Up Screen
-                ScreenManager.getInstance().showSignUpScreen();
-            }
-        });
-
-        mLabelCreateAccount.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
-                // Sign Up Screen
-                ScreenManager.getInstance().showSignUpScreen();
-            }
-        });
+        // Log In
         mTfUserPassword.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -64,6 +48,30 @@ public class LoginPanel {
                 }
             }
         });
+
+        // Sign Up
+        mLabelCreateAccount.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                // Sign Up Screen
+                ScreenManager.getInstance().showSignUpScreen();
+            }
+        });
+
+        // Sign Up
+        mLabelCreateAccount.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                // Sign Up Screen
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    ScreenManager.getInstance().showSignUpScreen();
+                }
+            }
+        });
+
+
         mLabelForgetPassword.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

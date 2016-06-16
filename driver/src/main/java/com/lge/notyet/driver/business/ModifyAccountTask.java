@@ -1,9 +1,7 @@
 package com.lge.notyet.driver.business;
 
 import com.lge.notyet.channels.ModifyAccountRequestChannel;
-import com.lge.notyet.channels.SignUpRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
-import com.lge.notyet.driver.ui.ITaskDoneCallback;
 import com.lge.notyet.lib.comm.*;
 
 import java.util.concurrent.Callable;

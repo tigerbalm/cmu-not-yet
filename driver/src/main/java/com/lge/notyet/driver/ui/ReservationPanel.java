@@ -1,5 +1,6 @@
 package com.lge.notyet.driver.ui;
 
+import com.lge.notyet.driver.business.ITaskDoneCallback;
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.business.ReservationTask;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
