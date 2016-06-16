@@ -37,15 +37,15 @@ public class TaskManager implements Runnable {
     @Override
     public void run() {
 
+        //noinspection InfiniteLoopStatement
         while(true) {
 
-            FutureTask task = null;
             try {
-                task = mTaskQueue.take();
+                FutureTask task = mTaskQueue.take();
+                mTaskExecutor.execute(task);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            mTaskExecutor.execute(task);
         }
     }
 }

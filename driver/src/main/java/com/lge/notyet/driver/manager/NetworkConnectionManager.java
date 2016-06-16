@@ -1,18 +1,20 @@
 package com.lge.notyet.driver.manager;
 
 import com.lge.notyet.channels.*;
+import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class NetworkConnectionManager {
 
+    private static final String LOG_TAG = "NetworkConnectionManager";
+
     private INetworkConnection mNc = null;
 
-    public static NetworkConnectionManager sNetworkConnectionManager = null;
+    private static NetworkConnectionManager sNetworkConnectionManager = null;
 
     private NetworkConnectionManager () {
         mNc = new MqttNetworkConnection(null);
@@ -29,15 +31,17 @@ public class NetworkConnectionManager {
 
         @Override
         public void onConnected() {
-            System.out.println("onConnected");
+            Log.logd(LOG_TAG, "onConnected");
         }
 
         @Override
         public void onConnectFailed() {
+            Log.logd(LOG_TAG, "onConnectFailed");
         }
 
         @Override
         public void onLost() {
+            Log.logd(LOG_TAG, "onLost");
             // Reconnect
             //mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
         }
@@ -49,8 +53,8 @@ public class NetworkConnectionManager {
                 mNc.connect(
                         //InetAddress.getLoopbackAddress(),
                         //InetAddress.getByName("192.168.1.20"),
-                        InetAddress.getByName("192.168.1.21"),
-                        //InetAddress.getByName("128.237.212.113"),
+                        //InetAddress.getByName("192.168.1.21"),
+                        InetAddress.getByName("128.237.175.140"),
                         //InetAddress.getByName("128.237.206.5"),
                         //InetAddress.getByName("10.245.148.224"),
                         mNetworkCallback);
@@ -61,7 +65,7 @@ public class NetworkConnectionManager {
     }
 
     public void close() {
-        if (!mNc.isConnected()) {
+        if (mNc.isConnected()) {
             mNc.disconnect();
         }
     }
@@ -89,7 +93,6 @@ public class NetworkConnectionManager {
     public ModifyAccountRequestChannel createModifyAccountRequestChannel() {
         return new ModifyAccountRequestChannel(mNc);
     }
-
 
     public CancelReservationRequestChannel createCancelReservationRequestChannel(int reservationId) {
         return new CancelReservationRequestChannel(mNc, reservationId);

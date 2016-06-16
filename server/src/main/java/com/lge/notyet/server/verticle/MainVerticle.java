@@ -3,6 +3,7 @@ package com.lge.notyet.server.verticle;
 import com.lge.notyet.server.manager.AuthenticationManager;
 import com.lge.notyet.server.manager.ReservationManager;
 import com.lge.notyet.server.manager.FacilityManager;
+import com.lge.notyet.server.manager.StatisticsManager;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.*;
@@ -32,6 +33,7 @@ public class MainVerticle extends AbstractVerticle {
         AuthenticationManager.getInstance();
         ReservationManager.getInstance();
         FacilityManager.getInstance();
+        StatisticsManager.getInstance();
     }
 
     @Override

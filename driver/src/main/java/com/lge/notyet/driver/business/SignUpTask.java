@@ -2,25 +2,24 @@ package com.lge.notyet.driver.business;
 
 import com.lge.notyet.channels.SignUpRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
+import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-/**
- * Created by beney.kim on 2016-06-15.
- */
 public class SignUpTask implements Callable<Void> {
 
+    private static final String LOG_TAG = "SignUpTask";
 
-    private String mUserEmailAddress;
-    private String mPassWord;
-    private String mCreditCardNumber;
-    private String mCreditCardExpireDate;
-    private String mCreditCardCvc;
-    private ITaskDoneCallback mTaskDoneCallback;
+    private final String mUserEmailAddress;
+    private final String mPassWord;
+    private final String mCreditCardNumber;
+    private final String mCreditCardExpireDate;
+    private final String mCreditCardCvc;
+    private final ITaskDoneCallback mTaskDoneCallback;
 
-    public SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
+    private SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
         mUserEmailAddress = userEmailAddress;
         mPassWord = passWord;
         mCreditCardNumber = creditCardNumber;
@@ -39,29 +38,36 @@ public class SignUpTask implements Callable<Void> {
         sc.addObserver(mSignUpResult);
         sc.addTimeoutObserver(mSignUpTimeout);
 
-        sc.request(sc.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
+        boolean ret = sc.request(SignUpRequestChannel.createRequestMessage(mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate/*, mCreditCardCvc*/));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
         return null;
     }
 
     // Business Logic here, we have no time :(
-    private IOnResponse mSignUpResult = new IOnResponse() {
+    private final IOnResponse mSignUpResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            // Need to parse
-            // ReservationResponseMessage result = (ReservationResponseMessage) message;
-            System.out.println("mSignUpResult Result=" + message.getMessage());
-            mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+            try {
+                Log.logd(LOG_TAG, "mSignUpResult Result=" + message.getMessage());
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            }
         }
     };
 
-    private IOnTimeout mSignUpTimeout = new IOnTimeout() {
+    private final IOnTimeout mSignUpTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
-            System.out.println("Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            Log.logd(LOG_TAG, "Failed to send Message=" + message);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 

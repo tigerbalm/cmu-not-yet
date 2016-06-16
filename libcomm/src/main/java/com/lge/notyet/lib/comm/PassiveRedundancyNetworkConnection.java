@@ -170,10 +170,10 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     }
 
     @Override
-    protected void request(NetworkChannel networkChannel, NetworkMessage message) {
+    protected boolean request(NetworkChannel networkChannel, NetworkMessage message) {
         NetworkChannel nc = new PassiveRedundancyNetworkChannel(networkChannel);
         mPassiveRedundancyNetworkChannels.put(networkChannel.getHashKey(), nc);
-        super.request(nc, message);
+        return super.request(nc, message);
     }
 
     public class SelfConfigurationChannel extends NotificationChannel {

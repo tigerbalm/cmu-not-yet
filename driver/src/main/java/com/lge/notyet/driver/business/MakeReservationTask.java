@@ -1,22 +1,26 @@
 package com.lge.notyet.driver.business;
 
-import com.lge.notyet.channels.ReservableFacilitiesRequestChannel;
+import com.lge.notyet.channels.ReservationRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
+import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-public class UpdateFacilityListTask implements Callable<Void> {
 
-    private static final String LOG_TAG = "UpdateFacilityListTask";
+public class MakeReservationTask implements Callable<Void> {
 
-    private final String mSessionKey;
+    private static final String LOG_TAG = "MakeReservationTask";
+
+    private final int mFacilityId;
+    private final long mRequestTime;
     private final ITaskDoneCallback mTaskDoneCallback;
 
-    private UpdateFacilityListTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
-        mSessionKey = sessionKey;
+    private MakeReservationTask(int facilityId, long timeStamp, ITaskDoneCallback taskDoneCallback) {
+        mFacilityId = facilityId;
+        mRequestTime = timeStamp;
         mTaskDoneCallback = taskDoneCallback;
     }
 
@@ -26,25 +30,26 @@ public class UpdateFacilityListTask implements Callable<Void> {
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
 
-        ReservableFacilitiesRequestChannel reservableFacilitiesRequestChannel = ncm.createReservableFacilitiesRequestChannel();
-        reservableFacilitiesRequestChannel.addObserver(mUpdateFacilityListResult);
-        reservableFacilitiesRequestChannel.addTimeoutObserver(mUpdateFacilityListTimeout);
+        ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
+        rc.addObserver(mMakeReservationResult);
+        rc.addTimeoutObserver(mMakeReservationTimeout);
 
-        boolean ret = reservableFacilitiesRequestChannel.request(ReservableFacilitiesRequestChannel.createRequestMessage(mSessionKey));
+        boolean ret = rc.request(ReservationRequestChannel.createRequestMessage(SessionManager.getInstance().getKey(), mRequestTime));
         if (mTaskDoneCallback != null && !ret) {
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
+
         return null;
     }
 
     // Business Logic here, we have no time :(
-    private final IOnResponse mUpdateFacilityListResult = new IOnResponse() {
+    private final IOnResponse mMakeReservationResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             try {
-                Log.logd(LOG_TAG, "mUpdateFacilityListResult Result=" + message.getMessage());
+                Log.logd(LOG_TAG, "mMakeReservationResult Result=" + message.getMessage());
                 if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {
@@ -54,7 +59,7 @@ public class UpdateFacilityListTask implements Callable<Void> {
         }
     };
 
-    private final IOnTimeout mUpdateFacilityListTimeout = new IOnTimeout() {
+    private final IOnTimeout mMakeReservationTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
@@ -63,7 +68,7 @@ public class UpdateFacilityListTask implements Callable<Void> {
         }
     };
 
-    public static FutureTask<Void> getTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
-        return new FutureTask<>(new UpdateFacilityListTask(sessionKey, taskDoneCallback));
+    public static FutureTask<Void> getTask(int facilityId, long timeStamp, ITaskDoneCallback taskDoneCallback) {
+        return new FutureTask<>(new MakeReservationTask(facilityId, timeStamp, taskDoneCallback));
     }
 }

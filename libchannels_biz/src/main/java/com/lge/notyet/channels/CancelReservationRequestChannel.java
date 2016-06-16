@@ -25,7 +25,7 @@ public class CancelReservationRequestChannel extends ClientChannelRegistry {
         return new MqttUri(StringFormatter.format(TOPIC, reservationId).getValue());
     }
 
-    public static final int getReservationId(Uri uri) {
+    public static int getReservationId(Uri uri) {
         return Integer.parseInt((String) uri.getPathSegments().get(2));
     }
 

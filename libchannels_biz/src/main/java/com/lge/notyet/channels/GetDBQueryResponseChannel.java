@@ -9,10 +9,11 @@ import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
 import java.util.List;
 
-public class GetSlotsResponseChannel extends ServerChannelRegistry {
-    private final static String TOPIC = "/facility/+/slots/get/#";
+public class GetDBQueryResponseChannel extends ServerChannelRegistry {
+    private final static String TOPIC = "/facility/dbquery/get/#";
+    public final static String KEY_RESULT = "result";
 
-    public GetSlotsResponseChannel(INetworkConnection networkConnection) {
+    public GetDBQueryResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
     }
 
@@ -21,11 +22,11 @@ public class GetSlotsResponseChannel extends ServerChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-    public static JsonObject createResponseObject(List<JsonObject> slotObjectList) {
+    public static JsonObject createResponseObject(List<JsonArray> resultList) {
         JsonObject responseObject = new JsonObject();
-        JsonArray slotObjectArray = new JsonArray();
-        slotObjectList.forEach(slotObjectArray::add);
-        responseObject.add("slots", slotObjectArray);
+        JsonArray resultArray = new JsonArray();
+        resultList.forEach(resultArray::add);
+        responseObject.add(KEY_RESULT, resultArray);
         return responseObject;
     }
 }

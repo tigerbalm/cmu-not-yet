@@ -26,15 +26,15 @@ public class UpdateSlotStatusPublishChannel extends PublishChannel {
         return new MqttUri(StringFormatter.format(TOPIC, physicalId, slotId).getValue());
     }
 
-    public static final String getControllerPhysicalId(Uri uri) {
+    public static String getControllerPhysicalId(Uri uri) {
         return (String) uri.getPathSegments().get(2);
     }
 
-    public static final int getSlotNumber(Uri uri) {
+    public static int getSlotNumber(Uri uri) {
         return Integer.parseInt((String) uri.getPathSegments().get(4));
     }
 
-    public static final boolean isOccupied(NetworkMessage networkMessage) {
+    public static boolean isOccupied(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_OCCUPIED).asInt() == 1;
     }
 }

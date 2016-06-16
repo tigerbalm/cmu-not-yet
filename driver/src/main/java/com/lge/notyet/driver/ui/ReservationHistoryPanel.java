@@ -2,11 +2,12 @@ package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ITaskDoneCallback;
 import com.lge.notyet.driver.business.ReservationCancelTask;
-import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
+import com.lge.notyet.driver.resource.Strings;
+import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
@@ -15,10 +16,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-/**
- * Created by beney.kim on 2016-06-14.
- */
-public class ReservationHistoryPanel {
+public class ReservationHistoryPanel implements Screen {
+
+    private static final String LOG_TAG = "ReservationHistoryPanel";
+
     private JLabel mLabelUserName;
     private JLabel mLabelReservationDate;
     private JLabel mLabelReservationLocation;
@@ -28,7 +29,9 @@ public class ReservationHistoryPanel {
     private JButton cancelButton;
     private JLabel mLabelLogout;
 
-    public void init() {
+
+    @Override
+    public void initScreen() {
 
         SessionManager mSessionManager = SessionManager.getInstance();
 
@@ -50,85 +53,12 @@ public class ReservationHistoryPanel {
         mLabelReservationConfirmationNumber.setText(mSessionManager.getReservationConfirmationNumber() + "");
         //mLabelReservationConfirmationNumber.updateUI();
         //mLabelReservationConfirmationNumber.update(mLabelReservationConfirmationNumber.getGraphics());
-
     }
 
-    public ReservationHistoryPanel() {
-        mLabelModifyAccountInfo.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
-        mLabelModifyAccountInfo.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TaskManager.getInstance().runTask(ReservationCancelTask.getTask(SessionManager.getInstance().getKey(),
-                        SessionManager.getInstance().getReservationId(),
-                        mCancelReservationDoneCallback));
-            }
-        });
-        mLabelLogout.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                SessionManager.getInstance().clear(); // Log-out
-                NetworkConnectionManager.getInstance().close();
-                ScreenManager.getInstance().showLoginScreen();
-            }
-        });
-        mLabelLogout.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
-                SessionManager.getInstance().clear(); // Log-out
-                NetworkConnectionManager.getInstance().close();
-                ScreenManager.getInstance().showLoginScreen();
-            }
-        });
+    @Override
+    public void disposeScreen() {
+
     }
-
-
-    private ITaskDoneCallback mCancelReservationDoneCallback = new ITaskDoneCallback() {
-
-        @Override
-        public void onDone(int result, Object response) {
-
-            if (result == ITaskDoneCallback.FAIL) {
-                System.out.println("Failed to cancel reservation due to timeout");
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to cancel reservation.",
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            ReservationResponseMessage resMsg = new ReservationResponseMessage((MqttNetworkMessage)response);
-            System.out.println("Success to cancel reservation, response message=" + resMsg.getMessage());
-
-            if (resMsg.getResult() == 1) { // Success
-
-                SessionManager.getInstance().clearReservationInformation();
-                ScreenManager.getInstance().showReservationRequestScreen();
-
-            } else if (resMsg.getResult() == 0) {
-                System.out.println("Failed to signup, fail cause is " + resMsg.getFailCause());
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Failed to cancel reservation, fail cause=" + resMsg.getFailCause(),
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-            }
-        }
-    };
-
 
     public JPanel getRootPanel() {
         return mForm;
@@ -137,4 +67,121 @@ public class ReservationHistoryPanel {
     public String getName() {
         return "ReservationHistoryPanel";
     }
+
+    private void setUserInputEnabled(boolean enabled) {
+        cancelButton.setEnabled(enabled);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Business Logic
+
+    public ReservationHistoryPanel() {
+
+        // Modify Account
+        mLabelModifyAccountInfo.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                ScreenManager.getInstance().showModifyAccountPanelScreen();
+            }
+        });
+
+        // Modify Account
+        mLabelModifyAccountInfo.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                ScreenManager.getInstance().showModifyAccountPanelScreen();
+            }
+        });
+
+        // Log-out
+        mLabelLogout.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                SessionManager.getInstance().clear(); // Log-out
+                // NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+        });
+
+        // Log-out
+        mLabelLogout.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                SessionManager.getInstance().clear(); // Log-out
+                // NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+        });
+
+        // Cancel Reservation
+        cancelButton.addActionListener(e -> {
+
+            setUserInputEnabled(false);
+            TaskManager.getInstance().runTask(ReservationCancelTask.getTask(SessionManager.getInstance().getKey(),
+                    SessionManager.getInstance().getReservationId(),
+                    mCancelReservationDoneCallback));
+        });
+    }
+
+    private final ITaskDoneCallback mCancelReservationDoneCallback = (result, response) -> {
+
+        setUserInputEnabled(true);
+
+        if (result == ITaskDoneCallback.FAIL) {
+
+            Log.logd(LOG_TAG, "Failed to cancel reservation due to timeout");
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
+
+        try {
+
+            Log.logd(LOG_TAG, "Received response to CancelReservation, message=" + resMsg.getMessage());
+
+            int success = resMsg.getMessage().get("success").asInt();
+
+            if (success == 1) { // Success
+
+                SessionManager.getInstance().clearReservationInformation();
+                ScreenManager.getInstance().showReservationRequestScreen();
+
+            } else if (success == 0) {
+
+                Log.logd(LOG_TAG, "Failed to signup, with cause=" + resMsg.getMessage().get("cause").asString());
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.CANCEL_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to cancel reservation due to timeout");
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    };
 }
