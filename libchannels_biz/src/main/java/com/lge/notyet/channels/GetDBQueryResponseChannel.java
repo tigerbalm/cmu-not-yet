@@ -7,13 +7,11 @@ import com.lge.notyet.lib.comm.ServerChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.List;
 
 public class GetDBQueryResponseChannel extends ServerChannelRegistry {
     private final static String TOPIC = "/facility/dbquery/get/#";
+    private final static String KEY_RESULT = "result";
 
     public GetDBQueryResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
@@ -24,40 +22,11 @@ public class GetDBQueryResponseChannel extends ServerChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-//    public static JsonObject createResponseObject(String[][] metaAndResultSetObjectTable) {
-//        JsonObject responseObject = new JsonObject();
-//        JsonArray metaAndResultSetTable = new JsonArray();
-//        JsonArray metaAndResultSetArray;
-//        for (String[] metaAndResultSetObjectArray : metaAndResultSetObjectTable) {
-//            metaAndResultSetArray = new JsonArray();
-//            for(String metaAndResultSetObject: metaAndResultSetObjectArray) {
-//                metaAndResultSetArray.add(metaAndResultSetObject);
-//            }
-//            metaAndResultSetTable.add(metaAndResultSetArray);
-//        }
-//        responseObject.add("metaAndResultSet", metaAndResultSetTable);
-//        return responseObject;
-//    }
-
-    public static JsonObject createResponseObject(ResultSet rs) throws SQLException {
+    public static JsonObject createResponseObject(List<JsonArray> resultList) {
         JsonObject responseObject = new JsonObject();
-        JsonArray resultSetTable = new JsonArray();
-        JsonArray resultSetArray;
-
-        ResultSetMetaData columns= rs.getMetaData();
-        int columnCount= columns.getColumnCount();
-
-        while (rs.next()) {
-            resultSetArray = new JsonArray();
-            for (int i=1;i<=columnCount;i++) {
-                resultSetArray.add(rs.getString(i));
-            }
-            resultSetTable.add(resultSetArray);
-        }
-
-
-        responseObject.add("resultSet", resultSetTable);
+        JsonArray resultArray = new JsonArray();
+        resultList.forEach(resultArray::add);
+        responseObject.add(KEY_RESULT, resultArray);
         return responseObject;
     }
-
 }
