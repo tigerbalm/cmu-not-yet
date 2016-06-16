@@ -12,4 +12,4 @@ include ':libchannels_biz'
 include ':driver'
 include 'owner'
 include 'attendant'
-
+include ':kiosk'
