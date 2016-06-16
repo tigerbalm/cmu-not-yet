@@ -22,11 +22,11 @@ public class LoginRequestChannel extends ClientChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-    public static final String getEmail(NetworkMessage networkMessage) {
+    public static String getEmail(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get("email").asString();
     }
 
-    public static final String getPassword(NetworkMessage networkMessage) {
+    public static String getPassword(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get("password").asString();
     }
 

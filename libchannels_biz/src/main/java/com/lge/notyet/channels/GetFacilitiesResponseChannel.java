@@ -24,9 +24,7 @@ public class GetFacilitiesResponseChannel extends ServerChannelRegistry {
     public static JsonObject createResponseObject(List<JsonObject> facilityObjectList) {
         JsonObject responseObject = new JsonObject();
         JsonArray facilityObjectArray = new JsonArray();
-        for (JsonObject facilityObject : facilityObjectList) {
-            facilityObjectArray.add(facilityObject);
-        }
+        facilityObjectList.forEach(facilityObjectArray::add);
         responseObject.add("facilities", facilityObjectArray);
         return responseObject;
     }
