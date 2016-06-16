@@ -10,7 +10,9 @@ import com.lge.notyet.attendant.manager.Slot;
 import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.channels.UpdateSlotStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.*;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +21,12 @@ import java.util.Calendar;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Created by beney.kim on 2016-06-16.
@@ -28,7 +36,10 @@ public class FacilityMonitorPanel {
     private JLabel mLabelFacilityName;
     private JScrollPane mSpSlotStatus;
 
-    UpdateSlotStatusSubscribeChannel mUpdateSlotStatusSubscribeChannel = null;
+    private UpdateSlotStatusSubscribeChannel mUpdateSlotStatusSubscribeChannel = null;
+
+    private AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
+    ScheduledFuture<?> mSlotStatusUpdateThread = null;
 
     public void init() {
 
@@ -52,6 +63,7 @@ public class FacilityMonitorPanel {
             JLabel slotNumber = new JLabel(slot.getNumber() + "");
             slotNumber.setHorizontalAlignment(SwingConstants.CENTER);
 
+            /*
             JLabel strReservedFrom = new JLabel("Reserved From");
             strReservedFrom.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -65,12 +77,32 @@ public class FacilityMonitorPanel {
 
             JLabel reservedTimeL = new JLabel(reservedTimeString);
             reservedTimeL.setHorizontalAlignment(SwingConstants.CENTER);
+            */
+
+            // Reserved Time Based [START]
+
+            JLabel strReservedFrom = new JLabel("Occupied Time");
+            strReservedFrom.setHorizontalAlignment(SwingConstants.CENTER);
+
+            long now = Calendar.getInstance().getTimeInMillis()/1000;
+            long occupiedTimeSec = now - slot.getOccupiedTimeStamp();
+
+            JLabel reservedTimeL = new JLabel(occupiedTimeSec / 60 + " minute(s)");
+            reservedTimeL.setHorizontalAlignment(SwingConstants.CENTER);
+
+            // Reserved Time Based [END]
 
             JPanel slotPanel = new JPanel(new GridLayout(0, 1));
             slotPanel.add(slotNumber);
             slotPanel.add(new JSeparator());
-            slotPanel.add(strReservedFrom);
-            slotPanel.add(reservedTimeL);
+
+            if(slot.isOccupied()) {
+                slotPanel.add(strReservedFrom);
+                slotPanel.add(reservedTimeL);
+            } else {
+                slotPanel.add(new JLabel());
+                slotPanel.add(new JLabel());
+            }
 
             slotPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
@@ -85,8 +117,27 @@ public class FacilityMonitorPanel {
 
         mSpSlotStatus.getViewport().removeAll();
         mSpSlotStatus.getViewport().add(center, null);
+
+        if (mSlotStatusUpdateThreadStarted.get() == false) {
+            mSlotStatusUpdateThreadStarted.set(true);
+            scheduleSlotStatusUpdate();
+        }
     }
 
+    public void dispose() {
+
+        if (mUpdateSlotStatusSubscribeChannel != null) {
+            mUpdateSlotStatusSubscribeChannel.unlisten();
+            mUpdateSlotStatusSubscribeChannel = null;
+        }
+
+        if (mSlotStatusUpdateThreadStarted.get() == true) {
+            if (mSlotStatusUpdateThread != null) {
+                mSlotStatusUpdateThread.cancel(true);
+            }
+            mSlotStatusUpdateThreadStarted.set(false);
+        }
+    }
 
     // Business Logic here, we have no time :(
     private IOnNotify mSlotStatusChanged = new IOnNotify() {
@@ -118,6 +169,23 @@ public class FacilityMonitorPanel {
             }
         }
     };
+
+    private static final int SLOT_STATUS_UPDATE_PERIOD = 10;
+    private static final int SLOT_STATUS_UPDATE_MESSAGE_MAX = 3;
+    private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(SLOT_STATUS_UPDATE_MESSAGE_MAX);
+
+    private class SlotStatusUpdateThread implements Runnable {
+
+        public void run() {
+            init();
+        }
+    }
+
+    private void scheduleSlotStatusUpdate() {
+        // TODO: Need to check Maximum Pended Requests?
+        mSlotStatusUpdateThread = mScheduler.scheduleAtFixedRate(new SlotStatusUpdateThread(), SLOT_STATUS_UPDATE_PERIOD, SLOT_STATUS_UPDATE_PERIOD, SECONDS);
+    }
+
     public JPanel getRootPanel() {
         return mForm;
     }

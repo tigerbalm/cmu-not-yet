@@ -24,12 +24,12 @@ public class AttendantTestServer {
             System.out.println("mGetSlotsRequestReceived Requested Received=" + message.getMessage() + ", topic=" + uri.getLocation().toString());
 
             List<JsonObject> slotList = new ArrayList<>();
-            slotList.add(new JsonObject().add("id", 1).add("number", 1).add("occupied", 1).add("occupied_ts", 1000L));
-            slotList.add(new JsonObject().add("id", 2).add("number", 2).add("occupied", 1).add("occupied_ts", 3000L));
+            slotList.add(new JsonObject().add("id", 1).add("number", 1).add("occupied", 1).add("occupied_ts", 1466021160L));
+            slotList.add(new JsonObject().add("id", 2).add("number", 2).add("occupied", 1).add("occupied_ts", 1466041160L));
             slotList.add(new JsonObject().add("id", 3).add("number", 4).add("occupied", 0).add("occupied_ts", 0L));
             slotList.add(new JsonObject().add("id", 4).add("number", 8).add("occupied", 0).add("occupied_ts", 0L));
             slotList.add(new JsonObject().add("id", 5).add("number", 16).add("occupied", 0).add("occupied_ts", 0L));
-            slotList.add(new JsonObject().add("id", 6).add("number", 32).add("occupied", 1).add("occupied_ts", 8000L));
+            slotList.add(new JsonObject().add("id", 6).add("number", 32).add("occupied", 1).add("occupied_ts", 1466001160L));
             MqttNetworkMessage response = new MqttNetworkMessage(mGetSlotsResponseChannel.createResponseObject(slotList));
             response.getMessage().add("success", 1);
             System.out.println("mGetSlotsRequestReceived send Response=" + response.getMessage());
