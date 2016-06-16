@@ -12,12 +12,6 @@ public class ReservationRequestMessage extends MqttNetworkMessage {
         super(new JsonObject());
     }
 
-    // TypeCasting :(
-    public ReservationRequestMessage(MqttNetworkMessage message) {
-        this();
-        mMessage = message.getMessage();
-    }
-
     public ReservationRequestMessage setSessionKey(String sessionKey) {
         mMessage.add(SESSION_KEY, sessionKey);
         return this;

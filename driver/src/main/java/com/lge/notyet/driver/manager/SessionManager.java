@@ -2,9 +2,6 @@ package com.lge.notyet.driver.manager;
 
 import java.util.HashMap;
 
-/**
- * Created by beney.kim on 2016-06-15.
- */
 public class SessionManager {
 
     private final static String EMAIL = "email";
@@ -12,9 +9,9 @@ public class SessionManager {
     private final static String CREDIT_CARD_NUMBER = "credit_card_number";
     private final static String CREDIT_CARD_EXPIRE = "credit_card_expire";
 
-    private HashMap<String, String> mSession;
+    private final HashMap<String, String> mSession;
 
-    private HashMap<Integer, String> mFacilityList;
+    private final HashMap<Integer, String> mFacilityList;
 
     // Reservation Information
     private long mReservedTime = 0L;
@@ -70,11 +67,11 @@ public class SessionManager {
         mSession.put(CREDIT_CARD_EXPIRE, credit_card_expire);
     }
 
-    public void setReservationInformation(long reservedTime, int reservedConfirmationNumber, int reservedFacilityId, int reservatoinId) {
+    public void setReservationInformation(long reservedTime, int reservedConfirmationNumber, int reservedFacilityId, int reservationId) {
         mReservedTime = reservedTime;
         mReservedConfirmationNumber = reservedConfirmationNumber;
         mReservedFacilityId = reservedFacilityId;
-        mReservedId = reservatoinId;
+        mReservedId = reservationId;
     }
 
     public long getReservationTime() {

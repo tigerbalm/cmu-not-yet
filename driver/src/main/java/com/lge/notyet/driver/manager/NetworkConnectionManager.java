@@ -6,13 +6,12 @@ import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class NetworkConnectionManager {
 
     private INetworkConnection mNc = null;
 
-    public static NetworkConnectionManager sNetworkConnectionManager = null;
+    private static NetworkConnectionManager sNetworkConnectionManager = null;
 
     private NetworkConnectionManager () {
         mNc = new MqttNetworkConnection(null);

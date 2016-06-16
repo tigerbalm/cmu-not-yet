@@ -2,7 +2,6 @@ package com.lge.notyet.driver.test;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.channels.*;
-import com.lge.notyet.driver.business.ReservationRequestMessage;
 import com.lge.notyet.driver.business.ReservationResponseMessage;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
@@ -36,108 +35,85 @@ public class TestServer {
     }
 
     // Business Logic here, we have no time :(
-    private IOnRequest mGetReservationRequestReceived = new IOnRequest() {
+    private final IOnRequest mGetReservationRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        // Need to parse
 
-            // Need to parse
+        MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
 
-            MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
+        // TODO: We can change this value for test
+        boolean isReservedTest = true;
 
-            boolean isReservedTest = true;
+        //noinspection ConstantConditions
+        if (!isReservedTest) {
+            response.getMessage().add("success", 0);
+            response.getMessage().add("cause", "NO_RESERVATION_EXIST");
+        } else {
 
-            if (isReservedTest == false) {
-                response.getMessage().add("success", 0);
-                response.getMessage().add("cause", "NO_RESERVATION_EXIST");
-            } else {
-
-                response.getMessage().add("success", 1);
-                response.getMessage().add("reservation_ts", 1466021160L);
-                response.getMessage().add("confirmation_no", 3333);
-                response.getMessage().add("id", 1);
-                response.getMessage().add("facility_id", 1);
-            }
-
-            System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
-            message.responseFor(response);
-        }
-    };
-
-    // Business Logic here, we have no time :(
-    private IOnRequest mUpdateFacilityListRequestReceived = new IOnRequest() {
-
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-
-            // Need to parse
-
-            List<JsonObject> facilityList = new ArrayList<>();
-            facilityList.add(new JsonObject().add("id", 1).add("name", "Shadyside Parking Lot"));
-            facilityList.add(new JsonObject().add("id", 7).add("name", "CMU Parking Lot"));
-            MqttNetworkMessage response = new MqttNetworkMessage(mReservableFacilitiesResponseChannel.createResponseObject(facilityList));
             response.getMessage().add("success", 1);
-            System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
-            message.responseFor(response);
+            response.getMessage().add("reservation_ts", 1466021160L);
+            response.getMessage().add("confirmation_no", 3333);
+            response.getMessage().add("id", 1);
+            response.getMessage().add("facility_id", 1);
         }
+
+        System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
+        message.responseFor(response);
     };
 
     // Business Logic here, we have no time :(
-    private IOnRequest mLoginRequestReceived = new IOnRequest() {
+    private final IOnRequest mUpdateFacilityListRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        // Need to parse
 
-            // Need to parse
-            MqttNetworkMessage response = new MqttNetworkMessage(mLoginResponseChannel.createResponseObject(1, 2, "1111-2222-3333-4444", "12/16", "12345678"));
-            response.getMessage().add("success", 1);
-            System.out.println("Login Requested Received=" + message.getMessage());
-
-            message.responseFor(response);
-        }
+        List<JsonObject> facilityList = new ArrayList<>();
+        facilityList.add(new JsonObject().add("id", 1).add("name", "Shadyside Parking Lot"));
+        facilityList.add(new JsonObject().add("id", 7).add("name", "CMU Parking Lot"));
+        MqttNetworkMessage response = new MqttNetworkMessage(ReservableFacilitiesResponseChannel.createResponseObject(facilityList));
+        response.getMessage().add("success", 1);
+        System.out.println("UpdateFacilityList Requested Received=" + message.getMessage());
+        message.responseFor(response);
     };
 
     // Business Logic here, we have no time :(
-    private IOnRequest mSignUpRequestReceived = new IOnRequest() {
+    private final IOnRequest mLoginRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        // Need to parse
+        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, 2, "1111-2222-3333-4444", "12/16", "12345678"));
+        response.getMessage().add("success", 1);
+        System.out.println("Login Requested Received=" + message.getMessage());
 
-            // Need to parse
-            MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
-            response.getMessage().add("success", 1);
-            System.out.println("mSignUpRequestReceived Requested Received=" + message.getMessage());
-
-            message.responseFor(response);
-        }
+        message.responseFor(response);
     };
 
     // Business Logic here, we have no time :(
-    private IOnRequest mCancelReservationRequestReceived = new IOnRequest() {
+    private final IOnRequest mSignUpRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        // Need to parse
+        MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
+        response.getMessage().add("success", 1);
+        System.out.println("mSignUpRequestReceived Requested Received=" + message.getMessage());
 
-            // Need to parse
-            MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
-            response.getMessage().add("success", 1);
-            System.out.println("mCancelReservationRequestReceived Requested Received=" + message.getMessage());
-
-            message.responseFor(response);
-        }
+        message.responseFor(response);
     };
 
     // Business Logic here, we have no time :(
-    private IOnRequest mReservationRequestReceived = new IOnRequest() {
+    private final IOnRequest mCancelReservationRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        // Need to parse
+        MqttNetworkMessage response = new MqttNetworkMessage(new JsonObject());
+        response.getMessage().add("success", 1);
+        System.out.println("mCancelReservationRequestReceived Requested Received=" + message.getMessage());
 
-            // Need to parse
-            ReservationRequestMessage reqMsg = new ReservationRequestMessage((MqttNetworkMessage)message);
-            System.out.println("Reservation Requested Received=" + message.getMessage());
-            message.responseFor(new ReservationResponseMessage().setResult(1).setConfirmationNumber(10L).setReservationId(1));
-        }
+        message.responseFor(response);
+    };
+
+    // Business Logic here, we have no time :(
+    private final IOnRequest mReservationRequestReceived = (networkChannel, uri, message) -> {
+
+        // Need to parse
+        System.out.println("Reservation Requested Received=" + message.getMessage());
+        message.responseFor(new ReservationResponseMessage().setResult(1).setConfirmationNumber(10L).setReservationId(1));
     };
 
 
