@@ -40,7 +40,10 @@ public class ModifyAccountTask implements Callable<Void>  {
         sc.addObserver(mModifyAccountResult);
         sc.addTimeoutObserver(mModifyAccountTimeout);
 
-        sc.request(ModifyAccountRequestChannel.createRequestMessage(mSessionKey, mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
+        boolean ret = sc.request(ModifyAccountRequestChannel.createRequestMessage(mSessionKey, mUserEmailAddress, mPassWord, mCreditCardNumber, mCreditCardExpireDate, mCreditCardCvc));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
         return null;
     }
 
@@ -50,8 +53,14 @@ public class ModifyAccountTask implements Callable<Void>  {
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            Log.logd(LOG_TAG, "mModifyAccountResult Result=" + message.getMessage());
-            mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+            try {
+                Log.logd(LOG_TAG, "mModifyAccountResult Result=" + message.getMessage());
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            }
         }
     };
 
@@ -60,7 +69,7 @@ public class ModifyAccountTask implements Callable<Void>  {
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
             Log.logd(LOG_TAG, "Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 

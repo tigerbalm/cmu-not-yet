@@ -4,7 +4,6 @@ import com.lge.notyet.channels.CancelReservationRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.*;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -28,14 +27,15 @@ public class ReservationCancelTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
+
         CancelReservationRequestChannel cancelReservationRequestChannel = ncm.createCancelReservationRequestChannel(mReservationId);
         cancelReservationRequestChannel.addObserver(mCancelReservationResult);
         cancelReservationRequestChannel.addTimeoutObserver(mCancelReservationTimeout);
 
-        MqttNetworkMessage requestMsg = CancelReservationRequestChannel.createRequestMessage(mSessionKey);
-        Log.log(LOG_TAG, requestMsg.toString());
-
-        cancelReservationRequestChannel.request(requestMsg);
+        boolean ret = cancelReservationRequestChannel.request(CancelReservationRequestChannel.createRequestMessage(mSessionKey));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
         return null;
     }
 
@@ -47,11 +47,11 @@ public class ReservationCancelTask implements Callable<Void> {
 
             try {
                 Log.logd(LOG_TAG, "mCancelReservationResult Result=" + message.getMessage());
-                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
             }
         }
     };
@@ -61,7 +61,7 @@ public class ReservationCancelTask implements Callable<Void> {
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
             Log.logd(LOG_TAG, "Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 

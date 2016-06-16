@@ -7,8 +7,8 @@ abstract public class ServerChannel extends RequestResponseChannel  {
     }
 
     @Override
-    public final void request(NetworkMessage message) {
-
+    public final boolean request(NetworkMessage message) {
+        return false;
     }
 
     @Override
