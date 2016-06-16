@@ -3,6 +3,7 @@ package com.lge.notyet.attendant.manager;
 import com.lge.notyet.channels.GetFacilitiesRequestChannel;
 import com.lge.notyet.channels.GetSlotsRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
+import com.lge.notyet.channels.UpdateSlotStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
@@ -77,5 +78,9 @@ public class NetworkConnectionManager {
 
     public GetSlotsRequestChannel createGetSlotsRequestChannel(int facilityId) {
         return new GetSlotsRequestChannel(mNc, facilityId);
+    }
+
+    public UpdateSlotStatusSubscribeChannel createUpdateSlotStatusSubscribeChannel(int physicalId) {
+        return new UpdateSlotStatusSubscribeChannel(mNc, physicalId);
     }
 }
