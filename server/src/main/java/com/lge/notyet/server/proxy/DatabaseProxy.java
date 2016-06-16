@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class DatabaseProxy {
     private static DatabaseProxy instance = null;
 
-    private static final String HOST = "128.237.175.140";
+    private static final String HOST = "127.0.0.1";
     private static final String USERNAME = "dba";
     private static final String PASSWORD = "dba";
     private static final String DATABASE = "sure-park";
@@ -105,30 +105,6 @@ public class DatabaseProxy {
             @Override
             public List<JsonObject> result() {
                 return ar.result().getRows().stream().map(row -> JsonObject.readFrom(row.toString())).collect(Collectors.toList());
-            }
-
-            @Override
-            public Throwable cause() {
-                return ar.cause();
-            }
-
-            @Override
-            public boolean succeeded() {
-                return ar.succeeded();
-            }
-
-            @Override
-            public boolean failed() {
-                return ar.failed();
-            }
-        }));
-    }
-
-    public void rawQuery(SQLConnection connection, String sql, Handler<AsyncResult<List<JsonArray>>> resultHandler) {
-        connection.query(sql, ar -> resultHandler.handle(new AsyncResult<List<JsonArray>>() {
-            @Override
-            public List<JsonArray> result() {
-                return ar.result().getResults().stream().map(row -> JsonArray.readFrom(row.toString())).collect(Collectors.toList());
             }
 
             @Override
