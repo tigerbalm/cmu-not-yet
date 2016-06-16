@@ -1,6 +1,6 @@
 package com.lge.notyet.owner.ui;
 
-import com.lge.notyet.owner.business.Networking;
+import com.lge.notyet.owner.business.dbQueryMysqlNetworking;
 import com.lge.notyet.owner.business.StateMachine;
 
 import javax.swing.*;
@@ -29,8 +29,12 @@ public class Specification_Result extends JDialog {
 
     private void onOK() {
         resultArea.setText(StateMachine.getInstance().getQuery()+"\r\n");
-        Networking.getInstance().queryServer(resultArea, StateMachine.getInstance().getSqlQuery() );
+        dbQueryMysqlNetworking.getInstance().queryServer(resultArea, StateMachine.getInstance().getSqlQuery() );
     }
 
+
+}
+
+class GenericTextResultHandler{
 
 }

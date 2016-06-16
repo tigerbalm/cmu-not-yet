@@ -3,20 +3,19 @@ package com.lge.notyet.owner.business;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 import javax.swing.*;
-import java.awt.*;
 import java.sql.*;
 
 /**
  * Created by gladvin.durai on 15-Jun-2016.
  */
-public class Networking {
-    private static Networking ourInstance = new Networking();
+public class dbQueryMysqlNetworking {
+    private static dbQueryMysqlNetworking ourInstance = new dbQueryMysqlNetworking();
 
-    public static Networking getInstance() {
+    public static dbQueryMysqlNetworking getInstance() {
         return ourInstance;
     }
 
-    private Networking() {
+    private dbQueryMysqlNetworking() {
     }
 
     public void queryServer(JTextArea callingUI, String query) {
