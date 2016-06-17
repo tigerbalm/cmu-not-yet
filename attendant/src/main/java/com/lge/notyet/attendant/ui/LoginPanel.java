@@ -5,20 +5,19 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.attendant.business.GetFacilityTask;
 import com.lge.notyet.attendant.business.GetSlotListTask;
+import com.lge.notyet.attendant.business.ITaskDoneCallback;
 import com.lge.notyet.attendant.business.LoginTask;
 import com.lge.notyet.attendant.manager.ScreenManager;
 import com.lge.notyet.attendant.manager.SessionManager;
 import com.lge.notyet.attendant.manager.TaskManager;
+import com.lge.notyet.attendant.resource.Strings;
 import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
 import java.awt.event.*;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
-public class LoginPanel {
+public class LoginPanel implements Screen {
 
     private static final String LOG_TAG = "LoginPanel";
 
@@ -28,18 +27,12 @@ public class LoginPanel {
     private JPasswordField mTfUserPassword;
     private JPanel mForm;
 
-
     public LoginPanel() {
 
         // Log In
-        mBtnSignIn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        mBtnSignIn.addActionListener(e -> doLogin());
 
-                doLogin();
-            }
-        });
-
+        // Log In
         mTfUserPassword.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -49,38 +42,50 @@ public class LoginPanel {
                 }
             }
         });
+
+        // Forgot Password
         mLabelForgetPassword.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        "Please contact to operator/attendant, Telephone #: 111-222-3333",
-                        "SurePark",
+                        Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
                         JOptionPane.INFORMATION_MESSAGE);
             }
         });
+
+        // Forgot Password
         mLabelForgetPassword.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
 
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        "Please contact to operator/attendant, Telephone #: 111-222-3333",
-                        "SurePark",
+                        Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
                         JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }
 
-    public void init() {
-        // mTfUserPassword.setText("");
+    @Override
+    public void initScreen() {
+        mTfUserPassword.setText("");
     }
 
+    @Override
+    public void disposeScreen() {
+
+    }
+
+    @Override
     public JPanel getRootPanel() {
         return mForm;
     }
 
+    @Override
     public String getName() {
         return "LoginScreen";
     }
@@ -91,23 +96,30 @@ public class LoginPanel {
         mBtnSignIn.setEnabled(enabled);
     }
 
-    private ITaskDoneCallback mGetSlotListCallback = new ITaskDoneCallback() {
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Business Logic
 
-        @Override
-        public void onDone(int result, Object response) {
+    private final ITaskDoneCallback mGetSlotListCallback = (result, response) -> {
 
-            if (result == ITaskDoneCallback.FAIL) {
-                Log.log(LOG_TAG, "Failed to get slot list due to timeout");
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to get slot list.",
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+        if (result == ITaskDoneCallback.FAIL) {
 
+            Log.logd(LOG_TAG, "Failed to get slot list due to timeout");
 
-            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            Log.log(LOG_TAG, "Success to get slot list , response message=" + resMsg.getMessage());
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.GET_SLOT_LIST_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.WARNING_MESSAGE);
+
+            SessionManager.getInstance().clear();
+            return;
+        }
+
+        MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+
+        // Response may be wrong, we need to validate it, or handle exception
+        try {
+
+            Log.logd(LOG_TAG, "Received response to GetSlotListRequest, message=" + resMsg.getMessage());
 
             int success = resMsg.getMessage().get("success").asInt();
 
@@ -116,13 +128,19 @@ public class LoginPanel {
                 JsonArray slots = resMsg.getMessage().get("slots").asArray();
 
                 for (JsonValue aSlot : slots.values()) {
+
                     JsonObject slot = aSlot.asObject();
                     int id = slot.get("id").asInt();  // Slot's Unique ID
                     int number = slot.get("number").asInt(); //
                     int occupied = slot.get("occupied").asInt();
                     int reserved = slot.get("reserved").asInt();
                     long occupied_ts = slot.get("occupied_ts").asLong();
+                    // TODO: ADD this information
+                    long reservation_ts = 0; // slot.get("reservation_ts").asLong();
+                    // TODO: ADD this information
+                    String user_email = ""; // slot.get("user_email").asString();
                     int controller_id = slot.get("controller_id").asInt();
+                    // TODO: ADD this information
                     int physical_id = 0;//slot.get("physical_id").asInt();
                     SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id);
                 }
@@ -131,40 +149,71 @@ public class LoginPanel {
 
             } else if (success == 0) {
                 Log.log(LOG_TAG, "Failed to get slot list, fail cause is " + resMsg.getMessage().get("cause").asString());
+				
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        "Failed to get slot list, fail cause=" + resMsg.getMessage().get("cause").asString(),
-                        "SurePark",
+                        Strings.GET_SLOT_LIST_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                        Strings.APPLICATION_NAME,
                         JOptionPane.WARNING_MESSAGE);
+
+                SessionManager.getInstance().clear();
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to get slot list, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_SLOT_LIST_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+						
+                SessionManager.getInstance().clear();
             }
+
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to get slot list, exception occurred");
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.GET_SLOT_LIST_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.ERROR_MESSAGE);
+
+            SessionManager.getInstance().clear();
         }
     };
 
-    private ITaskDoneCallback mGetFacilityCallback = new ITaskDoneCallback() {
+    private final ITaskDoneCallback mGetFacilityCallback = (result, response) -> {
 
-        @Override
-        public void onDone(int result, Object response) {
+        if (result == ITaskDoneCallback.FAIL) {
 
-            if (result == ITaskDoneCallback.FAIL) {
-                Log.log(LOG_TAG, "Failed to get facility information due to timeout");
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to get facility information.",
-                        "SurePark",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+            Log.logd(LOG_TAG, "Failed to get facility due to timeout");
 
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.GET_FACILITY_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.WARNING_MESSAGE);
 
-            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            Log.log(LOG_TAG, "Success to get facility information, response message=" + resMsg.getMessage());
+            SessionManager.getInstance().clear();
+            return;
+        }
+
+        MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+
+        // Response may be wrong, we need to validate it, or handle exception
+        try {
+
+            Log.logd(LOG_TAG, "Received response to GetFacility, message=" + resMsg.getMessage());
 
             int success = resMsg.getMessage().get("success").asInt();
 
             if (success == 1) { // Success
 
+                SessionManager.getInstance().clearFacilityInformation();
+
                 JsonArray facilities = resMsg.getMessage().get("facilities").asArray();
 
                 if (facilities.size() != 1) {
-                    Log.log(LOG_TAG, "Wrong Information from server, attendant should have only one facility");
+                    Log.logd(LOG_TAG, "Wrong information from server, attendant should have only one facility");
                 }
 
                 for (JsonValue facility : facilities.values()) {
@@ -181,16 +230,43 @@ public class LoginPanel {
                         mGetSlotListCallback));
 
             } else if (success == 0) {
-                Log.log(LOG_TAG, "Failed to get facility information, fail cause is " + resMsg.getMessage().get("cause").asString());
+
+                Log.logv(LOG_TAG, "Failed get facility, with cause=" + resMsg.getMessage().get("cause").asString());
+
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        "Failed to get facility information, fail cause=" + resMsg.getMessage().get("cause").asString(),
-                        "SurePark",
+                        Strings.GET_FACILITY_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                        Strings.APPLICATION_NAME,
                         JOptionPane.WARNING_MESSAGE);
+
+                SessionManager.getInstance().clear();
+
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to get facility, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_FACILITY_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+						
+				SessionManager.getInstance().clear();
             }
+
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to get facility, exception occurred");
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.GET_FACILITY_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.ERROR_MESSAGE);
+
+            SessionManager.getInstance().clear();
         }
     };
 
-    private ITaskDoneCallback mLoginDoneCallback = new ITaskDoneCallback() {
+    private final ITaskDoneCallback mLoginDoneCallback = new ITaskDoneCallback() {
 
         @Override
         public void onDone(int result, Object response) {
@@ -198,46 +274,102 @@ public class LoginPanel {
             setUserInputEnabled(true);
 
             if (result == ITaskDoneCallback.FAIL) {
-                Log.log(LOG_TAG, "Failed to login due to timeout");
+
+                Log.logd(LOG_TAG, "Failed to login due to timeout");
+
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        "Network Connection Error: Failed to login.",
-                        "SurePark",
+                        Strings.LOGIN_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
-            Log.log(LOG_TAG, "Received login response, message=" + resMsg.getMessage());
+            MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
 
+            // Response may be wrong, we need to validate it, or handle exception
             try {
+
+                Log.logd(LOG_TAG, "Received response to LoginRequest, message=" + resMsg.getMessage());
 
                 int success = resMsg.getMessage().get("success").asInt();
 
                 if (success == 1) { // Success
 
+                    // int userId = resMsg.getMessage().get("id").asInt(); // I will use SessionKey
+                    int userType = resMsg.getMessage().get("type").asInt();
                     String session = resMsg.getMessage().get("session_key").asString();
+
+                    if (userType != 1) { // Attendant
+
+                        Log.logd(LOG_TAG, "This is not driver account");
+
+                        JOptionPane.showMessageDialog(getRootPanel(),
+                                Strings.LOGIN_FAILED + ":" + Strings.WRONG_ACCOUNT,
+                                Strings.APPLICATION_NAME,
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    if (session == null) {
+
+                        Log.logd(LOG_TAG, "Failed to validate response");
+
+                        JOptionPane.showMessageDialog(getRootPanel(),
+                                Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                                Strings.APPLICATION_NAME,
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
                     SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
                     SessionManager.getInstance().setKey(session);
 
-                    Log.log(LOG_TAG, "Success to login, session key is " + resMsg.getMessage().get("session_key").asString());
-
+                    // Retrieve Facilities
                     TaskManager.getInstance().runTask(GetFacilityTask.getTask(session, mGetFacilityCallback));
 
                 } else if (success == 0) {
-                    Log.log(LOG_TAG, "Failed to login, fail cause is " + resMsg.getMessage().get("cause").asString());
+
+                    Log.logv(LOG_TAG, "Failed to login, with cause=" + resMsg.getMessage().get("cause").asString());
+
                     JOptionPane.showMessageDialog(getRootPanel(),
-                            "Failed to login, fail cause=" + resMsg.getMessage().get("cause").asString(),
-                            "SurePark",
+                            Strings.LOGIN_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
                             JOptionPane.WARNING_MESSAGE);
+
+                } else {
+
+                    Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
                 }
 
             } catch (Exception e) {
+
+                Log.logd(LOG_TAG, "Failed to login, exception occurred");
                 e.printStackTrace();
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.LOGIN_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     };
 
     private void doLogin() {
+
+        if (SessionManager.getInstance().getKey() != null) {
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.ALREADY_LOGIN,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         // Verify Inputs
         String userEmailAddress = mTfUserEmailAddress.getText();
         String userPassword = new String(mTfUserPassword.getPassword());
@@ -246,16 +378,16 @@ public class LoginPanel {
 
         if (userEmailAddress == null || userEmailAddress.length() == 0) {
             JOptionPane.showMessageDialog(getRootPanel(),
-                    "Please input user email address",
-                    "SurePark",
+                    Strings.INPUT_EMAIL_ADDRESS,
+                    Strings.APPLICATION_NAME,
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (userPassword.length() == 0) {
             JOptionPane.showMessageDialog(getRootPanel(),
-                    "Please input user password",
-                    "SurePark",
+                    Strings.INPUT_PASSWORD,
+                    Strings.APPLICATION_NAME,
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -263,5 +395,4 @@ public class LoginPanel {
         setUserInputEnabled(false);
         TaskManager.getInstance().runTask(LoginTask.getTask(userEmailAddress, userPassword, mLoginDoneCallback));
     }
-
 }

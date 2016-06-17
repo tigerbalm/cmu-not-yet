@@ -1,7 +1,6 @@
 package com.lge.notyet.attendant.business;
 
 import com.lge.notyet.channels.LoginRequestChannel;
-import com.lge.notyet.attendant.ui.ITaskDoneCallback;
 import com.lge.notyet.attendant.manager.NetworkConnectionManager;
 import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.lib.comm.*;

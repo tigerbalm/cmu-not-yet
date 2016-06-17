@@ -3,16 +3,13 @@ package com.lge.notyet.attendant.manager;
 import java.util.HashMap;
 import java.util.Set;
 
-/**
- * Created by beney.kim on 2016-06-15.
- */
 public class SessionManager {
 
     private final static String EMAIL = "email";
     private final static String KEY = "key";
 
-    private HashMap<String, String> mSession;
-    private HashMap<Integer, Slot> mSlots;
+    private final HashMap<String, String> mSession;
+    private final HashMap<Integer, Slot> mSlots;
 
     private int mFacilityId = -1;
     private String mFacilityName = null;

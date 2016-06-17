@@ -127,7 +127,7 @@ public class LoginPanel implements Screen {
 
         if (result == ITaskDoneCallback.FAIL) {
 
-            Log.logd(LOG_TAG, "Failed to update facility list due to timeout");
+            Log.logd(LOG_TAG, "Failed to check reservation due to timeout");
 
             JOptionPane.showMessageDialog(getRootPanel(),
                     Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
@@ -164,10 +164,21 @@ public class LoginPanel implements Screen {
                 SessionManager.getInstance().clearReservationInformation();
                 ScreenManager.getInstance().showReservationRequestScreen();
 
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to check reservation, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+						
+                SessionManager.getInstance().clear();
             }
+
         } catch (Exception e) {
 
-            Log.logd(LOG_TAG, "Failed to update facility list, exception occurred");
+            Log.logd(LOG_TAG, "Failed to check reservation, exception occurred");
             e.printStackTrace();
 
             JOptionPane.showMessageDialog(getRootPanel(),
@@ -228,6 +239,17 @@ public class LoginPanel implements Screen {
                         JOptionPane.WARNING_MESSAGE);
 
                 SessionManager.getInstance().clear();
+
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to update facility list, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.UPDATE_FACILITY_LIST_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+						
+				SessionManager.getInstance().clear();
             }
 
         } catch (Exception e) {
@@ -317,6 +339,7 @@ public class LoginPanel implements Screen {
                             Strings.LOGIN_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
                             Strings.APPLICATION_NAME,
                             JOptionPane.WARNING_MESSAGE);
+
                 } else {
 
                     Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);

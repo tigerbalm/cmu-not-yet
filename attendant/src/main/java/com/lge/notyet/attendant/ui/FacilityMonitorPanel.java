@@ -1,18 +1,11 @@
 package com.lge.notyet.attendant.ui;
 
-import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.attendant.manager.NetworkConnectionManager;
-import com.lge.notyet.attendant.manager.ScreenManager;
 import com.lge.notyet.attendant.manager.SessionManager;
 import com.lge.notyet.attendant.manager.Slot;
-import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.channels.UpdateSlotStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.*;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import org.eclipse.paho.client.mqttv3.MqttException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,10 +21,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
-public class FacilityMonitorPanel {
+public class FacilityMonitorPanel implements Screen {
+
+    private static final String LOG_TAG = "FacilityMonitorPanel";
+
     private JPanel mForm;
     private JLabel mLabelFacilityName;
     private JScrollPane mSpSlotStatus;
@@ -41,7 +34,9 @@ public class FacilityMonitorPanel {
     private AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
     ScheduledFuture<?> mSlotStatusUpdateThread = null;
 
-    public void init() {
+
+    @Override
+    public void initScreen() {
 
         if (mUpdateSlotStatusSubscribeChannel == null) {
             // TODO: NEED TO USE CONTROLLER ID HERE
@@ -152,7 +147,8 @@ public class FacilityMonitorPanel {
         }
     }
 
-    public void dispose() {
+    @Override
+    public void disposeScreen() {
 
         if (mUpdateSlotStatusSubscribeChannel != null) {
             mUpdateSlotStatusSubscribeChannel.unlisten();
@@ -167,7 +163,20 @@ public class FacilityMonitorPanel {
         }
     }
 
-    // Business Logic here, we have no time :(
+    public JPanel getRootPanel() {
+        return mForm;
+    }
+
+    public String getName() {
+        return "FacilityMonitorPanel";
+    }
+
+    private void setUserInputEnabled(boolean enabled) {
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Business Logic
+
     private IOnNotify mSlotStatusChanged = new IOnNotify() {
 
         @Override
@@ -190,7 +199,7 @@ public class FacilityMonitorPanel {
                     if (slot != null) {
                         slot.setOccupied(occupied == 1);
                     }
-                    init();
+                    initScreen();
                 } catch (NumberFormatException ne) {
                     ne.printStackTrace();
                 }
@@ -205,21 +214,13 @@ public class FacilityMonitorPanel {
     private class SlotStatusUpdateThread implements Runnable {
 
         public void run() {
-            init();
+            initScreen();
         }
     }
 
     private void scheduleSlotStatusUpdate() {
         // TODO: Need to check Maximum Pended Requests?
         mSlotStatusUpdateThread = mScheduler.scheduleAtFixedRate(new SlotStatusUpdateThread(), SLOT_STATUS_UPDATE_PERIOD, SLOT_STATUS_UPDATE_PERIOD, SECONDS);
-    }
-
-    public JPanel getRootPanel() {
-        return mForm;
-    }
-
-    public String getName() {
-        return "FacilityMonitorPanel";
     }
 
     private void createUIComponents() {

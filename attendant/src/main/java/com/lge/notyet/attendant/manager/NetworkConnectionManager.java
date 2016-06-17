@@ -14,7 +14,7 @@ public class NetworkConnectionManager {
 
     private INetworkConnection mNc = null;
 
-    public static NetworkConnectionManager sNetworkConnectionManager = null;
+    private static NetworkConnectionManager sNetworkConnectionManager = null;
 
     private NetworkConnectionManager () {
         mNc = new MqttNetworkConnection(null);
