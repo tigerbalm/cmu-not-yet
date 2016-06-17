@@ -5,24 +5,18 @@ import com.lge.notyet.attendant.ui.ITaskDoneCallback;
 import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.channels.GetFacilitiesRequestChannel;
 import com.lge.notyet.lib.comm.*;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
-
 public class GetFacilityTask implements Callable<Void> {
-
 
     private static final String LOG_TAG = "GetFacilityTask";
 
-    private String mSessionKey;
-    private ITaskDoneCallback mTaskDoneCallback;
+    private final String mSessionKey;
+    private final ITaskDoneCallback mTaskDoneCallback;
 
-    public GetFacilityTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
+    private GetFacilityTask(String sessionKey, ITaskDoneCallback taskDoneCallback) {
         mSessionKey = sessionKey;
         mTaskDoneCallback = taskDoneCallback;
     }
@@ -32,33 +26,40 @@ public class GetFacilityTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
+
         GetFacilitiesRequestChannel fc = ncm.createGetFacilitiesRequestChannel();
         fc.addObserver(mGetFacilityResult);
         fc.addTimeoutObserver(mGetFacilityTimeout);
 
-        MqttNetworkMessage requestMsg = fc.createRequestMessage(mSessionKey);
-        Log.log(LOG_TAG, requestMsg.toString());
-        fc.request(requestMsg);
+        boolean ret = fc.request(GetFacilitiesRequestChannel.createRequestMessage(mSessionKey));
+        if (mTaskDoneCallback != null && !ret) {
+            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+        }
         return null;
     }
 
-    // Business Logic here, we have no time :(
-    private IOnResponse mGetFacilityResult = new IOnResponse() {
+    private final IOnResponse mGetFacilityResult = new IOnResponse() {
 
         @Override
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
-            System.out.println("mLoginResult Result=" + message.getMessage());
-            mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+            try {
+                Log.logd(LOG_TAG, "mGetFacilityResult Result=" + message.getMessage());
+                mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            }
         }
     };
 
-    private IOnTimeout mGetFacilityTimeout = new IOnTimeout() {
+    private final IOnTimeout mGetFacilityTimeout = new IOnTimeout() {
 
         @Override
         public void onTimeout(NetworkChannel networkChannel, NetworkMessage message) {
-            System.out.println("Failed to send Message=" + message);
-            mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
+            Log.logd(LOG_TAG, "Failed to send Message=" + message);
+            if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }
     };
 
