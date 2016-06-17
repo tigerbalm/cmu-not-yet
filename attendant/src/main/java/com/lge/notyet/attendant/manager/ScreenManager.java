@@ -9,15 +9,16 @@ import java.awt.*;
 
 public class ScreenManager {
 
-    private static ScreenManager sScreenManager = null;
-    private final CardLayout mMainCardLayout;
     private JPanel mCards;
+    private final CardLayout mMainCardLayout;
 
     private String mLastScreenName;
     private String mCurrentScreenName;
 
     private Screen mLoginPanel;
     private Screen mFacilityMonitorPanel;
+
+    private static ScreenManager sScreenManager = null;
 
     private ScreenManager () {
         mMainCardLayout = new CardLayout();
@@ -43,7 +44,6 @@ public class ScreenManager {
         mCards.add(mFacilityMonitorPanel.getRootPanel(), mFacilityMonitorPanel.getName());
 
         showLoginScreen();
-
         return mCards;
     }
 

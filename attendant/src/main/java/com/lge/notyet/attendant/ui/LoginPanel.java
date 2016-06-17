@@ -141,7 +141,7 @@ public class LoginPanel implements Screen {
                     String user_email = ""; // slot.get("user_email").asString();
                     int controller_id = slot.get("controller_id").asInt();
                     // TODO: ADD this information
-                    int physical_id = 0;//slot.get("physical_id").asInt();
+                    int physical_id = 1;//slot.get("physical_id").asInt();
                     SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id);
                 }
 
@@ -216,6 +216,7 @@ public class LoginPanel implements Screen {
                     Log.logd(LOG_TAG, "Wrong information from server, attendant should have only one facility");
                 }
 
+                //noinspection LoopStatementThatDoesntLoop
                 for (JsonValue facility : facilities.values()) {
                     JsonObject fac = facility.asObject();
                     int id = fac.get("id").asInt();

@@ -3,6 +3,7 @@ package com.lge.notyet.attendant.ui;
 import com.lge.notyet.attendant.manager.NetworkConnectionManager;
 import com.lge.notyet.attendant.manager.SessionManager;
 import com.lge.notyet.attendant.manager.Slot;
+import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.channels.UpdateSlotStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
@@ -31,22 +32,19 @@ public class FacilityMonitorPanel implements Screen {
 
     private UpdateSlotStatusSubscribeChannel mUpdateSlotStatusSubscribeChannel = null;
 
-    private AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
-    ScheduledFuture<?> mSlotStatusUpdateThread = null;
-
+    private final AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
+    private ScheduledFuture<?> mSlotStatusUpdateThread = null;
 
     @Override
     public void initScreen() {
 
         if (mUpdateSlotStatusSubscribeChannel == null) {
-            // TODO: NEED TO USE CONTROLLER ID HERE
-            mUpdateSlotStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateSlotStatusSubscribeChannel(1 /* TEST*/);
+            mUpdateSlotStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateSlotStatusSubscribeChannel();
             mUpdateSlotStatusSubscribeChannel.listen();
             mUpdateSlotStatusSubscribeChannel.addObserver(mSlotStatusChanged);
         }
 
         mLabelFacilityName.setText(SessionManager.getInstance().getFacilityName());
-
 
         Set<Integer> slotIds = SessionManager.getInstance().getSlotIds();
         JPanel center = new JPanel();
@@ -58,90 +56,67 @@ public class FacilityMonitorPanel implements Screen {
             JLabel slotNumber = new JLabel(slot.getControllerId() + "-" + slot.getNumber());
             slotNumber.setHorizontalAlignment(SwingConstants.CENTER);
 
-            /*
-            JLabel strReservedFrom = new JLabel("Reserved From");
-            strReservedFrom.setHorizontalAlignment(SwingConstants.CENTER);
+            boolean isOccupied = slot.isOccupied();
+            boolean isReserved = slot.isReserved();
 
-            Calendar reservedTime = Calendar.getInstance();
-            reservedTime.setTimeInMillis(slot.getOccupiedTimeStamp()*1000);
-            reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+            JLabel labelStatus;
+            if (isOccupied) {
+                labelStatus = new JLabel("Occupied");
+                labelStatus.setForeground(Color.white);
+            } else if (isReserved) {
+                labelStatus = new JLabel("Reserved");
+                labelStatus.setForeground(new Color(24, 27, 143));
+            } else {
+                labelStatus = new JLabel("Empty");
+            }
+            labelStatus.setHorizontalAlignment(SwingConstants.CENTER);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm, MM/dd/yy");
-            sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-            String reservedTimeString = sdf.format(reservedTime.getTime());
-
-            JLabel reservedTimeL = new JLabel(reservedTimeString);
-            reservedTimeL.setHorizontalAlignment(SwingConstants.CENTER);
-            */
-
-            // Reserved Time Based [START]
-
-            JLabel strReservedFrom = new JLabel("Reserved Time");
-            strReservedFrom.setHorizontalAlignment(SwingConstants.CENTER);
-
-            Calendar reservedTime = Calendar.getInstance();
-            reservedTime.setTimeInMillis(slot.getOccupiedTimeStamp()*1000);
-            reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm, MM/dd/yy");
-            sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-            String reservedTimeString = sdf.format(reservedTime.getTime());
-
-            JLabel reservedTimeL = new JLabel(reservedTimeString);
-            reservedTimeL.setHorizontalAlignment(SwingConstants.CENTER);
-
-
-
-
-
-            JLabel strOccupiedFrom = new JLabel("Occupying Time");
-            strOccupiedFrom.setHorizontalAlignment(SwingConstants.CENTER);
-
-            long now = Calendar.getInstance().getTimeInMillis()/1000;
-            long occupiedTimeSec = now - slot.getOccupiedTimeStamp();
-
-            JLabel strOccupiedTime = new JLabel(occupiedTimeSec / 60 + " minute(s)");
-            strOccupiedTime.setHorizontalAlignment(SwingConstants.CENTER);
-
-
-
-            // Reserved Time Based [END]
+            JLabel labelTime;
+            if (isOccupied) {
+                long now = Calendar.getInstance().getTimeInMillis()/1000;
+                long occupiedTimeSec = now - slot.getOccupiedTimeStamp();
+                labelTime = new JLabel(occupiedTimeSec / 60 + " min(s)");
+                labelTime.setForeground(Color.white);
+            } else if (isReserved) {
+                // TODO: ADD this information
+                /*
+                Calendar reservedTime = Calendar.getInstance();
+                reservedTime.setTimeInMillis(1466091160L * 1000);
+                // reservedTime.setTimeInMillis(slot.getReservedTimeStamp() * 1000);
+                reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+                SimpleDateFormat dataFormat = new SimpleDateFormat("hh:mm, MM/dd/yy");
+                dataFormat.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+                labelTime = new JLabel(dataFormat.format(reservedTime.getTime()));
+                */
+                labelTime = new JLabel();
+                labelTime.setForeground(new Color(24, 27, 143));
+            } else {
+                labelTime = new JLabel();
+            }
+            labelTime.setHorizontalAlignment(SwingConstants.CENTER);
 
             JPanel slotPanel = new JPanel(new GridLayout(0, 1));
             slotPanel.add(slotNumber);
             slotPanel.add(new JSeparator());
-
-            if(slot.isOccupied()) {
-                slotPanel.add(strOccupiedFrom);
-                slotPanel.add(strOccupiedTime);
-            } else if(slot.isReserved()) {
-                slotPanel.add(strReservedFrom);
-                slotPanel.add(reservedTimeL);
-            } else {
-                slotPanel.add(new JLabel());
-                slotPanel.add(new JLabel());
-            }
-
+            slotPanel.add(labelStatus);
+            slotPanel.add(labelTime);
             slotPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
-            if(slot.isOccupied()) {
+            if(isOccupied) {
                 slotPanel.setBackground(new Color(24, 27, 143));
                 slotNumber.setForeground(Color.white);
-                strOccupiedFrom.setForeground(Color.white);
-                strOccupiedTime.setForeground(Color.white);
-            } else if(slot.isReserved()) {
+            } else if(isReserved) {
                 slotPanel.setBackground(new Color(255, 191, 245));
                 slotNumber.setForeground(new Color(24, 27, 143));
-                strReservedFrom.setForeground(new Color(24, 27, 143));
-                reservedTimeL.setForeground(new Color(24, 27, 143));
             }
+
             center.add(slotPanel);
         }
 
         mSpSlotStatus.getViewport().removeAll();
         mSpSlotStatus.getViewport().add(center, null);
 
-        if (mSlotStatusUpdateThreadStarted.get() == false) {
+        if (!mSlotStatusUpdateThreadStarted.get()) {
             mSlotStatusUpdateThreadStarted.set(true);
             scheduleSlotStatusUpdate();
         }
@@ -155,7 +130,7 @@ public class FacilityMonitorPanel implements Screen {
             mUpdateSlotStatusSubscribeChannel = null;
         }
 
-        if (mSlotStatusUpdateThreadStarted.get() == true) {
+        if (mSlotStatusUpdateThreadStarted.get()) {
             if (mSlotStatusUpdateThread != null) {
                 mSlotStatusUpdateThread.cancel(true);
             }
@@ -177,33 +152,39 @@ public class FacilityMonitorPanel implements Screen {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Business Logic
 
-    private IOnNotify mSlotStatusChanged = new IOnNotify() {
+    private final IOnNotify mSlotStatusChanged = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onNotify(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        MqttNetworkMessage notificationMessage = (MqttNetworkMessage)message;
 
-            MqttNetworkMessage notificationMessage = (MqttNetworkMessage)message;
-
-            System.out.println("mSlotStatusChanged Result=" + notificationMessage.getMessage() + " on topic=" + uri.getLocation());
+        try {
+            Log.logd(LOG_TAG, "mSlotStatusChanged Result=" + notificationMessage.getMessage() + " on topic=" + uri.getLocation());
 
             String topic = (String) uri.getLocation();
             StringTokenizer topicTokenizer = new StringTokenizer(topic, "/");
+
             if (topicTokenizer.countTokens() == 4) {
-                topicTokenizer.nextToken();
-                topicTokenizer.nextToken();
-                topicTokenizer.nextToken();
+
                 try {
-                    int slotId = Integer.parseInt(topicTokenizer.nextToken());
+
+                    topicTokenizer.nextToken(); // skip "controller"
+                    int physicalId = Integer.parseInt(topicTokenizer.nextToken());
+                    topicTokenizer.nextToken(); // "slot"
+                    int slotNumber = Integer.parseInt(topicTokenizer.nextToken());
                     int occupied = notificationMessage.getMessage().get("occupied").asInt();
-                    Slot slot = SessionManager.getInstance().getSlot(slotId);
+                    Slot slot = SessionManager.getInstance().getSlot(physicalId, slotNumber);
                     if (slot != null) {
                         slot.setOccupied(occupied == 1);
                     }
                     initScreen();
+
                 } catch (NumberFormatException ne) {
                     ne.printStackTrace();
                 }
             }
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to parse notification message, exception occurred");
+            e.printStackTrace();
         }
     };
 

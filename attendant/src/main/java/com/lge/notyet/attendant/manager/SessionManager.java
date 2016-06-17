@@ -33,7 +33,6 @@ public class SessionManager {
     public String getUserEmail() {
         return mSession.get(EMAIL);
     }
-
     public String getKey() {
         return mSession.get(KEY);
     }
@@ -41,7 +40,6 @@ public class SessionManager {
     public void setUserEmail(String email) {
         mSession.put(EMAIL, email);
     }
-
     public void setKey(String key) {
         mSession.put(KEY, key);
     }
@@ -77,12 +75,23 @@ public class SessionManager {
         return mSlots.get(id);
     }
 
+    public Slot getSlot(int physical_id, int slot_number) {
+
+        for (Slot slot : mSlots.values()) {
+
+            if (slot.getPhysicalId() == physical_id && slot.getNumber() == slot_number) {
+                return slot;
+            }
+        }
+        return null;
+    }
+
     public int getSlotSize() {
         return mSlots.size();
     }
 
     public void clear() {
-        clearFacilityInformation();
         mSession.clear();
+        clearFacilityInformation();
     }
 }

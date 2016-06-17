@@ -18,7 +18,7 @@ public class Slot {
         mOccupied = occupied;
         mReserved = reserved;
         mOccupiedTimeStamp = occupiedTimeStamp;
-        //mReservedTimeStamp =
+        mReservedTimeStamp = 0L;
         mControllerId = controller_id;
         mPhysicalId = physical_id;
     }
@@ -44,6 +44,10 @@ public class Slot {
     public void setReserved(boolean reserved) {
         mReserved = reserved;
     }
+    public long getReservedTimeStamp() {
+        return mReservedTimeStamp;
+    }
+
 
     public long getOccupiedTimeStamp() {
         return mOccupiedTimeStamp;

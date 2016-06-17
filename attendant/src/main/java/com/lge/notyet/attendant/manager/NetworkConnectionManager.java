@@ -1,5 +1,6 @@
 package com.lge.notyet.attendant.manager;
 
+import com.lge.notyet.attendant.util.Log;
 import com.lge.notyet.channels.GetFacilitiesRequestChannel;
 import com.lge.notyet.channels.GetSlotsRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
@@ -11,6 +12,8 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
 import java.net.InetAddress;
 
 public class NetworkConnectionManager {
+
+    private static final String LOG_TAG = "NetworkConnectionManager";
 
     private INetworkConnection mNc = null;
 
@@ -31,15 +34,17 @@ public class NetworkConnectionManager {
 
         @Override
         public void onConnected() {
-            System.out.println("onConnected");
+            Log.logd(LOG_TAG, "onConnected");
         }
 
         @Override
         public void onConnectFailed() {
+            Log.logd(LOG_TAG, "onConnectFailed");
         }
 
         @Override
         public void onLost() {
+            Log.logd(LOG_TAG, "onLost");
             // Reconnect
             //mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);
         }
@@ -63,7 +68,7 @@ public class NetworkConnectionManager {
     }
 
     public void close() {
-        if (!mNc.isConnected()) {
+        if (mNc.isConnected()) {
             mNc.disconnect();
         }
     }
@@ -82,5 +87,9 @@ public class NetworkConnectionManager {
 
     public UpdateSlotStatusSubscribeChannel createUpdateSlotStatusSubscribeChannel(int physicalId) {
         return new UpdateSlotStatusSubscribeChannel(mNc, physicalId);
+    }
+
+    public UpdateSlotStatusSubscribeChannel createUpdateSlotStatusSubscribeChannel() {
+        return new UpdateSlotStatusSubscribeChannel(mNc);
     }
 }
