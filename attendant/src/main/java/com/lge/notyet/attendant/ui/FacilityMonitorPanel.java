@@ -1,6 +1,7 @@
 package com.lge.notyet.attendant.ui;
 
 import com.lge.notyet.attendant.manager.NetworkConnectionManager;
+import com.lge.notyet.attendant.manager.ScreenManager;
 import com.lge.notyet.attendant.manager.SessionManager;
 import com.lge.notyet.attendant.manager.Slot;
 import com.lge.notyet.attendant.util.Log;
@@ -10,6 +11,8 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Set;
@@ -29,11 +32,26 @@ public class FacilityMonitorPanel implements Screen {
     private JPanel mForm;
     private JLabel mLabelFacilityName;
     private JScrollPane mSpSlotStatus;
+    private JLabel mLabelLogout;
 
     private UpdateSlotStatusSubscribeChannel mUpdateSlotStatusSubscribeChannel = null;
 
     private final AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
     private ScheduledFuture<?> mSlotStatusUpdateThread = null;
+
+    public FacilityMonitorPanel() {
+        mLabelLogout.addMouseListener(new MouseAdapter() {
+
+            // Logout
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                SessionManager.getInstance().clear(); // Log-out
+                // NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+        });
+    }
 
     @Override
     public void initScreen() {
@@ -55,6 +73,7 @@ public class FacilityMonitorPanel implements Screen {
 
             JLabel slotNumber = new JLabel(slot.getControllerId() + "-" + slot.getNumber());
             slotNumber.setHorizontalAlignment(SwingConstants.CENTER);
+            slotNumber.setFont(new Font(null, 0, 18));
 
             boolean isOccupied = slot.isOccupied();
             boolean isReserved = slot.isReserved();
@@ -70,6 +89,7 @@ public class FacilityMonitorPanel implements Screen {
                 labelStatus = new JLabel("Empty");
             }
             labelStatus.setHorizontalAlignment(SwingConstants.CENTER);
+            labelStatus.setFont(new Font(null, 0, 18));
 
             JLabel labelTime;
             if (isOccupied) {
@@ -94,6 +114,7 @@ public class FacilityMonitorPanel implements Screen {
                 labelTime = new JLabel();
             }
             labelTime.setHorizontalAlignment(SwingConstants.CENTER);
+            labelTime.setFont(new Font(null, 0, 18));
 
             JPanel slotPanel = new JPanel(new GridLayout(0, 1));
             slotPanel.add(slotNumber);
