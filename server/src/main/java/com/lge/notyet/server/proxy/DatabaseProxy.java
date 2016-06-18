@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class DatabaseProxy {
     private static DatabaseProxy instance = null;
 
-    private static final String HOST = "128.237.175.140";
+    private static final String HOST = "localhost";
     private static final String USERNAME = "dba";
     private static final String PASSWORD = "dba";
     private static final String DATABASE = "sure-park";

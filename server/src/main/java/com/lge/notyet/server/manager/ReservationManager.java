@@ -132,6 +132,32 @@ public class ReservationManager {
         });
     }
 
+    public void getReservation(String controllerPhysicalId, int slotNumber, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("getReservation: controllerPhysicalId=" + controllerPhysicalId + ", slotNumber=" + slotNumber);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectReservationBySlot(sqlConnection, controllerPhysicalId, slotNumber, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar -> {});
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        if (objects.isEmpty()) {
+                            handler.handle(Future.failedFuture("NO_RESERVATION_EXIST"));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                        } else {
+                            handler.handle(Future.succeededFuture(objects.get(0)));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     public void makeReservation(int userId, int slotId, int reservationTimestamp, int confirmationNumber, Handler<AsyncResult<JsonObject>> handler) {
         logger.info("makeReservation: userId=" + userId + ", slotId=" + slotId);
         databaseProxy.openConnection(ar1 -> {
