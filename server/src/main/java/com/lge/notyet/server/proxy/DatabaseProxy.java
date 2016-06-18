@@ -360,11 +360,11 @@ public class DatabaseProxy {
         updateWithParams(connection, sql, parameters, resultHandler);
     }
 
-    public void updateControllerAvailable(SQLConnection connection, int controllerId, boolean available, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "update controller set available=? where id=?";
+    public void updateControllerAvailable(SQLConnection connection, String controllerPhysicalId, boolean available, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "update controller set available=? where physical_id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(available ? 1 : 0);
-        parameters.add(controllerId);
+        parameters.add(controllerPhysicalId);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
 
