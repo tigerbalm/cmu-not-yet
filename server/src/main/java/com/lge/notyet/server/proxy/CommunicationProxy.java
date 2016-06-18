@@ -32,9 +32,16 @@ public class CommunicationProxy {
         }
     }
 
-    public Future<Void> start(final String host) {
+    public Future<Void> start(final String host, final boolean redundancy) {
         final Future<Void> future = Future.future();
-        networkConnection = new MqttPassiveRedundancyNetworkConnection("server", new MqttNetworkConnection(null));
+
+        MqttNetworkConnection mqttNetworkConnection = new MqttNetworkConnection(null);
+        if (redundancy) {
+            networkConnection = new MqttPassiveRedundancyNetworkConnection("server", mqttNetworkConnection);
+        } else {
+            networkConnection = mqttNetworkConnection;
+        }
+
         try {
             logger.info("making MQTT connection (" + host + ")");
             networkConnection.connect(InetAddress.getByName(host), new INetworkCallback() {

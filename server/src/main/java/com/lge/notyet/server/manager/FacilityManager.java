@@ -142,7 +142,7 @@ public class FacilityManager {
                 handler.handle(Future.failedFuture(ar1.cause()));
             } else {
                 final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, true, ar2 -> {
+                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, false, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
                         databaseProxy.closeConnection(sqlConnection, false, ar -> {});

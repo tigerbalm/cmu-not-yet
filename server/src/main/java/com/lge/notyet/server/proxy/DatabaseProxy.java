@@ -9,7 +9,6 @@ import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.sql.SQLConnection;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -342,6 +341,7 @@ public class DatabaseProxy {
     }
 
     public void updateSlotOccupied(SQLConnection connection, int slotId, boolean occupied, int occupiedTs, Handler<AsyncResult<JsonArray>> resultHandler) {
+        logger.info("updateSlotOccupied: slotId=" + slotId + ", occupied=" + occupied + ", occupiedTs=" + occupiedTs);
         String sql = "update slot set occupied=?, occupied_ts=? where id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(occupied ? 1 : 0);
@@ -359,6 +359,7 @@ public class DatabaseProxy {
     }
 
     public void updateControllerAvailable(SQLConnection connection, String controllerPhysicalId, boolean available, Handler<AsyncResult<JsonArray>> resultHandler) {
+        logger.info("updateControllerAvailable: controllerPhysicalId=" + controllerPhysicalId + ", available=" + available);
         String sql = "update controller set available=? where physical_id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(available ? 1 : 0);
@@ -402,34 +403,33 @@ public class DatabaseProxy {
     }
 
     public void updateSlots(SQLConnection connection, String controllerPhysicalId, List<JsonObject> slotObjectList, Handler<AsyncResult<Void>> resultHandler) {
-        List<Future> futureList = new ArrayList<>();
-        for (JsonObject slotObject : slotObjectList) {
+        if (slotObjectList.isEmpty()) {
+            resultHandler.handle(Future.succeededFuture());
+        } else {
+            final JsonObject slotObject = slotObjectList.remove(0);
             final int slotNumber = slotObject.get("number").asInt();
             final boolean occupied = slotObject.get("occupied").asInt() == 1;
             final int occupiedTs = occupied ? ((int) System.currentTimeMillis() / 1000) : -1;
-            Future future = Future.future();
-            futureList.add(future);
             selectSlot(connection, controllerPhysicalId, slotNumber, ar -> {
                 if (ar.failed()) {
-                    future.fail(ar.cause());
+                    resultHandler.handle(Future.failedFuture(ar.cause()));
                 } else {
                     final List<JsonObject> objects = ar.result();
                     if (objects.isEmpty()) {
-                        future.fail(ar.cause());
+                        resultHandler.handle(Future.failedFuture("NO_SLOT_EXISTS"));
                     } else {
                         final JsonObject object = objects.get(0);
                         final int slotId = object.get("id").asInt();
-                        updateSlotOccupied(connection, slotId, occupied, occupiedTs, future.completer());
+                        updateSlotOccupied(connection, slotId, occupied, occupiedTs, ar2 -> {
+                            if (ar2.failed()) {
+                                resultHandler.handle(Future.failedFuture(ar2.cause()));
+                            } else {
+                                updateSlots(connection, controllerPhysicalId, slotObjectList, resultHandler);
+                            }
+                        });
                     }
                 }
             });
         }
-        CompositeFuture.all(futureList).setHandler(ar -> {
-            if (ar.failed()) {
-                resultHandler.handle(Future.failedFuture(ar.cause()));
-            } else {
-                resultHandler.handle(Future.succeededFuture());
-            }
-        });
     }
 }

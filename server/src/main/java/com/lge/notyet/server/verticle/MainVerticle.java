@@ -21,6 +21,7 @@ import java.util.Random;
 
 public class MainVerticle extends AbstractVerticle {
     private static final String BROKER_HOST = "localhost";
+    private static final boolean REDUNDANCY = false;
     private static final String DB_HOST = "localhost";
     private static final String DB_USERNAME = "dba";
     private static final String DB_PASSWORD = "dba";
@@ -40,7 +41,7 @@ public class MainVerticle extends AbstractVerticle {
         communicationProxy = CommunicationProxy.getInstance(vertx);
         databaseProxy = DatabaseProxy.getInstance(vertx);
 
-        Future<Void> communicationReady = communicationProxy.start(BROKER_HOST);
+        Future<Void> communicationReady = communicationProxy.start(BROKER_HOST, REDUNDANCY);
         Future<Void> databaseReady = databaseProxy.start(DB_HOST, DB_USERNAME, DB_PASSWORD);
         CompositeFuture.all(communicationReady, databaseReady).setHandler(ar -> {
             if (ar.succeeded()) {
@@ -66,6 +67,7 @@ public class MainVerticle extends AbstractVerticle {
         new SignUpResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> signUp(message)).listen();
         new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
+        new UpdateControllerStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateControllerStatus(uri, message)).listen();
         new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
         new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(message)).listen();
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
@@ -122,6 +124,33 @@ public class MainVerticle extends AbstractVerticle {
                 });
             }
         });
+    }
+
+    private void updateControllerStatus(Uri uri, NetworkMessage message) {
+        try {
+            final String controllerPhysicalId = UpdateControllerStatusPublishChannel.getControllerPhysicalId(uri);
+            final boolean available = UpdateControllerStatusPublishChannel.isAvailable(message);
+
+            Future future = Future.future();
+            future.setHandler(new Handler<AsyncResult>() {
+                @Override
+                public void handle(AsyncResult ar) {
+                    if (ar.failed()) {
+                        logger.info("updateControllerStatus: failed");
+                    } else {
+                        logger.info("updateControllerStatus: success");
+                    }
+                }
+            });
+            if (available) {
+                final List<JsonObject> slotObjectList = UpdateControllerStatusPublishChannel.getSlots(message);
+                facilityManager.updateControllerAvailable(controllerPhysicalId, slotObjectList, future.completer());
+            } else {
+                facilityManager.updateControllerUnavailable(controllerPhysicalId, future.completer());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateSlotStatus(Uri uri, NetworkMessage message) {
