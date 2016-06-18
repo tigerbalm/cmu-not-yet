@@ -27,6 +27,8 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
 
     // MQTT Variables
     private MqttAsyncClient mMqttAsyncClient = null;
+    private String mClientId = null;
+
     private final MqttCallback mMqttCallback = new MqttCallback() {
 
         @Override
@@ -143,7 +145,8 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         mNetworkCallback = networkCb;
 
         try {
-            mMqttAsyncClient = new MqttAsyncClient("tcp://" + ipAddress.getHostAddress(), MqttAsyncClient.generateClientId());
+            mClientId = MqttAsyncClient.generateClientId();
+            mMqttAsyncClient = new MqttAsyncClient("tcp://" + ipAddress.getHostAddress(), mClientId);
 
             mMqttAsyncClient.setCallback(mMqttCallback);
             if (connOptions == null) {
@@ -232,8 +235,8 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         boolean ret = true;
         int sequenceNumber = sRequestSequenceNumber.addAndGet(1);
         try {
-            mRequestChannelMap.put(netChannel.getChannelDescription().getLocation() + MqttConstants.RESPONSE_MESSAGE_TOPIC+ sequenceNumber, netChannel);
-            mMqttAsyncClient.subscribe(netChannel.getChannelDescription().getLocation() + MqttConstants.RESPONSE_MESSAGE_TOPIC + sequenceNumber, MqttConstants.DEFAULT_QOS);
+            mRequestChannelMap.put(netChannel.getChannelDescription().getLocation() + "/" + mClientId + MqttConstants.RESPONSE_MESSAGE_TOPIC + sequenceNumber, netChannel);
+            mMqttAsyncClient.subscribe(netChannel.getChannelDescription().getLocation() + "/" + mClientId + MqttConstants.RESPONSE_MESSAGE_TOPIC + sequenceNumber, MqttConstants.DEFAULT_QOS);
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
@@ -244,8 +247,8 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
         mqttNetworkMessage.addMessageType(NetworkMessage.MESSAGE_TYPE_REQUEST);
 
         try {
-            mMqttAsyncClient.publish(netChannel.getChannelDescription().getLocation() + MqttConstants.REQUEST_MESSAGE_TOPIC + sequenceNumber, new MqttMessage(message.getBytes()));
-            scheduleNetworkTimeout(message, netChannel.getChannelDescription().getLocation() + MqttConstants.RESPONSE_MESSAGE_TOPIC + sequenceNumber);
+            mMqttAsyncClient.publish(netChannel.getChannelDescription().getLocation() + "/" + mClientId + MqttConstants.REQUEST_MESSAGE_TOPIC + sequenceNumber, new MqttMessage(message.getBytes()));
+            scheduleNetworkTimeout(message, netChannel.getChannelDescription().getLocation() + "/" + mClientId + MqttConstants.RESPONSE_MESSAGE_TOPIC + sequenceNumber);
         } catch (MqttException e) {
             // TODO: Add Exception Handler
             e.printStackTrace();
