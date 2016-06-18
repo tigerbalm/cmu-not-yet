@@ -17,6 +17,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.util.List;
+import java.util.Random;
 
 public class MainVerticle extends AbstractVerticle {
     private static final String BROKER_HOST = "localhost";
@@ -66,9 +67,13 @@ public class MainVerticle extends AbstractVerticle {
         new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
         new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
-        new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(uri, message)).listen();
+        new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(message)).listen();
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
         new GetDBQueryResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
+        new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
+        new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmReservation(message)).listen();
+        new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(message)).listen();
+        new CancelReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> cancelReservation(uri, message)).listen();
     }
 
     private void login(NetworkMessage message) {
@@ -141,7 +146,7 @@ public class MainVerticle extends AbstractVerticle {
         });
     }
 
-    private void getFacilities(Uri uri, NetworkMessage message) {
+    private void getFacilities(NetworkMessage message) {
         final String sessionKey = GetFacilitiesRequestChannel.getSessionKey(message);
 
         authenticationManager.getSessionUser(sessionKey, ar1 -> {
@@ -218,6 +223,101 @@ public class MainVerticle extends AbstractVerticle {
                         communicationProxy.responseFail(message, ar2.cause());
                     } else {
                         communicationProxy.responseSuccess(message, GetDBQueryResponseChannel.createResponseObject(ar2.result()));
+                    }
+                });
+            }
+        });
+    }
+
+    private void makeReservation(Uri uri, NetworkMessage message) {
+        final String sessionKey = ReservationRequestChannel.getSessionKey(message);
+        final int facilityId = ReservationRequestChannel.getFacilityId(uri);
+        final int reservationTimestamp = ReservationRequestChannel.getReservationTimestamp(message);
+
+        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final JsonObject userObject = ar1.result();
+                final int userId = userObject.get("id").asInt();
+                facilityManager.getReservableSlots(facilityId, ar2 -> {
+                    if (ar2.failed()) {
+                        communicationProxy.responseFail(message, ar2.cause());
+                    } else {
+                        final List<JsonObject> slotObjects = ar2.result();
+                        if (slotObjects.isEmpty()) {
+                            communicationProxy.responseFail(message, "NO_AVAILABLE_SLOT");
+                        } else {
+                            final int slotId = slotObjects.get(0).get("id").asInt();
+                            final int confirmationNumber = new Random().nextInt((9999 - 1000) + 1) + 1000;
+                            reservationManager.makeReservation(userId, slotId, reservationTimestamp, confirmationNumber, ar3 -> {
+                                if (ar3.failed()) {
+                                    communicationProxy.responseFail(message, ar3.cause());
+                                } else {
+                                    communicationProxy.responseSuccess(message, ar3.result());
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void confirmReservation(NetworkMessage message) {
+        final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
+
+        logger.debug("confirmReservation: confirmationNumber=" + confirmationNumber);
+
+        reservationManager.getReservationByConfirmationNumber(confirmationNumber, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final JsonObject reservationObject = ar1.result();
+                final int slotNumber = reservationObject.get("slot_no").asInt();
+                communicationProxy.responseSuccess(message, ConfirmReservationResponseChannel.createResponseObject(slotNumber));
+            }
+        });
+    }
+
+    private void getReservation(NetworkMessage message) {
+        final String sessionKey = GetReservationRequestChannel.getSessionKey(message);
+
+        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                final JsonObject userObject = ar1.result();
+                final int userType = userObject.get("type").asInt();
+                final int userId = userObject.get("id").asInt();
+                if (userType != User.USER_TYPE_DRIVER) {
+                    communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                } else {
+                    reservationManager.getReservationByUserId(userId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            communicationProxy.responseSuccess(message, ar2.result());
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void cancelReservation(Uri uri, NetworkMessage message) {
+        final int reservationId = CancelReservationRequestChannel.getReservationId(uri);
+        final String sessionKey = CancelReservationRequestChannel.getSessionKey(message);
+
+        authenticationManager.checkUserType(sessionKey, User.USER_TYPE_DRIVER, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                reservationManager.removeReservation(reservationId, ar2 -> {
+                    if (ar2.failed()) {
+                        communicationProxy.responseFail(message, ar2.cause());
+                    } else {
+                        communicationProxy.responseSuccess(message, new JsonObject());
                     }
                 });
             }
