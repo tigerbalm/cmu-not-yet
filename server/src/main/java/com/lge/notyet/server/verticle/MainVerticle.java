@@ -68,6 +68,7 @@ public class MainVerticle extends AbstractVerticle {
         new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
         new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(uri, message)).listen();
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
+        new GetDBQueryResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
     }
 
     private void login(NetworkMessage message) {
@@ -200,6 +201,25 @@ public class MainVerticle extends AbstractVerticle {
                         }
                     });
                 }
+            }
+        });
+    }
+
+    private void getStatistics(NetworkMessage message) {
+        final String sessionKey = GetDBQueryRequestChannel.getSessionKey(message);
+        final String query = GetDBQueryRequestChannel.getKeyDbqueryKey(message);
+
+        authenticationManager.checkUserType(sessionKey, User.USER_TYPE_OWNER, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                statisticsManager.getStatisticsByQuery(query, ar2 -> {
+                    if (ar2.failed()) {
+                        communicationProxy.responseFail(message, ar2.cause());
+                    } else {
+                        communicationProxy.responseSuccess(message, GetDBQueryResponseChannel.createResponseObject(ar2.result()));
+                    }
+                });
             }
         });
     }
