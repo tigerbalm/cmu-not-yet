@@ -9,6 +9,11 @@ import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.*;
 
 public class MainVerticle extends AbstractVerticle {
+    private static final String BROKER_HOST = "localhost";
+    private static final String DB_HOST = "localhost";
+    private static final String DB_USERNAME = "dba";
+    private static final String DB_PASSWORD = "dba";
+
     private DatabaseProxy databaseProxy;
     private CommunicationProxy communicationProxy;
 
@@ -16,8 +21,8 @@ public class MainVerticle extends AbstractVerticle {
     public void start(final Future<Void> startFuture) throws Exception {
         communicationProxy = CommunicationProxy.getInstance(vertx);
         databaseProxy = DatabaseProxy.getInstance(vertx);
-        Future<Void> communicationReady = communicationProxy.start();
-        Future<Void> databaseReady = databaseProxy.start();
+        Future<Void> communicationReady = communicationProxy.start(BROKER_HOST);
+        Future<Void> databaseReady = databaseProxy.start(DB_HOST, DB_USERNAME, DB_PASSWORD);
 
         CompositeFuture.all(communicationReady, databaseReady).setHandler(ar -> {
             if (ar.succeeded()) {

@@ -18,10 +18,6 @@ import java.util.stream.Collectors;
 public class DatabaseProxy {
     private static DatabaseProxy instance = null;
 
-    //private static final String HOST = "128.237.175.140";
-    private static final String HOST = "192.168.1.20";
-    private static final String USERNAME = "dba";
-    private static final String PASSWORD = "dba";
     private static final String DATABASE = "sure-park";
 
     private Vertx vertx;
@@ -42,12 +38,12 @@ public class DatabaseProxy {
         }
     }
 
-    public Future<Void> start() {
+    public Future<Void> start(final String host, final String username, final String password) {
         final Future<Void> future = Future.future();
         io.vertx.core.json.JsonObject mysqlConfig = new io.vertx.core.json.JsonObject().
-                put("host", HOST).
-                put("username", USERNAME).
-                put("password", PASSWORD).
+                put("host", host).
+                put("username", username).
+                put("password", password).
                 put("database", DATABASE);
         sqlClient = MySQLClient.createShared(vertx, mysqlConfig);
         future.complete();
