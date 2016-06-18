@@ -73,6 +73,7 @@ public class FacilityMonitorPanel implements Screen {
 
             JLabel slotNumber = new JLabel(slot.getControllerId() + "-" + slot.getNumber());
             slotNumber.setHorizontalAlignment(SwingConstants.CENTER);
+            slotNumber.setFont(new Font(null, 0, 18));
 
             boolean isOccupied = slot.isOccupied();
             boolean isReserved = slot.isReserved();
@@ -88,6 +89,7 @@ public class FacilityMonitorPanel implements Screen {
                 labelStatus = new JLabel("Empty");
             }
             labelStatus.setHorizontalAlignment(SwingConstants.CENTER);
+            labelStatus.setFont(new Font(null, 0, 18));
 
             JLabel labelTime;
             if (isOccupied) {
@@ -112,6 +114,7 @@ public class FacilityMonitorPanel implements Screen {
                 labelTime = new JLabel();
             }
             labelTime.setHorizontalAlignment(SwingConstants.CENTER);
+            labelTime.setFont(new Font(null, 0, 18));
 
             JPanel slotPanel = new JPanel(new GridLayout(0, 1));
             slotPanel.add(slotNumber);
