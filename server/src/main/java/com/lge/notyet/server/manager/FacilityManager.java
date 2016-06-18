@@ -3,14 +3,12 @@ package com.lge.notyet.server.manager;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FacilityManager {
@@ -115,7 +113,7 @@ public class FacilityManager {
                 handler.handle(Future.failedFuture(ar1.cause()));
             } else {
                 final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, false, ar2 -> {
+                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, true, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
                         databaseProxy.closeConnection(sqlConnection, false, ar -> {});
