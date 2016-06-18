@@ -13,7 +13,7 @@
 ```
 {
   'available': 1,
-  'slots': [ { 'number': 1, 'occpuied': 0 },
+  'slots': [ { 'number': 1, 'occupied': 0 },
              { 'number': 2, 'occupied': 1 }, ... ]
 }
 ```

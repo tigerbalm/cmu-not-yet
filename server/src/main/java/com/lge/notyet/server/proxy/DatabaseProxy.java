@@ -2,16 +2,14 @@ package com.lge.notyet.server.proxy;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.sql.SQLConnection;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -401,5 +399,37 @@ public class DatabaseProxy {
         parameters.add(userId);
         parameters.add(sessionKey);
         updateWithParams(connection, sql, parameters, resultHandler);
+    }
+
+    public void updateSlots(SQLConnection connection, String controllerPhysicalId, List<JsonObject> slotObjectList, Handler<AsyncResult<Void>> resultHandler) {
+        List<Future> futureList = new ArrayList<>();
+        for (JsonObject slotObject : slotObjectList) {
+            final int slotNumber = slotObject.get("number").asInt();
+            final boolean occupied = slotObject.get("occupied").asInt() == 1;
+            final int occupiedTs = occupied ? ((int) System.currentTimeMillis() / 1000) : -1;
+            Future future = Future.future();
+            futureList.add(future);
+            selectSlot(connection, controllerPhysicalId, slotNumber, ar -> {
+                if (ar.failed()) {
+                    future.fail(ar.cause());
+                } else {
+                    final List<JsonObject> objects = ar.result();
+                    if (objects.isEmpty()) {
+                        future.fail(ar.cause());
+                    } else {
+                        final JsonObject object = objects.get(0);
+                        final int slotId = object.get("id").asInt();
+                        updateSlotOccupied(connection, slotId, occupied, occupiedTs, future.completer());
+                    }
+                }
+            });
+        }
+        CompositeFuture.all(futureList).setHandler(ar -> {
+            if (ar.failed()) {
+                resultHandler.handle(Future.failedFuture(ar.cause()));
+            } else {
+                resultHandler.handle(Future.succeededFuture());
+            }
+        });
     }
 }

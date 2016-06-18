@@ -3,12 +3,14 @@ package com.lge.notyet.server.manager;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FacilityManager {
@@ -106,6 +108,53 @@ public class FacilityManager {
         });
     }
 
+    public void updateControllerAvailable(String controllerPhysicalId, List<JsonObject> slotObjectList, Handler<AsyncResult<Void>> handler) {
+        logger.info("updateControllerAvailable: controllerPhysicalId=" + controllerPhysicalId + ", slotObjectList=" + slotObjectList);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, false, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                    } else {
+                        databaseProxy.updateSlots(sqlConnection, controllerPhysicalId, slotObjectList, ar3 -> {
+                            if (ar3.failed()) {
+                                handler.handle(Future.failedFuture(ar3.cause()));
+                                databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                            } else {
+                                handler.handle(Future.succeededFuture());
+                                databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    public void updateControllerUnavailable(String controllerPhysicalId, Handler<AsyncResult<Void>> handler) {
+        logger.info("updateControllerUnavailable: controllerPhysicalId=" + controllerPhysicalId);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, true, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                    } else {
+                        handler.handle(Future.succeededFuture());
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                    }
+                });
+            }
+        });
+    }
+
     public void updateSlotOccupied(int slotId, boolean occupied, Handler<AsyncResult<Void>> handler) {
         logger.info("updateSlotOccupied: slotId=" + slotId + ", occupied=" + occupied);
         databaseProxy.openConnection(ar1 -> {
@@ -117,12 +166,10 @@ public class FacilityManager {
                 databaseProxy.updateSlotOccupied(sqlConnection, slotId, occupied, occupiedTs, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, false, ar -> {
-                        });
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
                     } else {
                         handler.handle(Future.succeededFuture());
-                        databaseProxy.closeConnection(sqlConnection, true, ar -> {
-                        });
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
                     }
                 });
             }
