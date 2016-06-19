@@ -3,13 +3,13 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/facilities/reservable_list
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+   'session_key' : 'xxxxxx' // driver's session key
 }
 ```
 
@@ -18,7 +18,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/facilities/reservable_list/#
 ```
 
 ## Body
@@ -28,6 +28,16 @@
 ```
 {
   'success': 1
+  'facilities' : [
+    {
+      'id' : 1,
+      'name' : 'Shady Side Parking Lot'
+    },
+    {
+      ...
+    },
+    ...
+  ]
 }
 ```
 
@@ -36,7 +46,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_SESSION' // or other cause
 }
 ```
 

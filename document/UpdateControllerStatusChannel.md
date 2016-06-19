@@ -1,42 +1,28 @@
-# Request
+# Publish
 
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
-```
-
-## Body
-```
-{
-  'slot_no' : 1
-}
-```
-
-# Response
-
-## Topic
-
-```
-/controller/+/confirm_exit/#
+/controller/{controller_physical_id}
 ```
 
 ## Body
 
-### Success
+### When connected
 
 ```
 {
-  'success': 1
+  'available': 1,
+  'slots': [ { 'number': 1, 'occupied': 0 },
+             { 'number': 2, 'occupied': 1 }, ... ]
 }
 ```
 
-### Failed
+### When disconnected (Will Message)
 
 ```
 {
-  'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'available': 0
 }
 ```
 

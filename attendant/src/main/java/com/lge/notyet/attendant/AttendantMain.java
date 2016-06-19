@@ -4,21 +4,16 @@ import com.lge.notyet.attendant.manager.ScreenManager;
 
 import javax.swing.*;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
 public class AttendantMain {
 
-    private final ScreenManager mScreenManager;
+    private AttendantMain() {
 
-    public AttendantMain() {
-
-        mScreenManager = ScreenManager.getInstance();
+        ScreenManager mScreenManager = ScreenManager.getInstance();
         JFrame frame = new JFrame("SurePark Attendant Manager");
 
         frame.getContentPane().add(mScreenManager.init());
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

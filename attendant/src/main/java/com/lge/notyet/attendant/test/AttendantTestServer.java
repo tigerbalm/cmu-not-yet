@@ -15,61 +15,49 @@ public class AttendantTestServer {
     private static final String LOG_TAG = "TestServer";
 
     // Business Logic here, we have no time :(
-    private IOnRequest mGetSlotsRequestReceived = new IOnRequest() {
+    private final IOnRequest mGetSlotsRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
+        // Need to parse
+        Log.logd(LOG_TAG, "mGetSlotsRequestReceived Requested Received=" + message.getMessage() + ", topic=" + uri.getLocation().toString());
 
-            // Need to parse
-            System.out.println("mGetSlotsRequestReceived Requested Received=" + message.getMessage() + ", topic=" + uri.getLocation().toString());
-
-            List<JsonObject> slotList = new ArrayList<>();
-            slotList.add(new JsonObject().add("id", 1).add("number", 1).add("occupied", 1).add("occupied_ts", 1466021160L).add("reserved", 1).add("controller_id",1).add("physical_id",3));
-            slotList.add(new JsonObject().add("id", 2).add("number", 2).add("occupied", 1).add("occupied_ts", 1466041160L).add("reserved", 1).add("controller_id",1).add("physical_id",3));
-            slotList.add(new JsonObject().add("id", 3).add("number", 3).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",1).add("physical_id",3));
-            slotList.add(new JsonObject().add("id", 4).add("number", 4).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",1).add("physical_id",3));
-            slotList.add(new JsonObject().add("id", 5).add("number", 1).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",2).add("physical_id",8));
-            slotList.add(new JsonObject().add("id", 6).add("number", 2).add("occupied", 0).add("occupied_ts", 1466001160L).add("reserved", 1).add("controller_id",2).add("physical_id",8));
-            slotList.add(new JsonObject().add("id", 7).add("number", 3).add("occupied", 0).add("occupied_ts", 1466021160L).add("reserved", 1).add("controller_id",2).add("physical_id",8));
-            slotList.add(new JsonObject().add("id", 8).add("number", 4).add("occupied", 1).add("occupied_ts", 1466051160L).add("reserved", 1).add("controller_id",2).add("physical_id",8));
-            MqttNetworkMessage response = new MqttNetworkMessage(mGetSlotsResponseChannel.createResponseObject(slotList));
-            response.getMessage().add("success", 1);
-            System.out.println("mGetSlotsRequestReceived send Response=" + response.getMessage());
-            message.responseFor(response);
-        }
+        List<JsonObject> slotList = new ArrayList<>();
+        slotList.add(new JsonObject().add("id", 1).add("number", 1).add("occupied", 1).add("occupied_ts", 1466021160L).add("reserved", 1).add("controller_id",1).add("physical_id",3).add("reservation_id", 23).add("email", "tony").add("reservation_ts", 1466001160L));
+        slotList.add(new JsonObject().add("id", 2).add("number", 2).add("occupied", 1).add("occupied_ts", 1466041160L).add("reserved", 1).add("controller_id",1).add("physical_id",3).add("reservation_id", 123).add("email", "luffy").add("reservation_ts", 1466021160L));
+        slotList.add(new JsonObject().add("id", 3).add("number", 3).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",1).add("physical_id",3).add("reservation_id", 231).add("email", "allie").add("reservation_ts", 1466061160L));
+        slotList.add(new JsonObject().add("id", 4).add("number", 4).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",1).add("physical_id",3).add("reservation_id", 0).add("email", "").add("reservation_ts", 0L));
+        slotList.add(new JsonObject().add("id", 5).add("number", 1).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",2).add("physical_id",8).add("reservation_id", 0).add("email", "").add("reservation_ts", 0L));
+        slotList.add(new JsonObject().add("id", 6).add("number", 2).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",2).add("physical_id",8).add("reservation_id", 121).add("email", "david").add("reservation_ts", 1466021160L));
+        slotList.add(new JsonObject().add("id", 7).add("number", 3).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",2).add("physical_id",8).add("reservation_id", 344).add("email", "reshout").add("reservation_ts", 1466021160L));
+        slotList.add(new JsonObject().add("id", 8).add("number", 4).add("occupied", 1).add("occupied_ts", 1466051160L).add("reserved", 1).add("controller_id",2).add("physical_id",8).add("reservation_id", 5655).add("email", "beney").add("reservation_ts", 1466045160L));
+        MqttNetworkMessage response = new MqttNetworkMessage(GetSlotsResponseChannel.createResponseObject(slotList));
+        response.getMessage().add("success", 1);
+        Log.logd(LOG_TAG, "mGetSlotsRequestReceived send Response=" + response.getMessage());
+        message.responseFor(response);
     };
 
 
     // Business Logic here, we have no time :(
-    private IOnRequest mGetFacilitiesRequestReceived = new IOnRequest() {
+    private final IOnRequest mGetFacilitiesRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-
-            // Need to parse
-            System.out.println("mGetFacilitiesRequestReceived Requested Received=" + message.getMessage());
-            List<JsonObject> facilityList = new ArrayList<>();
-            facilityList.add(new JsonObject().add("id", 3).add("name", "Shadyside Parking Lot"));
-            MqttNetworkMessage response = new MqttNetworkMessage(mGetFacilitiesResponseChannel.createResponseObject(facilityList));
-            response.getMessage().add("success", 1);
-            System.out.println("mGetFacilitiesRequestReceived send Response=" + response.getMessage());
-            message.responseFor(response);
-        }
+        // Need to parse
+        Log.logd(LOG_TAG, "mGetFacilitiesRequestReceived Requested Received=" + message.getMessage());
+        List<JsonObject> facilityList = new ArrayList<>();
+        facilityList.add(new JsonObject().add("id", 3).add("name", "Shadyside Parking Lot"));
+        MqttNetworkMessage response = new MqttNetworkMessage(GetFacilitiesResponseChannel.createResponseObject(facilityList));
+        response.getMessage().add("success", 1);
+        Log.logd(LOG_TAG, "mGetFacilitiesRequestReceived send Response=" + response.getMessage());
+        message.responseFor(response);
     };
 
     // Business Logic here, we have no time :(
-    private IOnRequest mLoginRequestReceived = new IOnRequest() {
+    private final IOnRequest mLoginRequestReceived = (networkChannel, uri, message) -> {
 
-        @Override
-        public void onRequest(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
-
-            // Need to parse
-            System.out.println("Login Requested Received=" + message.getMessage());
-            MqttNetworkMessage response = new MqttNetworkMessage(mLoginResponseChannel.createResponseObject(1, 2, "1111-2222-3333-4444", "12/16", "12345678"));
-            response.getMessage().add("success", 1);
-            System.out.println("mLoginRequestReceived send Response=" + response.getMessage());
-            message.responseFor(response);
-        }
+        // Need to parse
+        Log.logd(LOG_TAG, "Login Requested Received=" + message.getMessage());
+        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, 1, "1111-2222-3333-4444", "12/16", "12345678"));
+        response.getMessage().add("success", 1);
+        Log.logd(LOG_TAG, "mLoginRequestReceived send Response=" + response.getMessage());
+        message.responseFor(response);
     };
 
     private INetworkConnection mNc = null;

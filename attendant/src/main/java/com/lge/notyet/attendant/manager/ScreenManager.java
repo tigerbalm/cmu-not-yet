@@ -1,26 +1,24 @@
 package com.lge.notyet.attendant.manager;
 
-/**
- * Created by beney.kim on 2016-06-12.
- */
-
 import com.lge.notyet.attendant.ui.FacilityMonitorPanel;
 import com.lge.notyet.attendant.ui.LoginPanel;
+import com.lge.notyet.attendant.ui.Screen;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class ScreenManager {
 
-    private static ScreenManager sScreenManager = null;
-    private CardLayout mMainCardLayout;
     private JPanel mCards;
+    private final CardLayout mMainCardLayout;
 
     private String mLastScreenName;
     private String mCurrentScreenName;
 
-    private LoginPanel mLoginPanel;
-    private FacilityMonitorPanel mFacilityMonitorPanel;
+    private Screen mLoginPanel;
+    private Screen mFacilityMonitorPanel;
+
+    private static ScreenManager sScreenManager = null;
 
     private ScreenManager () {
         mMainCardLayout = new CardLayout();
@@ -46,24 +44,19 @@ public class ScreenManager {
         mCards.add(mFacilityMonitorPanel.getRootPanel(), mFacilityMonitorPanel.getName());
 
         showLoginScreen();
-
         return mCards;
-    }
-
-    public CardLayout getLayout() {
-        return mMainCardLayout;
     }
 
     public void showLoginScreen() {
         mLastScreenName = null;
-        mLoginPanel.init();
+        mLoginPanel.initScreen();
         mMainCardLayout.show(mCards, mLoginPanel.getName());
         mCurrentScreenName = mLoginPanel.getName();
     }
 
     public void showFacilityMonitorScreen() {
         mLastScreenName = mCurrentScreenName;
-        mFacilityMonitorPanel.init();
+        mFacilityMonitorPanel.initScreen();
         mMainCardLayout.show(mCards, mFacilityMonitorPanel.getName());
         mCurrentScreenName = mFacilityMonitorPanel.getName();
     }

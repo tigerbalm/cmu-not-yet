@@ -7,6 +7,8 @@ public class Strings {
 
     public static final String INPUT_EMAIL_ADDRESS = "Please input user email address";
     public static final String INPUT_PASSWORD = "Please input password";
+    public static final String INPUT_CREDIT_CARD_NUMBER = "Please input valid credit card number";
+    public static final String INPUT_CREDIT_EXPIRE_DATE = "Please input valid credit card expire date";
 
     public static final String NETWORK_CONNECTION_ERROR = "Network Connection Error";
     public static final String LOGIN_FAILED = "Failed to login";

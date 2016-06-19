@@ -3,13 +3,14 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/login
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'email' : 'email@adress.com'
+  'password' : 'password'
 }
 ```
 
@@ -18,7 +19,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/login/#
 ```
 
 ## Body
@@ -28,6 +29,10 @@
 ```
 {
   'success': 1
+  'id' : 1,
+  'card_number' : '1234567890123456', // driver only
+  'card_expiration' : '01/20' // driver only
+  'session_key' : 'session Key'
 }
 ```
 
@@ -36,7 +41,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_EMAIL_PASSWORD' // or other cause
 }
 ```
 

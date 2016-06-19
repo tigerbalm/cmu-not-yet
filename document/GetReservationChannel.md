@@ -3,13 +3,13 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/reservation/get
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'session_key' : 'xxxxx' // driver's session_key
 }
 ```
 
@@ -18,7 +18,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/reservation/get/#
 ```
 
 ## Body
@@ -28,6 +28,17 @@
 ```
 {
   'success': 1
+  'id' : 1,
+  'reservation_ts' : 9999,
+  'confirmation_no' : 9999,
+  'user_id' : 1,
+  'user_email' : "reshout@gmail.com",
+  'slot_id' : 3,
+  'slot_no' : 3,
+  'controller_id' : 6,
+  'controller_physical_id' : "p1",
+  'facility_id' : 1,
+  'facility_name':"ShadySide"
 }
 ```
 
@@ -36,7 +47,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_SESSION' // or other cause, NO_RESERVATION_EXIST
 }
 ```
 

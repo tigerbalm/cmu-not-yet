@@ -1,14 +1,6 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.channels.LoginRequestChannel;
-import com.lge.notyet.channels.LoginResponseChannel;
-import com.lge.notyet.channels.SignUpRequestChannel;
-import com.lge.notyet.channels.SignUpResponseChannel;
-import com.lge.notyet.lib.comm.INetworkConnection;
-import com.lge.notyet.lib.comm.NetworkMessage;
-import com.lge.notyet.server.model.User;
-import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -25,19 +17,10 @@ public class AuthenticationManager {
 
     private final Logger logger;
     private final DatabaseProxy databaseProxy;
-    private final CommunicationProxy communicationProxy;
 
     private AuthenticationManager() {
         logger = LoggerFactory.getLogger(AuthenticationManager.class);
         databaseProxy = DatabaseProxy.getInstance(null);
-        communicationProxy = CommunicationProxy.getInstance(null);
-
-        INetworkConnection networkConnection = communicationProxy.getNetworkConnection();
-        new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
-        new SignUpResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> signUp(message)).listen();
-
-        // new LoginRequestChannel(networkConnection).request(LoginRequestChannel.createRequestMessage("owner@gmail.com", "password"));
-        // new SignUpRequestChannel(networkConnection).request(SignUpRequestChannel.createRequestMessage("beney@gmail.com", "password", "0000-1111-1111-1111", "00/00"));
     }
 
     public static AuthenticationManager getInstance() {
@@ -49,11 +32,12 @@ public class AuthenticationManager {
         }
     }
 
-    private String createSessionKey() {
+    private static String createSessionKey() {
         return UUID.randomUUID().toString().substring(0, 30);
     }
 
     public void signUp(String email, String password, String cardNumber, String cardExpiration, int userType, Handler<AsyncResult<String>> handler) {
+        logger.info("signUp: email=" + email + ", password=" + password + ", cardNumber=" + cardNumber + ", cardExpiration=" + cardExpiration + ", userType=" + userType);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -95,6 +79,7 @@ public class AuthenticationManager {
     }
 
     public void getSessionUser(String sessionKey, Handler<AsyncResult<JsonObject>> handler) {
+        logger.debug("getSessionUser: sessionKey=" + sessionKey);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -120,6 +105,7 @@ public class AuthenticationManager {
     }
 
     public void getEmailPasswordUser(String email, String password, Handler<AsyncResult<JsonObject>> handler) {
+        logger.debug("getEmailPasswordUser: email=" + email + ", password=" + password);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -145,6 +131,7 @@ public class AuthenticationManager {
     }
 
     public void checkUserType(String sessionKey, int userType, Handler<AsyncResult<Void>> handler) {
+        logger.debug("checkUserType: sessionKey=" + sessionKey + ", userType=" + userType);
         getSessionUser(sessionKey, ar -> {
             if (ar.failed()) {
                 handler.handle(Future.failedFuture(ar.cause()));
@@ -155,35 +142,6 @@ public class AuthenticationManager {
                 } else {
                     handler.handle(Future.succeededFuture());
                 }
-            }
-        });
-    }
-
-    private void login(NetworkMessage message) {
-        final String email = LoginRequestChannel.getEmail(message);
-        final String password = LoginRequestChannel.getPassword(message);
-
-        getEmailPasswordUser(email, password, ar -> {
-            if (ar.failed()) {
-                communicationProxy.responseFail(message, ar.cause());
-            } else {
-                JsonObject userObject = ar.result();
-                communicationProxy.responseSuccess(message, userObject);
-            }
-        });
-    }
-
-    private void signUp(NetworkMessage message) {
-        final String email = SignUpRequestChannel.getEmail(message);
-        final String password = SignUpRequestChannel.getPassword(message);
-        final String cardNumber = SignUpRequestChannel.getCardNumber(message);
-        final String cardExpiration = SignUpRequestChannel.getCardExpiration(message);
-
-        signUp(email, password, cardNumber, cardExpiration, User.USER_TYPE_DRIVER, ar1 -> {
-            if (ar1.failed()) {
-                communicationProxy.responseFail(message, ar1.cause());
-            } else {
-                communicationProxy.responseSuccess(message);
             }
         });
     }

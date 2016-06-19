@@ -1,4 +1,4 @@
-package com.lge.notyet.attendant.ui;
+package com.lge.notyet.attendant.business;
 
 public interface ITaskDoneCallback<T> {
 

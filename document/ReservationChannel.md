@@ -3,13 +3,14 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/facility/{facility_id}/reservation
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'session_key' : 'session_value' // driver's session key
+  'reservation_ts' : {reservation epoch / 1000}
 }
 ```
 
@@ -18,7 +19,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/facility/{facility_id}/reservation/#
 ```
 
 ## Body
@@ -28,6 +29,7 @@
 ```
 {
   'success': 1
+  'confirmation_no': {confirmation number}
 }
 ```
 
@@ -36,7 +38,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_SESSION' // or other cause
 }
 ```
 

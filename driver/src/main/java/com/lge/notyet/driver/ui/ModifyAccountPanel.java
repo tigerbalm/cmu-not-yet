@@ -7,6 +7,7 @@ import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
 import com.lge.notyet.driver.resource.Strings;
 import com.lge.notyet.driver.util.Log;
+import com.lge.notyet.driver.util.NumberUtils;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
@@ -80,11 +81,65 @@ public class ModifyAccountPanel implements Screen {
         // Modify Account
         mBtnModifyAccount.addActionListener(e -> {
 
-            setUserInputEnabled(false);
-
             String userEmailAddress = mTfUserEmailAddress.getText();
             String userPassword = new String(mTfUserPassword.getPassword());
 
+            if (userEmailAddress == null || userEmailAddress.length() == 0) {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.INPUT_EMAIL_ADDRESS,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (userPassword.length() == 0) {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.INPUT_PASSWORD,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String creditCardNumber = mTfCreditCardNumber.getText();
+            String creditCardMonth = mTfCreditCardMonth.getText();
+            String TfCreditCardYear = mTfCreditCardYear.getText();
+
+            if (creditCardNumber == null || creditCardNumber.length() == 0
+                    || !NumberUtils.isPositiveIntegerNumber(creditCardNumber)
+                    || (creditCardNumber.length() != 15 && creditCardNumber.length() != 16)) {
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.INPUT_CREDIT_CARD_NUMBER + ", example: 1234567890123456",
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (creditCardMonth == null || creditCardMonth.length() == 0
+                    || !NumberUtils.isPositiveIntegerNumber(creditCardMonth)
+                    || creditCardMonth.length() != 2
+                    || NumberUtils.toInt(creditCardMonth) < 0
+                    || NumberUtils.toInt(creditCardMonth) > 12) {
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.INPUT_CREDIT_EXPIRE_DATE + ", example: 01/20" ,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (TfCreditCardYear == null || TfCreditCardYear.length() == 0
+                    || NumberUtils.isNegativeIntegerNumber(TfCreditCardYear)
+                    || TfCreditCardYear.length() != 2) {
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.INPUT_CREDIT_EXPIRE_DATE + ", example: 01/20" ,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            setUserInputEnabled(false);
             TaskManager.getInstance().runTask(ModifyAccountTask.getTask(
                     SessionManager.getInstance().getKey(),
                     userEmailAddress, userPassword,

@@ -22,7 +22,7 @@ public class Query {
     {
         queryList.add(new Query(
                 "Average Occupancy (in hours)",
-                new String[]{"First Day", "Last Day", "Hours Occupied", "Occupancy in hours per day (Oops the slot count is not considered!!!)"},
+                new String[]{"First Day", "Last Day", "Hours Occupied", "Occupancy in hours per day"},
                 "select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day (Oops the slot count is not considered!!!)' from transaction"));//select datediff(from_unixtime(1465963300), from_unixtime(1465963199)), from_unixtime(1465963300),from_unixtime(1465963199)
         queryList.add(new Query(
                 "Peak Usage Hours",
