@@ -4,20 +4,20 @@
 #define _COMMAND_h
 #include <WString.h>
 #include <ArduinoJson.h>
-#include "NetworkManager.h"
+#include "MsgQueClient.h"
 #include "FacilityConfiguration.h"
 
 class Command
-{
-	NetworkManager *networkManager;
-
+{	
 protected:
+	MsgQueClient *client;
+
 	int topicId = 0;
 	String topic;
 	String body;
 public:
 	Command();
-	Command(NetworkManager *manager);
+	Command(MsgQueClient *_client);
 
 	int getFacilityId();
 	int getTopicId();
@@ -26,9 +26,12 @@ public:
 	virtual String getTopic();
 
 	void setBody(String body);
+	void setBody(char * body);
 	virtual String getBody();
 
 	bool send();
+	
+	String toString();
 };
 #endif
 

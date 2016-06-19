@@ -11,17 +11,18 @@
 
 #include "State.h"
 #include "StateChangeListener.h"
-#include "NetworkManager.h"
+#include "MsgQueClient.h"
+#include "Command.h"
 
 class WatingState :public State {	
-	StateChangeListener *stateChangeListener;
-	NetworkManager *networkManager;
+
 public:
 	void loop();
 
-	WatingState(StateChangeListener *listener, NetworkManager *manager);
+	WatingState(MsgQueClient *_client, StateChangeListener *_listener) : State(_client, _listener) {};
 
-	void onMessageReceived(String message);
+	void onMessageReceived(Command *command);
+
 	void carDetectedOnEntry(int status);
 	void carDetectedOnExit(int status);
 

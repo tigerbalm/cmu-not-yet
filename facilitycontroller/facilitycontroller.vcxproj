@@ -74,7 +74,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\mydocuments\Arduino\libraries\ArduinoJson\src;D:\mydocuments\Arduino\libraries\ArduinoJson\src\utility;D:\mydocuments\Arduino\libraries\PubSubClient\src;D:\mydocuments\Arduino\libraries\PubSubClient\src\utility;C:\Program Files (x86)\Arduino\libraries\Servo\src;C:\Program Files (x86)\Arduino\libraries\Servo\src\utility;C:\Program Files (x86)\Arduino\libraries\WiFi\src;C:\Program Files (x86)\Arduino\libraries\WiFi\src\utility;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\glqcbu0s.rsa\Micro Platforms\default\debuggers;D:\mydocuments\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;D:\workspace4\cmu-not-yet\facilitycontroller;C:\Program Files (x86)\Arduino\hardware\tools\avr/avr/include/;C:\Program Files (x86)\Arduino\hardware\tools\avr//avr/include/avr/;C:\Program Files (x86)\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\mydocuments\Arduino\libraries\ArduinoJson\src;D:\mydocuments\Arduino\libraries\ArduinoJson\src\utility;D:\mydocuments\Arduino\libraries\PubSubClient\src;D:\mydocuments\Arduino\libraries\PubSubClient\src\utility;C:\Program Files (x86)\Arduino\libraries\Servo\src;C:\Program Files (x86)\Arduino\libraries\Servo\src\utility;D:\mydocuments\Arduino\libraries\SimpleList;D:\mydocuments\Arduino\libraries\SimpleList\utility;C:\Program Files (x86)\Arduino\libraries\WiFi\src;C:\Program Files (x86)\Arduino\libraries\WiFi\src\utility;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\glqcbu0s.rsa\Micro Platforms\default\debuggers;D:\mydocuments\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;D:\workspace4\cmu-not-yet\facilitycontroller;C:\Program Files (x86)\Arduino\hardware\tools\avr/avr/include/;C:\Program Files (x86)\Arduino\hardware\tools\avr//avr/include/avr/;C:\Program Files (x86)\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>D:\workspace4\cmu-not-yet\facilitycontroller\__vm\.facilitycontroller.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>__AVR_ATmega2560__;F_CPU=16000000L;ARDUINO=10609;ARDUINO_AVR_MEGA2560;ARDUINO_ARCH_AVR;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -130,6 +130,7 @@
     <ClInclude Include="CommandReportSlotStatus.h" />
     <ClInclude Include="CommandRequestPayment.h" />
     <ClInclude Include="CommandVerifyReservation.h" />
+    <ClInclude Include="CommandWill.h" />
     <ClInclude Include="Controller.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -144,12 +145,15 @@
     <ClInclude Include="LeavingState.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="MsgQueClient.h" />
+    <ClInclude Include="MsgQueClientStatusListener.h" />
     <ClInclude Include="NetworkManager.h">
       <FileType>CppCode</FileType>
     </ClInclude>
     <ClInclude Include="NetworkManagerListener.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="Pair.h" />
     <ClInclude Include="ParkingState.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -188,18 +192,20 @@
     <ClCompile Include="CommandReportSlotStatus.cpp" />
     <ClCompile Include="CommandRequestPayment.cpp" />
     <ClCompile Include="CommandVerifyReservation.cpp" />
+    <ClCompile Include="CommandWill.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="EntryGateHelper.cpp" />
     <ClCompile Include="ExitGateHelper.cpp" />
     <ClCompile Include="GateCarDetector.cpp" />
     <ClCompile Include="LeavingState.cpp" />
+    <ClCompile Include="MsgQueClient.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="NetworkManagerListener.cpp" />
+    <ClCompile Include="Pair.cpp" />
     <ClCompile Include="ParkingState.cpp" />
     <ClCompile Include="Slot.cpp" />
     <ClCompile Include="SlotStatusChangeDetector.cpp" />
     <ClCompile Include="SlotStatusChangeListener.cpp" />
-    <ClCompile Include="State.cpp" />
     <ClCompile Include="StateChangeListener.cpp" />
     <ClCompile Include="WatingState.cpp" />
   </ItemGroup>

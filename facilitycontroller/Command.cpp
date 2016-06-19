@@ -8,9 +8,9 @@ Command::Command()
 {
 }
 
-Command::Command(NetworkManager * manager)
+Command::Command(MsgQueClient *_client)
 {
-	networkManager = manager;
+	client = _client;
 }
 
 int Command::getFacilityId()
@@ -23,17 +23,26 @@ int Command::getTopicId()
 	return topicId;
 }
 
-void Command::setTopic(String topic)
+void Command::setTopic(String _topic)
 {
+	topic = _topic;
 }
 
 String Command::getTopic()
 {
-	return String();
+	return topic;
 }
 
-void Command::setBody(String body)
+void Command::setBody(String _body)
 {
+	body = _body;
+}
+
+void Command::setBody(char *body)
+{
+	String b(body);
+
+	setBody(b);
 }
 
 String Command::getBody()
@@ -43,5 +52,16 @@ String Command::getBody()
 
 bool Command::send()
 {
-	return networkManager->send(getTopic(), getBody());
+	return client->publish(getTopic(), getBody());
+}
+
+String Command::toString()
+{
+	String info;
+
+	info += topic;
+	info += "\n";
+	info += body;
+
+	return info;
 }

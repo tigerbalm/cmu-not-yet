@@ -99,6 +99,18 @@
     <ClInclude Include="ExitGateHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MsgQueClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MsgQueClientStatusListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandWill.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pair.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CarDetectedListener.cpp">
@@ -137,9 +149,6 @@
     <ClCompile Include="SlotStatusChangeListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="State.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="StateChangeListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -165,6 +174,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ExitGateHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MsgQueClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandWill.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pair.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

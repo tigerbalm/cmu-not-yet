@@ -8,13 +8,19 @@
 
 ## Body
 
+### When status updated
+
+```
+{
+  'updated': 1
+}
+```
+
 ### When connected
 
 ```
 {
   'available': 1,
-  'slots': [ { 'number': 1, 'occupied': 0 },
-             { 'number': 2, 'occupied': 1 }, ... ]
 }
 ```
 

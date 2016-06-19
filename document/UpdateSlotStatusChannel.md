@@ -12,7 +12,7 @@
 
 ```
 {
-  'occupied': 1
+  'parked': 1
 }
 ```
 
@@ -20,7 +20,7 @@
 
 ```
 {
-  'occupied': 0
+  'parked': 0
 }
 ```
 

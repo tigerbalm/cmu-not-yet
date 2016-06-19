@@ -10,11 +10,13 @@ class CommandVerifyReservation : public Command
 	int reservationNumber;
 
 public:
-	CommandVerifyReservation(NetworkManager *_manager) : Command(_manager) {}
+	CommandVerifyReservation(MsgQueClient *_client) : Command(_client) {}
 	void setReservationNumber(int number);
 	
 	virtual String getTopic();
 	virtual String getBody();
+
+	static Command* create(MsgQueClient *_client) { return new CommandVerifyReservation(_client); }
 };
 
 #endif
