@@ -130,16 +130,18 @@ public class LoginPanel implements Screen {
                 for (JsonValue aSlot : slots.values()) {
 
                     JsonObject slot = aSlot.asObject();
+                    // mandatory fields
                     int id = slot.get("id").asInt();  // Slot's Unique ID
                     int number = slot.get("number").asInt();
                     int occupied = slot.get("occupied").asInt();
                     long occupied_ts = slot.get("occupied_ts").asLong();
                     int reserved = slot.get("reserved").asInt();
                     int controller_id = slot.get("controller_id").asInt();
-                    int physical_id = slot.get("physical_id").asInt();
-                    int reservation_id = slot.get("reservation_id").asInt();
-                    String user_email = slot.get("email").asString();
-                    long reservation_ts = slot.get("reservation_ts").asLong();
+                    String physical_id = slot.get("controller_physical_id").asString();
+                    // optional fields
+                    int reservation_id = slot.get("reservation_id").isNull() ? -1 : slot.get("reservation_id").asInt();
+                    String user_email = slot.get("email").isNull() ? null : slot.get("email").asString();
+                    long reservation_ts = slot.get("reservation_ts").isNull() ? -1 : slot.get("reservation_ts").asLong();
                     SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id, reservation_id, user_email, reservation_ts);
                 }
 

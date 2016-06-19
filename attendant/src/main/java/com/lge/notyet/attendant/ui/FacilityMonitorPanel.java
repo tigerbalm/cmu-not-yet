@@ -200,7 +200,7 @@ public class FacilityMonitorPanel implements Screen {
                 try {
 
                     topicTokenizer.nextToken(); // skip "controller"
-                    int physicalId = Integer.parseInt(topicTokenizer.nextToken());
+                    String physicalId = topicTokenizer.nextToken();
                     topicTokenizer.nextToken(); // "slot"
                     int slotNumber = Integer.parseInt(topicTokenizer.nextToken());
                     int occupied = notificationMessage.getMessage().get("occupied").asInt();
@@ -227,7 +227,6 @@ public class FacilityMonitorPanel implements Screen {
     private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(SLOT_STATUS_UPDATE_MESSAGE_MAX);
 
     private class SlotStatusUpdateThread implements Runnable {
-
         public void run() {
             initScreen();
         }

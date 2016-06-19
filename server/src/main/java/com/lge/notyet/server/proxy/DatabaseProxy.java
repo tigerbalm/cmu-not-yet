@@ -320,7 +320,7 @@ public class DatabaseProxy {
                 " inner join controller on controller.id=slot.controller_id" +
                 " inner join facility on facility.id=controller.facility_id" +
                 " inner join user on user.id=user_id" +
-                " where user_id=?" +
+                " where user_id=? and reservation.activiate=1" +
                 " order by reservation_ts";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(userId);

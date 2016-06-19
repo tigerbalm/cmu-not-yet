@@ -62,8 +62,7 @@ public class SessionManager {
         mFacilityName = null;
     }
 
-    public void addSlot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, int physical_id, int reservation_id, String user_email, long reservation_ts) {
-
+    public void addSlot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, String physical_id, int reservation_id, String user_email, long reservation_ts) {
         mSlots.put(id, new Slot(id, number, occupied, reserved, occupiedTimeStamp, controller_id, physical_id, reservation_id, user_email, reservation_ts));
     }
 
@@ -75,11 +74,10 @@ public class SessionManager {
         return mSlots.get(id);
     }
 
-    public Slot getSlot(int physical_id, int slot_number) {
-
+    public Slot getSlot(String physical_id, int slot_number) {
         for (Slot slot : mSlots.values()) {
 
-            if (slot.getPhysicalId() == physical_id && slot.getNumber() == slot_number) {
+            if (slot.getPhysicalId().equals(physical_id) && slot.getNumber() == slot_number) {
                 return slot;
             }
         }

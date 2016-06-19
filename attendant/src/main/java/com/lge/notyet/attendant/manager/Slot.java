@@ -9,11 +9,11 @@ public class Slot {
     private long mOccupiedTimeStamp;
     private long mReservedTimeStamp;
     private final int mControllerId;
-    private final int mPhysicalId;
+    private final String mPhysicalId;
     private final int mReservationId;
     private final String mUserEmail;
 
-    public Slot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, int physical_id, int reservation_id, String user_email, long reservation_ts) {
+    public Slot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, String physical_id, int reservation_id, String user_email, long reservation_ts) {
 
         mId = id;
         mNumber = number;
@@ -69,7 +69,7 @@ public class Slot {
     public int getControllerId() {
         return mControllerId;
     }
-    public int getPhysicalId() {
+    public String getPhysicalId() {
         return mPhysicalId;
     }
 }
