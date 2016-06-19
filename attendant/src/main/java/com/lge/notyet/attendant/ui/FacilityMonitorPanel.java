@@ -46,6 +46,7 @@ public class FacilityMonitorPanel implements Screen {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
+                disposeScreen();
                 SessionManager.getInstance().clear(); // Log-out
                 // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
@@ -73,7 +74,7 @@ public class FacilityMonitorPanel implements Screen {
 
             JLabel slotNumber = new JLabel(slot.getControllerId() + "-" + slot.getNumber());
             slotNumber.setHorizontalAlignment(SwingConstants.CENTER);
-            slotNumber.setFont(new Font(null, 0, 18));
+            slotNumber.setFont(new Font(null, 0, 16));
 
             boolean isOccupied = slot.isOccupied();
             boolean isReserved = slot.isReserved();
@@ -89,7 +90,7 @@ public class FacilityMonitorPanel implements Screen {
                 labelStatus = new JLabel("Empty");
             }
             labelStatus.setHorizontalAlignment(SwingConstants.CENTER);
-            labelStatus.setFont(new Font(null, 0, 18));
+            labelStatus.setFont(new Font(null, 0, 16));
 
             JLabel labelTime;
             if (isOccupied) {
@@ -98,29 +99,40 @@ public class FacilityMonitorPanel implements Screen {
                 labelTime = new JLabel(occupiedTimeSec / 60 + " min(s)");
                 labelTime.setForeground(Color.white);
             } else if (isReserved) {
-                // TODO: ADD this information
-                /*
+
                 Calendar reservedTime = Calendar.getInstance();
                 reservedTime.setTimeInMillis(1466091160L * 1000);
-                // reservedTime.setTimeInMillis(slot.getReservedTimeStamp() * 1000);
+                reservedTime.setTimeInMillis(slot.getReservedTimeStamp() * 1000);
                 reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
                 SimpleDateFormat dataFormat = new SimpleDateFormat("hh:mm, MM/dd/yy");
                 dataFormat.setTimeZone(TimeZone.getTimeZone("America/New_York"));
                 labelTime = new JLabel(dataFormat.format(reservedTime.getTime()));
-                */
-                labelTime = new JLabel();
                 labelTime.setForeground(new Color(24, 27, 143));
             } else {
                 labelTime = new JLabel();
             }
             labelTime.setHorizontalAlignment(SwingConstants.CENTER);
-            labelTime.setFont(new Font(null, 0, 18));
+            labelTime.setFont(new Font(null, 0, 16));
+
+            JLabel labelName;
+            if (isOccupied) {
+                labelName = new JLabel(slot.getReservedUserEmail());
+                labelName.setForeground(Color.white);
+            } else if (isReserved) {
+                labelName = new JLabel(slot.getReservedUserEmail());
+                labelName.setForeground(new Color(24, 27, 143));
+            } else {
+                labelName = new JLabel();
+            }
+            labelName.setHorizontalAlignment(SwingConstants.CENTER);
+            labelName.setFont(new Font(null, 0, 16));
 
             JPanel slotPanel = new JPanel(new GridLayout(0, 1));
             slotPanel.add(slotNumber);
             slotPanel.add(new JSeparator());
             slotPanel.add(labelStatus);
             slotPanel.add(labelTime);
+            slotPanel.add(labelName);
             slotPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
             if(isOccupied) {
@@ -193,6 +205,7 @@ public class FacilityMonitorPanel implements Screen {
                     int slotNumber = Integer.parseInt(topicTokenizer.nextToken());
                     int occupied = notificationMessage.getMessage().get("occupied").asInt();
                     Slot slot = SessionManager.getInstance().getSlot(physicalId, slotNumber);
+
                     if (slot != null) {
                         slot.setOccupied(occupied == 1);
                     }

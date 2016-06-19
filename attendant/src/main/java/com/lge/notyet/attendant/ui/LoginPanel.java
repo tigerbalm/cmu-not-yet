@@ -131,18 +131,16 @@ public class LoginPanel implements Screen {
 
                     JsonObject slot = aSlot.asObject();
                     int id = slot.get("id").asInt();  // Slot's Unique ID
-                    int number = slot.get("number").asInt(); //
+                    int number = slot.get("number").asInt();
                     int occupied = slot.get("occupied").asInt();
-                    int reserved = slot.get("reserved").asInt();
                     long occupied_ts = slot.get("occupied_ts").asLong();
-                    // TODO: ADD this information
-                    long reservation_ts = 0; // slot.get("reservation_ts").asLong();
-                    // TODO: ADD this information
-                    String user_email = ""; // slot.get("user_email").asString();
+                    int reserved = slot.get("reserved").asInt();
                     int controller_id = slot.get("controller_id").asInt();
-                    // TODO: ADD this information
-                    int physical_id = 1;//slot.get("physical_id").asInt();
-                    SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id);
+                    int physical_id = slot.get("physical_id").asInt();
+                    int reservation_id = slot.get("reservation_id").asInt();
+                    String user_email = slot.get("email").asString();
+                    long reservation_ts = slot.get("reservation_ts").asLong();
+                    SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id, reservation_id, user_email, reservation_ts);
                 }
 
                 ScreenManager.getInstance().showFacilityMonitorScreen();
