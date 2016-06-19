@@ -36,11 +36,4 @@ public class UpdateControllerStatusPublishChannel extends PublishChannel {
     public static boolean isAvailable(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_AVAILABLE).asInt() == 1;
     }
-
-    public static List<JsonObject> getSlots(NetworkMessage networkMessage) {
-        JsonArray slotArray = ((JsonObject) networkMessage.getMessage()).get(KEY_SLOTS).asArray();
-        List<JsonObject> slotList = new ArrayList<>();
-        slotArray.forEach(slotObject -> slotList.add(slotObject.asObject()));
-        return slotList;
-    }
 }

@@ -127,36 +127,22 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void updateControllerStatus(Uri uri, NetworkMessage message) {
-        try {
-            final String controllerPhysicalId = UpdateControllerStatusPublishChannel.getControllerPhysicalId(uri);
-            final boolean available = UpdateControllerStatusPublishChannel.isAvailable(message);
+        final String controllerPhysicalId = UpdateControllerStatusPublishChannel.getControllerPhysicalId(uri);
+        final boolean available = UpdateControllerStatusPublishChannel.isAvailable(message);
 
-            Future future = Future.future();
-            future.setHandler(new Handler<AsyncResult>() {
-                @Override
-                public void handle(AsyncResult ar) {
-                    if (ar.failed()) {
-                        logger.info("updateControllerStatus: failed");
-                    } else {
-                        logger.info("updateControllerStatus: success");
-                    }
-                }
-            });
-            if (available) {
-                final List<JsonObject> slotObjectList = UpdateControllerStatusPublishChannel.getSlots(message);
-                facilityManager.updateControllerAvailable(controllerPhysicalId, slotObjectList, future.completer());
+        facilityManager.updateControllerAvailable(controllerPhysicalId, available, ar -> {
+            if (ar.failed()) {
+                logger.info("updateControllerStatus: failed");
             } else {
-                facilityManager.updateControllerUnavailable(controllerPhysicalId, future.completer());
+                logger.info("updateControllerStatus: success");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     private void updateSlotStatus(Uri uri, NetworkMessage message) {
         final String controllerPhysicalId = UpdateSlotStatusPublishChannel.getControllerPhysicalId(uri);
         final int slotNumber = UpdateSlotStatusPublishChannel.getSlotNumber(uri);
-        final boolean occupied = UpdateSlotStatusPublishChannel.isOccupied(message);
+        final boolean parked = UpdateSlotStatusPublishChannel.isParked(message);
 
         facilityManager.getSlot(controllerPhysicalId, slotNumber, ar1 -> {
             if (ar1.failed()) {
@@ -164,11 +150,11 @@ public class MainVerticle extends AbstractVerticle {
             } else {
                 final JsonObject slotObject = ar1.result();
                 final int slotId = slotObject.get("id").asInt();
-                facilityManager.updateSlotOccupied(slotId, occupied, ar2 -> {
+                facilityManager.updateSlotParked(slotId, parked, ar2 -> {
                     if (ar2.failed()) {
                         ar2.cause().printStackTrace();
                     } else {
-                        logger.info("updateSlotStatus: slot=" + slotObject + " updated occupied=" + occupied);
+                        logger.info("updateSlotStatus: slot=" + slotObject + " updated parked=" + parked);
                     }
                 });
             }
