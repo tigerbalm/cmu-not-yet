@@ -8,19 +8,10 @@
 
 ## Body
 
-### When occupied
-
 ```
 {
-  'parked': 1
-}
-```
-
-### When free
-
-```
-{
-  'parked': 0
+  'parked': 1,
+  'confirmation_no': 5123
 }
 ```
 
