@@ -17,7 +17,7 @@ class CommandReportSlotStatus : public Command
 	int status;
 
 public:
-	CommandReportSlotStatus(NetworkManager *_manager, int _slot, int _status);
+	CommandReportSlotStatus(MsgQueClient *client, int _slot, int _status);
 
 	virtual String getTopic();
 	virtual String getBody();

@@ -11,20 +11,20 @@
 
 #include "State.h"
 #include "StateChangeListener.h"
-#include "NetworkManager.h"
+#include "MsgQueClient.h"
+#include "Command.h"
 
 class LeavingState : public State {
 private:
-	StateChangeListener *stateChangeListener;
-	NetworkManager *networkManager;
 	int mode;
 
 public:
 	void loop();
 
-	LeavingState(StateChangeListener *listener, NetworkManager *manager);
+	LeavingState(MsgQueClient *_client, StateChangeListener *_listener) : State(_client, _listener) {};
+	
+	void onMessageReceived(Command *command);
 
-	void onMessageReceived(String message);
 	void carDetectedOnEntry(int status);
 	void carDetectedOnExit(int status);
 

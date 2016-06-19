@@ -11,22 +11,21 @@
 
 #include "State.h"
 #include "StateChangeListener.h"
-#include "NetworkManager.h"
+#include "MsgQueClient.h"
+#include "Command.h"
 
 class ParkingState : public State {
 private:
-	StateChangeListener *stateChangeListener;
-	NetworkManager *networkManager;
-
 	int mode;
 public:
 	void loop();
 	void waitingNumberInput();
 	void verifyReservation(int number);	
 
-	ParkingState(StateChangeListener *listener, NetworkManager *manager);
+	ParkingState(MsgQueClient *_client, StateChangeListener *_listener);
 
-	void onMessageReceived(String message);
+	void onMessageReceived(Command *command);
+
 	void carDetectedOnEntry(int status);
 	void carDetectedOnExit(int status);
 

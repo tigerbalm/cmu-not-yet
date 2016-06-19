@@ -14,24 +14,18 @@
 #define MODE_WAITING_CONFIRM	2
 #define MODE_WAITING_PLACING	3
 
-ParkingState::ParkingState(StateChangeListener * listener, NetworkManager *manager)
+ParkingState::ParkingState(MsgQueClient *_client, StateChangeListener *_listener)
+	: State(_client, _listener)
 {
-	stateChangeListener = listener;
-	networkManager = manager;
-
 	mode = MODE_WAITING_NUMBER;
 }
 
-void ParkingState::onMessageReceived(String message)
+void ParkingState::onMessageReceived(Command *command)
 {
-	Serial.print("ParkingState::onMessageReceived: ");
-	Serial.println(message);
+	Serial.println("ParkingState::onMessageReceived: ");
 
 	if (mode == MODE_WAITING_CONFIRM)
 	{
-		Command command = CommandFactory::get("confirm_reservation");
-		command.setBody(message);
-
 		CmdVerifyReservationRes &response = (CmdVerifyReservationRes &)command;
 
 		if (response.isSuccess())
@@ -50,7 +44,7 @@ void ParkingState::onMessageReceived(String message)
 			Serial.println(response.getSlotNumber());
 
 			mode = MODE_WAITING_NUMBER;
-		}		
+		}
 	}
 }
 
@@ -93,7 +87,7 @@ void ParkingState::waitingNumberInput()
 void ParkingState::verifyReservation(int number)
 {
 	// send to server with number
-	CommandVerifyReservation verifyCmd(networkManager);
+	CommandVerifyReservation verifyCmd(mqClient);
 	verifyCmd.setReservationNumber(number);
 	verifyCmd.send();
 
@@ -136,7 +130,7 @@ void ParkingState::onSlotOccupied(int slotNum)
 		// 1. server 에 slot 상태 보낸다.
 		// 2. 특별한 경우이므로 보낼때 예약 번호를 같이 보낼 지 결정 필요
 
-		CommandReportSlotStatus cmdStatus(networkManager, slotNum, 1);
+		CommandReportSlotStatus cmdStatus(mqClient, slotNum, 1);
 		cmdStatus.send();
 
 		EntryGateHelper::ledOff();

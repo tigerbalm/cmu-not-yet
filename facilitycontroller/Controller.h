@@ -9,8 +9,6 @@
 	#include "WProgram.h"
 #endif
 
-#include "NetworkManager.h"
-#include "NetworkManagerListener.h"
 #include "State.h"
 #include "WatingState.h"
 #include "ParkingState.h"
@@ -19,8 +17,10 @@
 #include "GateCarDetector.h"
 #include "SlotStatusChangeListener.h"
 #include "SlotStatusChangeDetector.h"
+#include "MsgQueClient.h"
+#include "Command.h"
 
-class Controller : public StateChangeListener, public NetworkManagerListener, public CarDetectedListener, public SlotStatusChangeListener
+class Controller : public StateChangeListener, public CarDetectedListener, public SlotStatusChangeListener
 {
  protected:
 	 State *current;
@@ -29,23 +29,23 @@ class Controller : public StateChangeListener, public NetworkManagerListener, pu
 	 State *parkingState;
 	 State *leavingState;
 	 
-	 NetworkManager *networkManager;
+	 MsgQueClient *msgQueClient;
+
 	 GateCarDetector *entryGateCarDetector;
 	 GateCarDetector *exitGateCarDetector;
 	 SlotStatusChangeDetector *slotStatusChangeDetector;
 
  public:
-	 Controller();
+	 Controller(MsgQueClient &client);
 	 void setup();
 	 void setState(State* state);
 	 State* getState();
 	 void loop();
 
+	 void receiveMessage(Command *command);
+
 	 /* from StateChangeListener */
 	 void onStateChanged(int nextState);
-
-	 /* from NetworkManagerListener */
-	 void onMessageReceived(String message);
 
 	 /* from CarDetectedListener */
 	 void onCarChangeDetected(int gatePin, int status);
