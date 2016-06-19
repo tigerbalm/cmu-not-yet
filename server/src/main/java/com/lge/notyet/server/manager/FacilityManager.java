@@ -106,6 +106,26 @@ public class FacilityManager {
         });
     }
 
+    public void updateFacility(int facilityId, String name, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<Void>> handler) {
+        logger.info("updateFacility: facilityId=" + facilityId + ", name=" + name + ", fee=" + fee + ", feeUnit=" + feeUnit + ", gracePeriod=" + gracePeriod);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.updateFacility(sqlConnection, facilityId, name, fee, feeUnit, gracePeriod, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                    } else {
+                        handler.handle(Future.succeededFuture());
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                    }
+                });
+            }
+        });
+    }
+
     public void updateControllerAvailable(String controllerPhysicalId, boolean available, Handler<AsyncResult<Void>> handler) {
         logger.info("updateControllerAvailable: controllerPhysicalId=" + controllerPhysicalId + ", available=" + available);
         databaseProxy.openConnection(ar1 -> {

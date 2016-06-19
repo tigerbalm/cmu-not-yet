@@ -324,6 +324,18 @@ public class DatabaseProxy {
         queryWithParams(connection, sql, parameters, resultHandler);
     }
 
+    public void updateFacility(SQLConnection connection, int facilityId, String name, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonArray>> resultHandler) {
+        logger.info("updateFacility: facilityId=" + facilityId + ", name=" + name + ", fee=" + fee + ", feeUnit=" + feeUnit + ", gracePeriod=" + gracePeriod);
+        String sql = "update facility set name=?, fee=?, fee_unit=?, grace_period=? where id=?";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(name);
+        parameters.add(fee);
+        parameters.add(feeUnit);
+        parameters.add(gracePeriod);
+        parameters.add(facilityId);
+        updateWithParams(connection, sql, parameters, resultHandler);
+    }
+
     public void updateSlotParked(SQLConnection connection, int slotId, boolean parked, Handler<AsyncResult<JsonArray>> resultHandler) {
         logger.info("updateSlotParked: slotId=" + slotId + ", parked=" + parked);
         String sql = "update slot set parked=? where id=?";
