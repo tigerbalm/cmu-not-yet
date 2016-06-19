@@ -84,9 +84,11 @@ public class MainUI extends JDialog {
         revalidate();
         //FixMe: Move the functionality from Specification_Result file to this file.
         //FixMe: Add more settings option programmatically
-        //FixMe: Update database to work without having sql_mode set to null.
-        //FixMe: Add Slot condition for Query 3
+        //FixMe: Update database to work without having sql_mode set to null. Query2
+        //FixMe: Add Slot condition for Query 1
+        //FixMe: Field names take from SQL response, instead of maintaining a redundant copy.
         //FixMe: Do a formatted output of the report
+        //FixMe: Handle error conditions of server, by showing a popup
         //FixMe: Make event handler for Ctrl+L key on main window for Log window to be visible.
     }
 }
