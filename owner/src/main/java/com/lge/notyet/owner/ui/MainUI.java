@@ -16,6 +16,8 @@ public class MainUI extends JDialog {
     private JButton buttonOK;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
     private JPanel choicePanel;
+    private JButton configureButton;
+    private JTextPane reportTextPane;
     private ButtonGroup choiceGroup;
     private Specification_Result specialSettingAndResult;
 
@@ -76,6 +78,7 @@ public class MainUI extends JDialog {
         }
         customAdditionalDeveloperQueryRadioButton= new JRadioButton("Custom (Additional developer query)");
         choicePanel.add(customAdditionalDeveloperQueryRadioButton);
-       // revalidate();
+
+        revalidate();
     }
 }
