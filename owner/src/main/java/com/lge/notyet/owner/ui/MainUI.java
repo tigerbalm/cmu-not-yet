@@ -1,7 +1,13 @@
 package com.lge.notyet.owner.ui;
 
+import com.lge.notyet.channels.GetDBQueryResponseChannel;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import com.lge.notyet.owner.business.GenericTextResultHandler;
 import com.lge.notyet.owner.business.Query;
 import com.lge.notyet.owner.business.StateMachine;
+import com.lge.notyet.owner.business.dbQueryTask;
+import com.lge.notyet.owner.manager.TaskManager;
+import com.lge.notyet.owner.util.Log;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +28,9 @@ public class MainUI extends JDialog {
     private JTextArea logArea;
     private JPanel logPanel;
     private ButtonGroup choiceGroup;
-    private Specification_Result specialSettingAndResult;
+    //private Specification_Result specialSettingAndResult;
+
+    public static final String LOG_TAG= "Owner App";
 
     public MainUI() {
         setContentPane(contentPane);
@@ -41,13 +49,13 @@ public class MainUI extends JDialog {
         if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
             JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
         else{
-            StateMachine.getInstance().setQuery(choiceGroup.getSelection().getActionCommand(), customAdditionalDeveloperQueryRadioButton.isSelected());
-            if(specialSettingAndResult==null) {
-                specialSettingAndResult = new Specification_Result();
-            }
-            specialSettingAndResult.pack();
-            specialSettingAndResult.setVisible(true);
-            StateMachine.getInstance().setInternalState(StateMachine.States.MAINUI);
+//            if(specialSettingAndResult==null) {
+//                specialSettingAndResult = new Specification_Result();
+//            }
+//            specialSettingAndResult.pack();
+//            specialSettingAndResult.setVisible(true);
+//            StateMachine.getInstance().setInternalState(StateMachine.States.MAINUI);
+            TaskManager.getInstance().runTask(dbQueryTask.getTask(StateMachine.getInstance().getSqlQuery(), mQueryResponseCallback));
         }
     }
 
@@ -65,6 +73,15 @@ public class MainUI extends JDialog {
     }
 
     private void createUIComponents() {
+        ActionListener chooseReportHandler= new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                readReportChoiceAndDoMoreSettings();
+            }
+            public void readReportChoiceAndDoMoreSettings(){
+                StateMachine.getInstance().setQuery(choiceGroup.getSelection().getActionCommand(), customAdditionalDeveloperQueryRadioButton.isSelected());
+            }
+        };
         choiceGroup= new ButtonGroup();
         chooseReportPanel = new JPanel(new GridLayout(0,2));
         String defaultQuery= Query.getDefaultQueryId();
@@ -77,9 +94,14 @@ public class MainUI extends JDialog {
             }
             chooseReportPanel.add(jb);
             choiceGroup.add(jb);
+            jb.addActionListener(chooseReportHandler);
         }
         customAdditionalDeveloperQueryRadioButton= new JRadioButton("Custom (Additional developer query)");
         chooseReportPanel.add(customAdditionalDeveloperQueryRadioButton);
+        customAdditionalDeveloperQueryRadioButton.addActionListener(chooseReportHandler);
+
+        //Initiate the first action.
+        chooseReportHandler.actionPerformed(null);
 
         revalidate();
         //FixMe: Move the functionality from Specification_Result file to this file.
@@ -91,4 +113,43 @@ public class MainUI extends JDialog {
         //FixMe: Handle error conditions of server, by showing a popup
         //FixMe: Make event handler for Ctrl+L key on main window for Log window to be visible.
     }
+    private ITaskDoneCallback mQueryResponseCallback = new ITaskDoneCallback() {
+
+        @Override
+        public void onDone(int result, Object response) {
+
+            if (result == ITaskDoneCallback.FAIL) {
+                Log.log(LOG_TAG, "Failed to query due to timeout");
+                JOptionPane.showMessageDialog(textReportPane1,
+                        "Network Connection Error: Failed to query.",
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+            Log.log(LOG_TAG, "Received query response, message=" + resMsg.getMessage());
+
+            try {
+
+                int success = resMsg.getMessage().get("success").asInt();
+
+                if (success == 1) { // Success
+                    GenericTextResultHandler.handleResult(textReportPane1, resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT));
+
+                    Log.log(LOG_TAG, "Success to query DB, resultSet is " + resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT).toString());
+
+                } else if (success == 0) {
+                    Log.log(LOG_TAG, "Failed to query DB, fail cause is " + resMsg.getMessage().get("cause").asString());
+                    JOptionPane.showMessageDialog(textReportPane1,
+                            "Failed to query DB, fail cause=" + resMsg.getMessage().get("cause").asString(),
+                            "SurePark",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
 }
