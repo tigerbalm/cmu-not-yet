@@ -5,17 +5,16 @@
 #include "Controller.h"
 #include "SureParkPinHeader.h"
 
-Controller::Controller()
-{	
+Controller::Controller(MsgQueClient & client)
+{
+	msgQueClient = &client;
 }
 
 void Controller::setup()
-{
-	networkManager = new NetworkManager(this);
-
-	waitingState = new WatingState(this, networkManager);
-	parkingState = new ParkingState(this, networkManager);
-	leavingState = new LeavingState(this, networkManager);
+{	
+	waitingState = new WatingState(msgQueClient, this);
+	parkingState = new ParkingState(msgQueClient, this);
+	leavingState = new LeavingState(msgQueClient, this);
 
 	setState((State*)waitingState);
 
@@ -37,14 +36,20 @@ State* Controller::getState()
 
 void Controller::loop()
 {
-	//Serial.println("Controller::loop()");
-
-	networkManager->loop();
+	//Serial.println("Controller::loop()");	
 	entryGateCarDetector->loop();
 	exitGateCarDetector->loop();
 	slotStatusChangeDetector->loop();
 
 	current->loop();
+}
+
+void Controller::receiveMessage(Command *command)
+{
+	Serial.println("Controller::receiveMessage: ");
+	Serial.println(command->toString());
+
+	current->onMessageReceived(command);
 }
 
 void Controller::onStateChanged(int nextState)
@@ -66,13 +71,6 @@ void Controller::onStateChanged(int nextState)
 			// todo throw run-time exception... how????
 			break;
 	}
-}
-
-void Controller::onMessageReceived(String message)
-{
-	// somthing like that
-	// current->messageReceived();
-	current->onMessageReceived(message);
 }
 
 void Controller::onCarChangeDetected(int gatePin, int status)

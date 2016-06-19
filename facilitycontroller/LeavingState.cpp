@@ -17,6 +17,8 @@
 
 void LeavingState::loop()
 {
+	Serial.println("LeavingState");
+
 	switch (mode) {
 	case MODE_REQUEST_PAYMENT:
 		// send_request...
@@ -24,16 +26,9 @@ void LeavingState::loop()
 	}
 }
 
-LeavingState::LeavingState(StateChangeListener * listener, NetworkManager *manager)
+void LeavingState::onMessageReceived(Command *command)
 {
-	stateChangeListener = listener;
-	networkManager = manager;
-}
-
-void LeavingState::onMessageReceived(String message)
-{
-	Serial.print("LeavingState::onMessageReceived: ");
-	Serial.println(message);
+	Serial.println("LeavingState::onMessageReceived: ");
 }
 
 void LeavingState::carDetectedOnEntry(int status)

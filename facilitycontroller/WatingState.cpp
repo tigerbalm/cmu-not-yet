@@ -6,20 +6,15 @@
 #include "CarDetectedListener.h"
 #include "CommandReportSlotStatus.h"
 
-WatingState::WatingState(StateChangeListener *listener, NetworkManager *manager) {
-	stateChangeListener = listener;
-	networkManager = manager;
-}
 
 void WatingState::loop()
 {
 	Serial.println("WatingState::loop()");
 }
 
-void WatingState::onMessageReceived(String message)
+void WatingState::onMessageReceived(Command *command)
 {
-	Serial.print("WatingState::onMessageReceived: ");
-	Serial.println(message);
+	Serial.println("WatingState::onMessageReceived: ");
 }
 
 void WatingState::carDetectedOnEntry(int status)
@@ -70,7 +65,7 @@ void WatingState::onSlotEmptified(int slotNum)
 	//		-> listner에서 controller 를 가지고 다니는 방식으로 변경
 	if (stateChangeListener != NULL)
 	{
-		CommandReportSlotStatus cmdStatus(networkManager, slotNum, 0);
+		CommandReportSlotStatus cmdStatus(mqClient, slotNum, 0);
 		cmdStatus.send();
 
 		stateChangeListener->onStateChanged(STATE_LEAVING);
