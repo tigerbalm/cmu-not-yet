@@ -27,16 +27,19 @@
 
 ```
 {
-  'success': 1
-  'slots' : [
+  "success": 1
+  "slots" : [
     {
-      'id' : 1,
-      'number' : 1,
-      'occupied' : 1,
-      'reserved' : 1
-    },
-    {
-      ...
+      "controller_id": 2,
+      "controller_physical_id": "arduino2",
+      "id": 5,
+      "number": 1,
+      "parked": 0,
+      "parked_ts": null,
+      "reserved": 1,
+      "reservation_id": 31,
+      "reservation_ts": 1466349,
+      "email":"reshout@naver.com"
     },
     ...
   ]

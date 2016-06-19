@@ -266,11 +266,12 @@ public class DatabaseProxy {
 
     public void selectFacilitySlots(SQLConnection connection, int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectFacilitySlots: facilityId=" + facilityId);
-        String sql = "select slot.id, number, parked, reserved, controller_id, physical_id as controller_physical_id, reservation.id as reservation_id, email, reservation_ts" +
+        String sql = "select controller_id, physical_id as controller_physical_id, slot.id, number, parked, begin_ts as parked_ts, reserved, reservation.id as reservation_id, reservation_ts, email" +
                 " from facility inner join controller on facility.id=controller.facility_id" +
                 " inner join slot on controller.id=slot.controller_id" +
                 " left join reservation on reservation.slot_id=slot.id" +
                 " left join user on reservation.user_id=user.id" +
+                " left join transaction on transaction.reservation_id=reservation.id" +
                 " where facility.id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(facilityId);
