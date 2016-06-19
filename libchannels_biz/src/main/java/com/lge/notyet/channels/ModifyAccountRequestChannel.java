@@ -9,7 +9,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
 public class ModifyAccountRequestChannel extends ClientChannelRegistry {
 
-    private final static String TOPIC = "/modifyAccount";
+    private final static String TOPIC = "/user/modify_account";
 
     public ModifyAccountRequestChannel(INetworkConnection networkConnection) {
         super(networkConnection);

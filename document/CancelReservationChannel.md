@@ -3,13 +3,13 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/reservation/{reservation_id}/cancel
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'session_key' : 'session_value' // driver's session key
 }
 ```
 
@@ -18,7 +18,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/reservation/+/cancel/#
 ```
 
 ## Body
@@ -36,7 +36,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_SESSION' // or other cause
 }
 ```
 

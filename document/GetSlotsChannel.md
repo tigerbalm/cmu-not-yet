@@ -3,13 +3,13 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/facility/{facility_id}/slots/get
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'session_key' : 'xxxxxx' // attendant's session key
 }
 ```
 
@@ -18,7 +18,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/facility/+/slots/get
 ```
 
 ## Body
@@ -28,6 +28,18 @@
 ```
 {
   'success': 1
+  'slots' : [
+    {
+      'id' : 1,
+      'number' : 1,
+      'occupied' : 1,
+      'reserved' : 1
+    },
+    {
+      ...
+    },
+    ...
+  ]
 }
 ```
 
@@ -36,7 +48,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_SESSION' // or other cause, NO_AUTHORIZATION
 }
 ```
 

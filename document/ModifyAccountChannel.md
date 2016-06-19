@@ -3,13 +3,16 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/user/modify_account
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'session_key' : 'xxxxx' // driver's session_key
+  'password': 'xxxxxxxx',
+  'card_number': '0000-0000-0000-0000',
+  'card_expiration': '00/00' 
 }
 ```
 
@@ -18,7 +21,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/user/modify_account/#
 ```
 
 ## Body
@@ -30,13 +33,12 @@
   'success': 1
 }
 ```
-
 ### Failed
 
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_CARD_INFORMATION' // or other cause
 }
 ```
 
