@@ -18,7 +18,7 @@ public class GenericTextResultHandler {
 
     private GenericTextResultHandler() {
     }
-    public static void handleResult(JTextArea resultArea, JsonValue resultSetTable) {
+    public static void handleResult(JTextPane resultArea, JsonValue resultSetTable) {
         String[] colNames= StateMachine.getInstance().getColumnNames();
         JsonArray resultTable = (JsonArray) resultSetTable;
         StringBuilder result= new StringBuilder("");
