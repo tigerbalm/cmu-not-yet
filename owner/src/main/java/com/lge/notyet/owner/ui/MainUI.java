@@ -16,8 +16,9 @@ public class MainUI extends JDialog {
     private JButton buttonOK;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
     private JPanel choicePanel;
-    private JButton configureButton;
+    private JButton configureGracePeriodButton;
     private JTextPane reportTextPane;
+    private JButton configureParkingFeeButton;
     private ButtonGroup choiceGroup;
     private Specification_Result specialSettingAndResult;
 
