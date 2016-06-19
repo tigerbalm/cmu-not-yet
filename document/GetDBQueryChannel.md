@@ -3,13 +3,14 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/facility/dbquery/get
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'session_key' : 'session_value' // owner's session key
+  'dbquery_key' : 'sql_query // SQU Query statement to be executed
 }
 ```
 
@@ -18,7 +19,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/facility/dbquery/get/#
 ```
 
 ## Body
@@ -28,6 +29,7 @@
 ```
 {
   'success': 1
+  'result': SQL query result
 }
 ```
 
@@ -36,7 +38,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_SESSION' // or other cause
 }
 ```
 

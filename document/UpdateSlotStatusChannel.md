@@ -1,42 +1,26 @@
-# Request
+# Publish
 
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
-```
-
-## Body
-```
-{
-  'slot_no' : 1
-}
-```
-
-# Response
-
-## Topic
-
-```
-/controller/+/confirm_exit/#
+/controller/{physical_id}/slot/{slot_number}
 ```
 
 ## Body
 
-### Success
+### When occupied
 
 ```
 {
-  'success': 1
+  'occupied': 1
 }
 ```
 
-### Failed
+### When free
 
 ```
 {
-  'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'occupied': 0
 }
 ```
 

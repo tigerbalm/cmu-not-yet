@@ -3,13 +3,13 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/controller/{physical_id}/confirm_reservation/request/_id
 ```
 
 ## Body
 ```
 {
-  'slot_no' : 1
+  'confirmation_no' : 8341, /* 4 digits */
 }
 ```
 
@@ -18,7 +18,7 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/controller/+/confirm_reservation/#
 ```
 
 ## Body
@@ -28,6 +28,7 @@
 ```
 {
   'success': 1
+  'slot_no': 1
 }
 ```
 
@@ -36,7 +37,7 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION'
+  'cause': 'INVALID_CONFIRMATION_NO' // or other casue
 }
 ```
 
