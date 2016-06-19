@@ -10,17 +10,21 @@ public class Slot {
     private long mReservedTimeStamp;
     private final int mControllerId;
     private final int mPhysicalId;
+    private final int mReservationId;
+    private final String mUserEmail;
 
-    public Slot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, int physical_id) {
+    public Slot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, int physical_id, int reservation_id, String user_email, long reservation_ts) {
 
         mId = id;
         mNumber = number;
         mOccupied = occupied;
         mReserved = reserved;
         mOccupiedTimeStamp = occupiedTimeStamp;
-        mReservedTimeStamp = 0L;
+        mReservedTimeStamp = reservation_ts;
         mControllerId = controller_id;
         mPhysicalId = physical_id;
+        mReservationId = reservation_id;
+        mUserEmail = user_email;
     }
 
     public int getId() {
@@ -41,11 +45,17 @@ public class Slot {
     public boolean isReserved() {
         return mReserved;
     }
+    public int getReservationId() {
+        return mReservationId;
+    }
     public void setReserved(boolean reserved) {
         mReserved = reserved;
     }
     public long getReservedTimeStamp() {
         return mReservedTimeStamp;
+    }
+    public String getReservedUserEmail() {
+        return mUserEmail;
     }
 
 

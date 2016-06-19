@@ -21,14 +21,14 @@ public class AttendantTestServer {
         Log.logd(LOG_TAG, "mGetSlotsRequestReceived Requested Received=" + message.getMessage() + ", topic=" + uri.getLocation().toString());
 
         List<JsonObject> slotList = new ArrayList<>();
-        slotList.add(new JsonObject().add("id", 1).add("number", 1).add("occupied", 1).add("occupied_ts", 1466021160L).add("reserved", 1).add("controller_id",1).add("physical_id",3));
-        slotList.add(new JsonObject().add("id", 2).add("number", 2).add("occupied", 1).add("occupied_ts", 1466041160L).add("reserved", 1).add("controller_id",1).add("physical_id",3));
-        slotList.add(new JsonObject().add("id", 3).add("number", 3).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",1).add("physical_id",3));
-        slotList.add(new JsonObject().add("id", 4).add("number", 4).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",1).add("physical_id",3));
-        slotList.add(new JsonObject().add("id", 5).add("number", 1).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",2).add("physical_id",8));
-        slotList.add(new JsonObject().add("id", 6).add("number", 2).add("occupied", 0).add("occupied_ts", 1466001160L).add("reserved", 1).add("controller_id",2).add("physical_id",8));
-        slotList.add(new JsonObject().add("id", 7).add("number", 3).add("occupied", 0).add("occupied_ts", 1466021160L).add("reserved", 1).add("controller_id",2).add("physical_id",8));
-        slotList.add(new JsonObject().add("id", 8).add("number", 4).add("occupied", 1).add("occupied_ts", 1466051160L).add("reserved", 1).add("controller_id",2).add("physical_id",8));
+        slotList.add(new JsonObject().add("id", 1).add("number", 1).add("occupied", 1).add("occupied_ts", 1466021160L).add("reserved", 1).add("controller_id",1).add("physical_id",3).add("reservation_id", 23).add("email", "tony").add("reservation_ts", 1466001160L));
+        slotList.add(new JsonObject().add("id", 2).add("number", 2).add("occupied", 1).add("occupied_ts", 1466041160L).add("reserved", 1).add("controller_id",1).add("physical_id",3).add("reservation_id", 123).add("email", "luffy").add("reservation_ts", 1466021160L));
+        slotList.add(new JsonObject().add("id", 3).add("number", 3).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",1).add("physical_id",3).add("reservation_id", 231).add("email", "allie").add("reservation_ts", 1466061160L));
+        slotList.add(new JsonObject().add("id", 4).add("number", 4).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",1).add("physical_id",3).add("reservation_id", 0).add("email", "").add("reservation_ts", 0L));
+        slotList.add(new JsonObject().add("id", 5).add("number", 1).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 0).add("controller_id",2).add("physical_id",8).add("reservation_id", 0).add("email", "").add("reservation_ts", 0L));
+        slotList.add(new JsonObject().add("id", 6).add("number", 2).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",2).add("physical_id",8).add("reservation_id", 121).add("email", "david").add("reservation_ts", 1466021160L));
+        slotList.add(new JsonObject().add("id", 7).add("number", 3).add("occupied", 0).add("occupied_ts", 0L).add("reserved", 1).add("controller_id",2).add("physical_id",8).add("reservation_id", 344).add("email", "reshout").add("reservation_ts", 1466021160L));
+        slotList.add(new JsonObject().add("id", 8).add("number", 4).add("occupied", 1).add("occupied_ts", 1466051160L).add("reserved", 1).add("controller_id",2).add("physical_id",8).add("reservation_id", 5655).add("email", "beney").add("reservation_ts", 1466045160L));
         MqttNetworkMessage response = new MqttNetworkMessage(GetSlotsResponseChannel.createResponseObject(slotList));
         response.getMessage().add("success", 1);
         Log.logd(LOG_TAG, "mGetSlotsRequestReceived send Response=" + response.getMessage());
