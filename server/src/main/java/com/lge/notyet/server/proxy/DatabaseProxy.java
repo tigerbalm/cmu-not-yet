@@ -90,10 +90,6 @@ public class DatabaseProxy {
         }
     }
 
-    public void commit(SQLConnection connection, Handler<AsyncResult<Void>> resultHandler) {
-        connection.commit(resultHandler);
-    }
-
     private void query(SQLConnection connection, String sql, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         connection.query(sql, ar -> resultHandler.handle(new AsyncResult<List<JsonObject>>() {
             @Override
@@ -195,12 +191,6 @@ public class DatabaseProxy {
         }));
     }
 
-    public void selectUser(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
-        parameters.add(userId);
-        queryWithParams(connection, "select * from user where id=?", parameters, resultHandler);
-    }
-
     public void selectUserByEmail(SQLConnection connection, String email, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(email);
@@ -222,13 +212,6 @@ public class DatabaseProxy {
         queryWithParams(connection, "select * from user inner join session on user.id=session.user_id where session_key=?", parameters, resultHandler);
     }
 
-    public void selectSession(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        logger.info("selectSession: userId=" + userId);
-        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
-        parameters.add(userId);
-        queryWithParams(connection, "select * from session where user_id=?", parameters, resultHandler);
-    }
-
     public void selectReservableFacilities(SQLConnection connection, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservableFacilities:");
         String sql = "select id, name" +
@@ -244,7 +227,7 @@ public class DatabaseProxy {
 
     public void selectUserFacilities(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectUserFacilities: userId=" + userId);
-        String sql = "select facility.id, facility.name" +
+        String sql = "select facility.id, facility.name, fee, fee_unit, grace_period" +
                 " from facility inner join manage on facility.id=manage.facility_id inner join user on user.id=manage.facility_id" +
                 " where user_id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
