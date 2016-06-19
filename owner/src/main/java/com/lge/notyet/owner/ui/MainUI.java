@@ -2,40 +2,41 @@ package com.lge.notyet.owner.ui;
 
 import com.lge.notyet.owner.business.Query;
 import com.lge.notyet.owner.business.StateMachine;
-import jdk.nashorn.internal.scripts.JD;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.AbstractMap;
-import java.util.Enumeration;
 
 public class MainUI extends JDialog {
     private JPanel contentPane;
-    private JButton buttonOK;
+    private JButton fetchReportButton;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
-    private JPanel choicePanel;
+    private JPanel chooseReportPanel;
     private JButton configureGracePeriodButton;
     private JTextPane reportTextPane;
     private JButton configureParkingFeeButton;
+    private JPanel chooseMoreSettingsPanel;
+    private JTextPane textReportPane1;
+    private JPanel graphicalPane;
+    private JTextArea logArea;
+    private JPanel logPanel;
     private ButtonGroup choiceGroup;
     private Specification_Result specialSettingAndResult;
 
     public MainUI() {
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
+        getRootPane().setDefaultButton(fetchReportButton);
 
-        buttonOK.addActionListener(new ActionListener() {
+        fetchReportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onOK();
+                onFetchReport();
             }
         });
     }
 
-    private void onOK() {
-        //Find selected button
+    private void onFetchReport() {
 
         if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
             JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
@@ -65,7 +66,7 @@ public class MainUI extends JDialog {
 
     private void createUIComponents() {
         choiceGroup= new ButtonGroup();
-        choicePanel= new JPanel(new GridLayout(0,1));
+        chooseReportPanel = new JPanel(new GridLayout(0,2));
         String defaultQuery= Query.getDefaultQueryId();
         for (String queryID: Query.getQueryIdList()) {
             String textToDisplay= Query.getDisplayString(queryID);
@@ -74,12 +75,18 @@ public class MainUI extends JDialog {
             if(defaultQuery.equalsIgnoreCase(queryID)){
                 jb.setSelected(true);
             }
-            choicePanel.add(jb);
+            chooseReportPanel.add(jb);
             choiceGroup.add(jb);
         }
         customAdditionalDeveloperQueryRadioButton= new JRadioButton("Custom (Additional developer query)");
-        choicePanel.add(customAdditionalDeveloperQueryRadioButton);
+        chooseReportPanel.add(customAdditionalDeveloperQueryRadioButton);
 
         revalidate();
+        //FixMe: Move the functionality from Specification_Result file to this file.
+        //FixMe: Add more settings option programmatically
+        //FixMe: Update database to work without having sql_mode set to null.
+        //FixMe: Add Slot condition for Query 3
+        //FixMe: Do a formatted output of the report
+        //FixMe: Make event handler for Ctrl+L key on main window for Log window to be visible.
     }
 }
