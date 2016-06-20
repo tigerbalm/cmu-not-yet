@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.12)
 # Database: sure-park
-# Generation Time: 2016-06-20 02:02:18 +0000
+# Generation Time: 2016-06-20 18:50:21 +0000
 # ************************************************************
 
 
@@ -116,10 +116,10 @@ CREATE TABLE `reservation` (
   `slot_id` int(11) NOT NULL,
   `confirmation_no` int(11) unsigned NOT NULL,
   `reservation_ts` int(11) unsigned NOT NULL,
-  `activated` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `expiration_ts` int(11) NOT NULL,
   `fee` decimal(11,2) NOT NULL,
   `fee_unit` int(11) NOT NULL,
-  `grace_period` int(11) NOT NULL,
+  `activated` tinyint(1) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `slot_id` (`slot_id`),
   KEY `user_id` (`user_id`),
@@ -221,7 +221,7 @@ VALUES
 	(8,2,4,0,0),
 	(9,3,1,0,0),
 	(10,3,2,0,0),
-	(11,4,1,0,1),
+	(11,4,1,0,0),
 	(12,4,2,0,0);
 
 /*!40000 ALTER TABLE `slot` ENABLE KEYS */;
@@ -238,7 +238,8 @@ CREATE TABLE `transaction` (
   `reservation_id` int(11) NOT NULL,
   `begin_ts` int(11) NOT NULL,
   `end_ts` int(11) DEFAULT NULL,
-  `revenue` int(11) DEFAULT NULL,
+  `revenue` decimal(11,2) DEFAULT NULL,
+  `paid` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `reservation_id` (`reservation_id`),
   CONSTRAINT `transaction_ibfk_1` FOREIGN KEY (`reservation_id`) REFERENCES `reservation` (`id`)
