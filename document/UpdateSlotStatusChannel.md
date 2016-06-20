@@ -8,7 +8,8 @@
 
 ## Body
 
-When car is parked at slot # :
+###When car is parked at slot #
+
 ```
 {
   'parked': 1,
@@ -16,7 +17,8 @@ When car is parked at slot # :
 }
 ```
 
-When car is leaving from slot # :
+### When car is leaving from slot #
+
 ```
 {
   'parked': 0,
@@ -29,7 +31,6 @@ If you use MQTT connection, following key/value is added in body automatically w
 But when you received the message from channel, it does not exist.
 Hence, you have to add and remove following pair to communicate with other library or entity. i.e. Arduino MQTT library.
 If there is no this pair, the received element regards it as notification.
-
 
 ## Additional body for MQTT
 
