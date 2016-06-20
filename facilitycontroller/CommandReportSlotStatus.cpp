@@ -7,7 +7,6 @@
 String COMMAND_SLOT = "slot";
 
 CommandReportSlotStatus::CommandReportSlotStatus(MsgQueClient *_client, int _slot, int _status)
-	: Command(_client)
 {
 	slot = _slot;
 	status = _status;

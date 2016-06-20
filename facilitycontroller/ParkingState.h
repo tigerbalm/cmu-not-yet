@@ -16,6 +16,8 @@
 
 class ParkingState : public State {
 private:
+	int bookingNo;
+	int assignedSlot;
 	int mode;
 public:
 	void loop();

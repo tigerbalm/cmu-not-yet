@@ -75,9 +75,6 @@
     <ClInclude Include="MsgQueClientStatusListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CmdVerifyReservationRes.h">
-      <Filter>Header Files\Command</Filter>
-    </ClInclude>
     <ClInclude Include="Command.h">
       <Filter>Header Files\Command</Filter>
     </ClInclude>
@@ -88,12 +85,6 @@
       <Filter>Header Files\Command</Filter>
     </ClInclude>
     <ClInclude Include="CommandRequestPayment.h">
-      <Filter>Header Files\Command</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandVerifyReservation.h">
-      <Filter>Header Files\Command</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandWill.h">
       <Filter>Header Files\Command</Filter>
     </ClInclude>
     <ClInclude Include="Pair.h">
@@ -113,6 +104,30 @@
     </ClInclude>
     <ClInclude Include="StateChangeListener.h">
       <Filter>Header Files\State</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdPaymentReq.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdPaymentResp.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdVerifyBookingReq.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdVerifyBookingResp.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Request.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Response.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdCarParkedNoti.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdAliveNoti.h">
+      <Filter>Header Files\Command</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -158,15 +173,6 @@
     <ClCompile Include="CommandRequestPayment.cpp">
       <Filter>Source Files\Command</Filter>
     </ClCompile>
-    <ClCompile Include="CommandVerifyReservation.cpp">
-      <Filter>Source Files\Command</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandWill.cpp">
-      <Filter>Source Files\Command</Filter>
-    </ClCompile>
-    <ClCompile Include="CmdVerifyReservationRes.cpp">
-      <Filter>Source Files\Command</Filter>
-    </ClCompile>
     <ClCompile Include="LeavingState.cpp">
       <Filter>Source Files\State</Filter>
     </ClCompile>
@@ -180,6 +186,27 @@
       <Filter>Source Files\State</Filter>
     </ClCompile>
     <ClCompile Include="Pair.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdPaymentReq.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdPaymentResp.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdVerifyBookingReq.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdVerifyBookingResp.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdCarParkedNoti.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="Request.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdAliveNoti.cpp">
       <Filter>Source Files\Command</Filter>
     </ClCompile>
   </ItemGroup>

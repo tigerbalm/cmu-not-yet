@@ -124,13 +124,16 @@
     <ClInclude Include="ClientApi.h">
       <FileType>CppCode</FileType>
     </ClInclude>
-    <ClInclude Include="CmdVerifyReservationRes.h" />
+    <ClInclude Include="CmdCarParkedNoti.h" />
+    <ClInclude Include="CmdPaymentReq.h" />
+    <ClInclude Include="CmdPaymentResp.h" />
+    <ClInclude Include="CmdVerifyBookingResp.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandFactory.h" />
     <ClInclude Include="CommandReportSlotStatus.h" />
     <ClInclude Include="CommandRequestPayment.h" />
-    <ClInclude Include="CommandVerifyReservation.h" />
-    <ClInclude Include="CommandWill.h" />
+    <ClInclude Include="CmdVerifyBookingReq.h" />
+    <ClInclude Include="CmdAliveNoti.h" />
     <ClInclude Include="Controller.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -151,6 +154,8 @@
     <ClInclude Include="ParkingState.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="Request.h" />
+    <ClInclude Include="Response.h" />
     <ClInclude Include="Slot.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -180,13 +185,16 @@
   <ItemGroup>
     <ClCompile Include="CarDetectedListener.cpp" />
     <ClCompile Include="ClientApi.cpp" />
-    <ClCompile Include="CmdVerifyReservationRes.cpp" />
+    <ClCompile Include="CmdCarParkedNoti.cpp" />
+    <ClCompile Include="CmdPaymentReq.cpp" />
+    <ClCompile Include="CmdPaymentResp.cpp" />
+    <ClCompile Include="CmdVerifyBookingResp.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="CommandFactory.cpp" />
     <ClCompile Include="CommandReportSlotStatus.cpp" />
     <ClCompile Include="CommandRequestPayment.cpp" />
-    <ClCompile Include="CommandVerifyReservation.cpp" />
-    <ClCompile Include="CommandWill.cpp" />
+    <ClCompile Include="CmdVerifyBookingReq.cpp" />
+    <ClCompile Include="CmdAliveNoti.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="EntryGateHelper.cpp" />
     <ClCompile Include="ExitGateHelper.cpp" />
@@ -195,6 +203,7 @@
     <ClCompile Include="MsgQueClient.cpp" />
     <ClCompile Include="Pair.cpp" />
     <ClCompile Include="ParkingState.cpp" />
+    <ClCompile Include="Request.cpp" />
     <ClCompile Include="Slot.cpp" />
     <ClCompile Include="SlotStatusChangeDetector.cpp" />
     <ClCompile Include="SlotStatusChangeListener.cpp" />

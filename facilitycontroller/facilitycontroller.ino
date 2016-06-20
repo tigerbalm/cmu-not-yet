@@ -1,14 +1,19 @@
-#include "StateController.h"
+#include "SlotLedController.h"
+#include "CmdCarParkedNoti.h"
+#include "Request.h"
+#include "Response.h"
+#include "CmdPaymentResp.h"
+#include "CmdPaymentReq.h"
 #include "Pair.h"
-#include "CommandWill.h"
+#include "CmdAliveNoti.h"
 #include <SimpleList.h>
 #include "MsgQueClientStatusListener.h"
 #include "MsgQueClient.h"
-#include "CmdVerifyReservationRes.h"
+#include "CmdVerifyBookingReq.h"
 #include "FacilityConfiguration.h"
 #include "CommandRequestPayment.h"
 #include "CommandReportSlotStatus.h"
-#include "CommandVerifyReservation.h"
+#include "CmdVerifyBookingResp.h"
 #include "CommandFactory.h"
 #include "Command.h"
 #include "Slot.h"
@@ -20,23 +25,22 @@
 #include "EntryGateHelper.h"
 #include <ArduinoJson.h>
 #include <WiFi.h>
-#include "NetworkManagerListener.h"
 #include "ClientApi.h"
 #include <PubSubClient.h>
-#include "NetworkManager.h"
 #include "StateChangeListener.h"
 #include "LeavingState.h"
 #include "ParkingState.h"
 #include "WatingState.h"
 #include "State.h"
 #include "Controller.h"
+#include "SureParkPinHeader.h"
 
 #define EntryGateServoPin 5
 #define ExitGateServoPin 6
 
 WiFiClient wifiClient;
 PubSubClient psClient(MQ_SERVER_IP, MQ_SERVER_PORT, &psCallback, wifiClient);
-MsgQueClient mqClient("Arduino-1", psClient);
+MsgQueClient mqClient(MQ_CLIENT_ID, psClient);
 
 Controller controller(mqClient);
 
@@ -48,17 +52,34 @@ void psCallback(char* topic, byte* payload, unsigned int length)
 	Serial.println(topic);
 	Serial.println((char *)payload);
 
-	Command *cmd = CommandFactory::getInstance(&mqClient)->createCommand(String(topic));
+	Command *cmd = CommandFactory::getInstance()->createCommand(String(topic));
 	cmd->setBody((char*)payload);
 
 	controller.receiveMessage(cmd);
-
-	// todo : command 형태로 변경 필요
-	//String message((char *)payload);
-	//controller.onMessageReceived(message);
 }
 
-void startWifiConnection()
+void setup()
+{
+	setupSerial();
+	
+	setupNetwork();
+	
+	setupMqClient();
+	
+	setupController();
+	
+	setupDevice();
+}
+
+void setupSerial()
+{
+	Serial.begin(9600);
+	if (Serial) {
+		Serial.println("start facility");
+	}
+}
+
+void setupNetwork()
 {
 	int status = WL_IDLE_STATUS;
 
@@ -67,42 +88,44 @@ void startWifiConnection()
 	{
 		Serial.print("Attempting to connect to SSID: ");
 		Serial.println(NETWORK_SSID);
-		status = WiFi.begin(NETWORK_SSID);		
+		status = WiFi.begin(NETWORK_SSID);
 	}
 }
 
-void setup()
+void setupMqClient()
 {
-	initSerial();
-	
-	startWifiConnection();
 	mqClient.connect();
+}
 
+void setupController()
+{
 	controller.setup();
+}
 
-	entryGateServo.attach(EntryGateServoPin);	
+void setupDevice()
+{
+	// LED
+	SlotLedController::getInstance()->add(1, PARKING_STALL1_LED);
+	SlotLedController::getInstance()->add(2, PARKING_STALL2_LED);
+	SlotLedController::getInstance()->add(3, PARKING_STALL3_LED);
+	SlotLedController::getInstance()->add(4, PARKING_STALL4_LED);
+
+	entryGateServo.attach(EntryGateServoPin);
 	EntryGateHelper::attach(entryGateServo);
 	EntryGateHelper::close();
 	EntryGateHelper::ledOff();
 
-	exitGateServo.attach(ExitGateServoPin);	
+	exitGateServo.attach(ExitGateServoPin);
 	ExitGateHelper::attach(exitGateServo);
 	ExitGateHelper::close();
 	ExitGateHelper::ledOff();
 }
 
 void loop()
-{	
+{
+	SlotLedController::getInstance()->loop();
 	controller.loop();
 	mqClient.loop();
 
-	delay(500);
-}
-
-void initSerial()
-{
-	Serial.begin(9600);
-	if (Serial) {
-		Serial.println("start facility");
-	}
+	delay(100);
 }
