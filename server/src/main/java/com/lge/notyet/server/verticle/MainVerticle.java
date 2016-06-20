@@ -77,8 +77,6 @@ public class MainVerticle extends AbstractVerticle {
         new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(message)).listen();
         new CancelReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> cancelReservation(uri, message)).listen();
         new UpdateFacilityResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateFacility(uri, message)).listen();
-
-        new ConfirmReservationRequestChannel(networkConnection, "arduino1").request(ConfirmReservationRequestChannel.createRequestMessage(2758));
     }
 
     private void login(NetworkMessage message) {
