@@ -1,10 +1,6 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
-import com.lge.notyet.channels.*;
-import com.lge.notyet.lib.comm.*;
-import com.lge.notyet.server.model.User;
-import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -14,7 +10,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 
 import java.util.List;
-import java.util.Random;
 
 public class ReservationManager {
     private static ReservationManager instance = null;
@@ -114,40 +109,14 @@ public class ReservationManager {
         });
     }
 
-    public void getReservation(String controllerPhysicalId, int slotNumber, Handler<AsyncResult<JsonObject>> handler) {
-        logger.info("getReservation: controllerPhysicalId=" + controllerPhysicalId + ", slotNumber=" + slotNumber);
-        databaseProxy.openConnection(ar1 -> {
-            if (ar1.failed()) {
-                handler.handle(Future.failedFuture(ar1.cause()));
-            } else {
-                final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.selectReservationBySlot(sqlConnection, controllerPhysicalId, slotNumber, ar2 -> {
-                    if (ar2.failed()) {
-                        handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, ar -> {});
-                    } else {
-                        List<JsonObject> objects = ar2.result();
-                        if (objects.isEmpty()) {
-                            handler.handle(Future.failedFuture("NO_RESERVATION_EXIST"));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
-                        } else {
-                            handler.handle(Future.succeededFuture(objects.get(0)));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    public void makeReservation(int userId, int slotId, int reservationTimestamp, int confirmationNumber, Handler<AsyncResult<JsonObject>> handler) {
+    public void makeReservation(int userId, int slotId, int reservationTimestamp, int confirmationNumber, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonObject>> handler) {
         logger.info("makeReservation: userId=" + userId + ", slotId=" + slotId);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
             } else {
                 final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.insertReservation(sqlConnection, userId, slotId, reservationTimestamp, confirmationNumber, ar2 -> {
+                databaseProxy.insertReservation(sqlConnection, userId, slotId, reservationTimestamp, confirmationNumber, fee, feeUnit, gracePeriod, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
                         databaseProxy.closeConnection(sqlConnection, false, ar -> {});
@@ -169,6 +138,36 @@ public class ReservationManager {
                         });
                     }
                 });
+            }
+        });
+    }
+
+    public void startTransaction(int reservationId, Handler<AsyncResult<Void>> handler) {
+        logger.info("startTransaction: reservationId=" + reservationId);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                final int beginTs = (int) System.currentTimeMillis() / 1000;
+                databaseProxy.insertTransaction(sqlConnection, reservationId, beginTs, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                    } else {
+                        handler.handle(Future.succeededFuture());
+                    }
+                });
+            }
+        });
+    }
+
+    public void stopTransaction(int reservationId, Handler<AsyncResult<Void>> handler) {
+        logger.info("stopTransaction: reservationId=" + reservationId);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
             }
         });
     }

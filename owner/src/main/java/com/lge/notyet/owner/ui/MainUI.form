@@ -3,7 +3,7 @@
   <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="48" y="54" width="956" height="368"/>
+      <xy x="48" y="54" width="956" height="617"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -124,10 +124,12 @@
                 </border>
                 <children/>
               </grid>
-              <grid id="ad8f7" binding="chooseMoreSettingsPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-                <margin top="0" left="0" bottom="0" right="0"/>
+              <grid id="ad8f7" binding="chooseMoreSettingsPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <minimum-size width="800" height="100"/>
+                    <maximum-size width="800" height="100"/>
+                  </grid>
                 </constraints>
                 <properties/>
                 <border type="none" title="2. Choose more settings or leave as blank"/>

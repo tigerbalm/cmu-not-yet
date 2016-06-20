@@ -83,6 +83,34 @@ public class FacilityManager {
         });
     }
 
+    public void getFacility(int facilityId, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("getFacility: facilityId=" + facilityId);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectFacility(sqlConnection, facilityId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar -> {
+                        });
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        if (objects.isEmpty()) {
+                            databaseProxy.closeConnection(sqlConnection, ar -> {
+                            });
+                        } else {
+                            handler.handle(Future.succeededFuture(objects.get(0)));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     public void getFacilities(int userId, Handler<AsyncResult<List<JsonObject>>> handler) {
         logger.info("getFacilities: userId=" + userId);
         databaseProxy.openConnection(ar1 -> {
@@ -100,6 +128,26 @@ public class FacilityManager {
                         handler.handle(Future.succeededFuture(objects));
                         databaseProxy.closeConnection(sqlConnection, ar4 -> {
                         });
+                    }
+                });
+            }
+        });
+    }
+
+    public void updateFacility(int facilityId, String name, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<Void>> handler) {
+        logger.info("updateFacility: facilityId=" + facilityId + ", name=" + name + ", fee=" + fee + ", feeUnit=" + feeUnit + ", gracePeriod=" + gracePeriod);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.updateFacility(sqlConnection, facilityId, name, fee, feeUnit, gracePeriod, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                    } else {
+                        handler.handle(Future.succeededFuture());
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
                     }
                 });
             }

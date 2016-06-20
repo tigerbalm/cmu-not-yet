@@ -8,10 +8,18 @@
 
 ## Body
 
+When car is parked at slot # :
 ```
 {
   'parked': 1,
   'confirmation_no': 5123
+}
+```
+
+When car is leaving from slot # :
+```
+{
+  'parked': 0,
 }
 ```
 

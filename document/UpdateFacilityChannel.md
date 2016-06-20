@@ -3,13 +3,17 @@
 ## Topic
 
 ```
-/facilities/get
+/facility/{facility_id}/request
 ```
 
 ## Body
+
 ```
 {
-   'session_key' : 'xxxxxx' // owner's or attendant's session key
+  "name": "Shadyside Parking Lot",
+  "fee": 3.50,
+  "fee_unit": 3600, // second
+  "grace_period": 1800 // second
 }
 ```
 
@@ -18,7 +22,7 @@
 ## Topic
 
 ```
-/facilities/get/#
+/facility/{facility_id}/response/#
 ```
 
 ## Body
@@ -27,17 +31,7 @@
 
 ```
 {
-  'success': 1
-  'facilities' : [
-    {
-      "id":1,
-      "name":"Shadyside Parking Lot",
-      "fee":5.75,
-      "fee_unit":3600,
-      "grace_period":1800
-     },
-     ...
-  ]
+  "success": 1
 }
 ```
 
@@ -45,8 +39,8 @@
 
 ```
 {
-  'success': 0,
-  'cause': 'INVALID_SESSION' // or other cause, NO_AUTHORIZATION
+  "success": 0,
+  "cause": "NO_AUTHORIZATION",
 }
 ```
 

@@ -24,14 +24,33 @@ void Controller::setup()
 	slotStatusChangeDetector = new SlotStatusChangeDetector(this);
 }
 
-void Controller::setState(State* state)
+void Controller::setState(State* newState)
 {
-	current = state;
+	currentState->exit();
+
+	currentState = newState;
+	
+	currentState->enter();
 }
 
-State* Controller::getState()
+State* Controller::getCurrentState()
 {
-	return current;
+	return currentState;
+}
+
+State* Controller::getWaitingState()
+{
+	return waitingState;
+}
+
+State* Controller::getParkingState()
+{
+	return parkingState;
+}
+
+State* Controller::getLeavingState()
+{
+	return leavingState;
 }
 
 void Controller::loop()
@@ -41,7 +60,7 @@ void Controller::loop()
 	exitGateCarDetector->loop();
 	slotStatusChangeDetector->loop();
 
-	current->loop();
+	currentState->loop();
 }
 
 void Controller::receiveMessage(Command *command)
@@ -49,7 +68,7 @@ void Controller::receiveMessage(Command *command)
 	Serial.println("Controller::receiveMessage: ");
 	Serial.println(command->toString());
 
-	current->onMessageReceived(command);
+	currentState->onMessageReceived(command);
 }
 
 void Controller::onStateChanged(int nextState)
@@ -77,11 +96,11 @@ void Controller::onCarChangeDetected(int gatePin, int status)
 {
 	if (gatePin == ENTRY_BEAM_RECEIVER)
 	{
-		current->carDetectedOnEntry(status);
+		currentState->carDetectedOnEntry(status);
 	}
 	else
 	{
-		current->carDetectedOnExit(status);
+		currentState->carDetectedOnExit(status);
 	}
 }
 
@@ -89,10 +108,10 @@ void Controller::onSlotChange(int slotNumber, int status)
 {
 	if (status == SLOT_OCCUPIED)
 	{
-		current->onSlotOccupied(slotNumber);
+		currentState->onSlotOccupied(slotNumber);
 	}
 	else
 	{
-		current->onSlotEmptified(slotNumber);
+		currentState->onSlotEmptified(slotNumber);
 	}
 }

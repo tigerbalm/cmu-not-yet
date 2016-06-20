@@ -73,9 +73,10 @@ public class MainVerticle extends AbstractVerticle {
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
         new GetDBQueryResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
         new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
-        new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmReservation(message)).listen();
+        new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmReservation(uri, message)).listen();
         new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(message)).listen();
         new CancelReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> cancelReservation(uri, message)).listen();
+        new UpdateFacilityResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateFacility(uri, message)).listen();
     }
 
     private void login(NetworkMessage message) {
@@ -122,6 +123,22 @@ public class MainVerticle extends AbstractVerticle {
                         communicationProxy.responseSuccess(message, ReservableFacilitiesResponseChannel.createResponseObject(facilityObjects));
                     }
                 });
+            }
+        });
+    }
+
+    private void updateFacility(Uri uri, NetworkMessage message) {
+        final int facilityId = UpdateFacilityRequestChannel.getFacilityId(uri);
+        final String name = UpdateFacilityRequestChannel.getFacilityName(message);
+        final double fee = UpdateFacilityRequestChannel.getFee(message);
+        final int feeUnit = UpdateFacilityRequestChannel.getFeeUnit(message);
+        final int gracePeriod = UpdateFacilityRequestChannel.getGracePeriod(message);
+
+        facilityManager.updateFacility(facilityId, name, fee, feeUnit, gracePeriod, ar -> {
+            if (ar.failed()) {
+                communicationProxy.responseFail(message, ar.cause());
+            } else {
+                communicationProxy.responseSuccess(message);
             }
         });
     }
@@ -265,11 +282,21 @@ public class MainVerticle extends AbstractVerticle {
                         } else {
                             final int slotId = slotObjects.get(0).get("id").asInt();
                             final int confirmationNumber = new Random().nextInt((9999 - 1000) + 1) + 1000;
-                            reservationManager.makeReservation(userId, slotId, reservationTimestamp, confirmationNumber, ar3 -> {
+                            facilityManager.getFacility(facilityId, ar3 -> {
                                 if (ar3.failed()) {
                                     communicationProxy.responseFail(message, ar3.cause());
                                 } else {
-                                    communicationProxy.responseSuccess(message, ar3.result());
+                                    final JsonObject facilityObject = ar3.result();
+                                    final double fee = facilityObject.get("fee").asDouble();
+                                    final int feeUnit = facilityObject.get("fee_unit").asInt();
+                                    final int gracePeriod = facilityObject.get("grace_period").asInt();
+                                    reservationManager.makeReservation(userId, slotId, reservationTimestamp, confirmationNumber, fee, feeUnit, gracePeriod, ar4 -> {
+                                        if (ar4.failed()) {
+                                            communicationProxy.responseFail(message, ar4.cause());
+                                        } else {
+                                            communicationProxy.responseSuccess(message, ar4.result());
+                                        }
+                                    });
                                 }
                             });
                         }
@@ -279,9 +306,9 @@ public class MainVerticle extends AbstractVerticle {
         });
     }
 
-    private void confirmReservation(NetworkMessage message) {
+    private void confirmReservation(Uri uri, NetworkMessage message) {
         final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
-
+        final String controllerPhysicalId = ConfirmReservationRequestChannel.getControllerPhysicalId(uri);
         logger.debug("confirmReservation: confirmationNumber=" + confirmationNumber);
 
         reservationManager.getReservationByConfirmationNumber(confirmationNumber, ar1 -> {
@@ -289,14 +316,30 @@ public class MainVerticle extends AbstractVerticle {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
                 final JsonObject reservationObject = ar1.result();
-                final int slotNumber = reservationObject.get("slot_no").asInt();
-                communicationProxy.responseSuccess(message, ConfirmReservationResponseChannel.createResponseObject(slotNumber));
+                final int reservationId = reservationObject.get("id").asInt();
+                final String reservationControllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                final int reservationSlotNumber = reservationObject.get("slot_no").asInt();
+                final double reservationFee = reservationObject.get("fee").asDouble();
+                final int reservationFeeUnit = reservationObject.get("fee").asInt();
+
+                if (!controllerPhysicalId.equals(reservationControllerPhysicalId)) {
+                    communicationProxy.responseFail(message, "WRONG_CONTROLLER");
+                } else {
+                    reservationManager.startTransaction(reservationId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            communicationProxy.responseSuccess(message, ConfirmReservationResponseChannel.createResponseObject(reservationSlotNumber));
+                        }
+                    });
+                }
             }
         });
     }
 
     private void getReservation(NetworkMessage message) {
         final String sessionKey = GetReservationRequestChannel.getSessionKey(message);
+        logger.debug("getReservation: sessionKey=" + sessionKey);
 
         authenticationManager.getSessionUser(sessionKey, ar1 -> {
             if (ar1.failed()) {
