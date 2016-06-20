@@ -30,13 +30,13 @@
   'success': 1
   'facilities' : [
     {
-      'id' : 1,
-      'name' : 'Shady Side Parking Lot'
-    },
-    {
-      ...
-    },
-    ...
+      "id":1,
+      "name":"Shadyside Parking Lot",
+      "fee":5.75,
+      "fee_unit":3600,
+      "grace_period":1800
+     },
+     ...
   ]
 }
 ```

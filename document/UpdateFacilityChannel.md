@@ -1,17 +1,46 @@
-# Publish
+# Request
 
 ## Topic
 
 ```
-/controller/{physical_id}/slot/{slot_number}
+/facility/{facility_id}/request
 ```
 
 ## Body
 
 ```
 {
-  'parked': 1,
-  'confirmation_no': 5123
+  "name": "Shadyside Parking Lot",
+  "fee": 3.50,
+  "fee_unit": 3600, // second
+  "grace_period": 1800 // second
+}
+```
+
+# Response
+
+## Topic
+
+```
+/facility/{facility_id}/response/#
+```
+
+## Body
+
+### Success
+
+```
+{
+  "success": 1
+}
+```
+
+### Failed
+
+```
+{
+  "success": 0,
+  "cause": "NO_AUTHORIZATION",
 }
 ```
 

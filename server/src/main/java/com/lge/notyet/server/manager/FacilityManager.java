@@ -106,41 +106,14 @@ public class FacilityManager {
         });
     }
 
-    public void updateControllerAvailable(String controllerPhysicalId, List<JsonObject> slotObjectList, Handler<AsyncResult<Void>> handler) {
-        logger.info("updateControllerAvailable: controllerPhysicalId=" + controllerPhysicalId + ", slotObjectList=" + slotObjectList);
+    public void updateFacility(int facilityId, String name, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<Void>> handler) {
+        logger.info("updateFacility: facilityId=" + facilityId + ", name=" + name + ", fee=" + fee + ", feeUnit=" + feeUnit + ", gracePeriod=" + gracePeriod);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
             } else {
                 final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, true, ar2 -> {
-                    if (ar2.failed()) {
-                        handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
-                    } else {
-                        databaseProxy.updateSlots(sqlConnection, controllerPhysicalId, slotObjectList, ar3 -> {
-                            if (ar3.failed()) {
-                                handler.handle(Future.failedFuture(ar3.cause()));
-                                databaseProxy.closeConnection(sqlConnection, false, ar -> {});
-                            } else {
-                                handler.handle(Future.succeededFuture());
-                                databaseProxy.closeConnection(sqlConnection, true, ar -> {});
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    public void updateControllerUnavailable(String controllerPhysicalId, Handler<AsyncResult<Void>> handler) {
-        logger.info("updateControllerUnavailable: controllerPhysicalId=" + controllerPhysicalId);
-        databaseProxy.openConnection(ar1 -> {
-            if (ar1.failed()) {
-                handler.handle(Future.failedFuture(ar1.cause()));
-            } else {
-                final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, false, ar2 -> {
+                databaseProxy.updateFacility(sqlConnection, facilityId, name, fee, feeUnit, gracePeriod, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
                         databaseProxy.closeConnection(sqlConnection, false, ar -> {});
@@ -153,15 +126,34 @@ public class FacilityManager {
         });
     }
 
-    public void updateSlotOccupied(int slotId, boolean occupied, Handler<AsyncResult<Void>> handler) {
-        logger.info("updateSlotOccupied: slotId=" + slotId + ", occupied=" + occupied);
+    public void updateControllerAvailable(String controllerPhysicalId, boolean available, Handler<AsyncResult<Void>> handler) {
+        logger.info("updateControllerAvailable: controllerPhysicalId=" + controllerPhysicalId + ", available=" + available);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
             } else {
                 final SQLConnection sqlConnection = ar1.result();
-                final int occupiedTs = occupied ? ((int) System.currentTimeMillis() / 1000) : -1;
-                databaseProxy.updateSlotOccupied(sqlConnection, slotId, occupied, occupiedTs, ar2 -> {
+                databaseProxy.updateControllerAvailable(sqlConnection, controllerPhysicalId, available, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                    } else {
+                        handler.handle(Future.succeededFuture());
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                    }
+                });
+            }
+        });
+    }
+
+    public void updateSlotParked(int slotId, boolean parked, Handler<AsyncResult<Void>> handler) {
+        logger.info("updateSlotParked: slotId=" + slotId + ", parked=" + parked);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.updateSlotParked(sqlConnection, slotId, parked, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
                         databaseProxy.closeConnection(sqlConnection, false, ar -> {});

@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.12)
 # Database: sure-park
-# Generation Time: 2016-06-19 15:10:20 +0000
+# Generation Time: 2016-06-19 22:02:40 +0000
 # ************************************************************
 
 
@@ -41,7 +41,7 @@ LOCK TABLES `controller` WRITE;
 
 INSERT INTO `controller` (`id`, `physical_id`, `facility_id`, `available`)
 VALUES
-	(1,'arduino1',1,0),
+	(1,'arduino1',1,1),
 	(2,'arduino2',1,1),
 	(3,'arduino3',2,1),
 	(4,'arduino4',3,1);
@@ -129,7 +129,8 @@ LOCK TABLES `reservation` WRITE;
 
 INSERT INTO `reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`)
 VALUES
-	(29,10,1,7544,1466266,1);
+	(31,10,5,4574,1466349,1),
+	(32,3,6,6660,1466350,1);
 
 /*!40000 ALTER TABLE `reservation` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -205,9 +206,8 @@ CREATE TABLE `slot` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `controller_id` int(11) NOT NULL,
   `number` int(11) NOT NULL,
-  `occupied` tinyint(1) NOT NULL DEFAULT '0',
+  `parked` tinyint(1) NOT NULL DEFAULT '0',
   `reserved` tinyint(1) NOT NULL DEFAULT '0',
-  `occupied_ts` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `controller_id` (`controller_id`),
   CONSTRAINT `slot_ibfk_1` FOREIGN KEY (`controller_id`) REFERENCES `controller` (`id`)
@@ -216,20 +216,20 @@ CREATE TABLE `slot` (
 LOCK TABLES `slot` WRITE;
 /*!40000 ALTER TABLE `slot` DISABLE KEYS */;
 
-INSERT INTO `slot` (`id`, `controller_id`, `number`, `occupied`, `reserved`, `occupied_ts`)
+INSERT INTO `slot` (`id`, `controller_id`, `number`, `parked`, `reserved`)
 VALUES
-	(1,1,1,0,1,-1),
-	(2,1,2,1,0,1692006),
-	(3,1,3,0,0,-1),
-	(4,1,4,1,0,1692006),
-	(5,2,1,0,0,-1),
-	(6,2,2,0,0,-1),
-	(7,2,3,0,0,-1),
-	(8,2,4,0,0,-1),
-	(9,3,1,0,0,-1),
-	(10,3,2,0,0,-1),
-	(11,4,1,0,0,-1),
-	(12,4,2,0,0,-1);
+	(1,1,1,0,0),
+	(2,1,2,1,0),
+	(3,1,3,0,0),
+	(4,1,4,1,0),
+	(5,2,1,0,1),
+	(6,2,2,0,1),
+	(7,2,3,0,0),
+	(8,2,4,0,0),
+	(9,3,1,0,0),
+	(10,3,2,0,0),
+	(11,4,1,0,0),
+	(12,4,2,0,0);
 
 /*!40000 ALTER TABLE `slot` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -244,8 +244,8 @@ CREATE TABLE `transaction` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `reservation_id` int(11) NOT NULL,
   `begin_ts` int(11) NOT NULL,
-  `end_ts` int(11) NOT NULL,
-  `revenue` int(11) NOT NULL,
+  `end_ts` int(11) DEFAULT '-1',
+  `revenue` int(11) DEFAULT '-1',
   PRIMARY KEY (`id`),
   KEY `reservation_id` (`reservation_id`),
   CONSTRAINT `transaction_ibfk_1` FOREIGN KEY (`reservation_id`) REFERENCES `reservation` (`id`)
