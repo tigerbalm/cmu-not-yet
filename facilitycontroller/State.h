@@ -12,18 +12,24 @@
 #include "Command.h"
 #include "StateChangeListener.h"
 #include "MsgQueClient.h"
+//#include "Controller.h"
+
+class Controller;
 
 class State
 {
 protected:
-	StateChangeListener *stateChangeListener;
+	Controller *controller;
 	MsgQueClient *mqClient;
 
 public:
-	State(MsgQueClient *_client, StateChangeListener *_listener) { 
+	State(MsgQueClient *_client, Controller *_controller) { 
 		mqClient = _client;  
-		stateChangeListener = _listener; 
+		controller = _controller;
 	}
+
+	virtual void enter() {};
+	virtual void exit() {};
 
 	virtual void loop() = 0;
 	virtual void onMessageReceived(Command *command) = 0;

@@ -17,12 +17,18 @@
 class LeavingState : public State {
 private:
 	int mode;
+	int slot;
 
 public:
-	void loop();
-
-	LeavingState(MsgQueClient *_client, StateChangeListener *_listener) : State(_client, _listener) {};
+	LeavingState(MsgQueClient *_client, Controller *_controller) : State(_client, _controller) {};
 	
+	void enter();
+	void exit();
+
+	void loop();
+	
+	void setSlotNum(int _slot);
+
 	void onMessageReceived(Command *command);
 
 	void carDetectedOnEntry(int status);

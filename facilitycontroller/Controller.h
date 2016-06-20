@@ -23,7 +23,7 @@
 class Controller : public StateChangeListener, public CarDetectedListener, public SlotStatusChangeListener
 {
  protected:
-	 State *current;
+	 State *currentState;
 
 	 State *waitingState;
 	 State *parkingState;
@@ -39,7 +39,11 @@ class Controller : public StateChangeListener, public CarDetectedListener, publi
 	 Controller(MsgQueClient &client);
 	 void setup();
 	 void setState(State* state);
-	 State* getState();
+	 State* getCurrentState();
+	 State * getWaitingState();
+	 State * getParkingState();
+	 State * getLeavingState();
+
 	 void loop();
 
 	 void receiveMessage(Command *command);
