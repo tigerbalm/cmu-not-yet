@@ -3,7 +3,7 @@
 //import com.eclipsesource.json.JsonValue;
 //import com.lge.notyet.channels.GetDBQueryResponseChannel;
 //import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-//import com.lge.notyet.owner.business.GenericTextResultHandler;
+//import com.lge.notyet.owner.business.GenericQueryHandler;
 //import com.lge.notyet.owner.business.StateMachine;
 //import com.lge.notyet.owner.business.dbQueryTask;
 //import com.lge.notyet.owner.manager.SessionManager;
@@ -64,7 +64,7 @@
 //                int success = resMsg.getMessage().get("success").asInt();
 //
 //                if (success == 1) { // Success
-//                    GenericTextResultHandler.handleResult(resultArea, resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT));
+//                    GenericQueryHandler.handleResult(resultArea, resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT));
 //
 //                    Log.log(LOG_TAG, "Success to query DB, resultSet is " + resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT).toString());
 //

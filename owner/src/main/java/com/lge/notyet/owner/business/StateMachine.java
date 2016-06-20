@@ -10,32 +10,19 @@ public class StateMachine {
 
     private static StateMachine ourInstance = new StateMachine();
 
-    public static States getInternalState() {
+    public States getInternalState() {
         return internalState;
     }
 
-    public static void setInternalState(States internalState) {
-        StateMachine.internalState = internalState;
+    public void setInternalState(States internalState) {
+        this.internalState = internalState;
     }
 
-    private static States internalState= States.MAINUI;
-
-    private String query= null;
-    public String getQuery() {
-        if(customSQLQuery!= null){
-            return customSQLQuery;
-        }
-        else{
-            return Query.getSqlQuery(queryId);
-        }
-    }
+    private States internalState= States.MAINUI;
 
     private String queryId=Query.getDefaultQueryId();
-    public String getSqlQuery() {
-        return Query.getSqlQuery(queryId);
-    }
 
-    private static String customSQLQuery= null;
+    private boolean isCustomSQLQuery= false;
 
     public static StateMachine getInstance() {
         return ourInstance;
@@ -47,16 +34,15 @@ public class StateMachine {
     public void setQuery(String queryId, boolean customSelected) {
         setInternalState(States.SUBUI);
         this.queryId= queryId;
-        if(customSelected)
-            customSQLQuery= Query.getSqlQuery(queryId);
-        else
-            customSQLQuery= null;
+        this.isCustomSQLQuery= customSelected;
+        if(this.isCustomSQLQuery==true){
+            getQueryInstance().setSQLQuery(Query.getInstance(queryId, false).getSqlQuery());
+        }
     }
 
-    public String[] getColumnNames() {
-        return Query.getColumnNames(queryId);
+    public GenericQueryHandler getQueryInstance(){
+        return Query.getInstance(queryId, isCustomSQLQuery);
     }
-
 
     /**
      * Created by gladvin.durai on 15-Jun-2016.

@@ -2,7 +2,7 @@ package com.lge.notyet.owner.ui;
 
 import com.lge.notyet.channels.GetDBQueryResponseChannel;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import com.lge.notyet.owner.business.GenericTextResultHandler;
+import com.lge.notyet.owner.business.GenericQueryHandler;
 import com.lge.notyet.owner.business.Query;
 import com.lge.notyet.owner.business.StateMachine;
 import com.lge.notyet.owner.business.dbQueryTask;
@@ -45,18 +45,8 @@ public class MainUI extends JDialog {
     }
 
     private void onFetchReport() {
-
-        if(customAdditionalDeveloperQueryRadioButton.isSelected()==true)
-            JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
-        else{
-//            if(specialSettingAndResult==null) {
-//                specialSettingAndResult = new Specification_Result();
-//            }
-//            specialSettingAndResult.pack();
-//            specialSettingAndResult.setVisible(true);
-//            StateMachine.getInstance().setInternalState(StateMachine.States.MAINUI);
-            TaskManager.getInstance().runTask(dbQueryTask.getTask(StateMachine.getInstance().getSqlQuery(), mQueryResponseCallback));
-        }
+//      JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
+        TaskManager.getInstance().runTask(dbQueryTask.getTask(StateMachine.getInstance().getQueryInstance().getSqlQuery(), mQueryResponseCallback));
     }
 
     private void exitAll(){
@@ -76,17 +66,21 @@ public class MainUI extends JDialog {
         ActionListener chooseReportHandler= new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                readReportChoiceAndDoMoreSettings();
+                readReportChoiceAndDoMoreSettings(e);
             }
-            public void readReportChoiceAndDoMoreSettings(){
+            public void readReportChoiceAndDoMoreSettings(ActionEvent e){
                 StateMachine.getInstance().setQuery(choiceGroup.getSelection().getActionCommand(), customAdditionalDeveloperQueryRadioButton.isSelected());
+                if(e!=null) {//Not required for the first time initialization phase.
+                    StateMachine.getInstance().getQueryInstance().fillMoreSettingPanel(chooseMoreSettingsPanel);
+                }
+
             }
         };
         choiceGroup= new ButtonGroup();
         chooseReportPanel = new JPanel(new GridLayout(0,2));
         String defaultQuery= Query.getDefaultQueryId();
         for (String queryID: Query.getQueryIdList()) {
-            String textToDisplay= Query.getDisplayString(queryID);
+            String textToDisplay= Query.getInstance(queryID, false).getDisplayString();
             JRadioButton jb= new JRadioButton(textToDisplay);
             jb.setActionCommand(queryID);
             if(defaultQuery.equalsIgnoreCase(queryID)){
@@ -96,7 +90,7 @@ public class MainUI extends JDialog {
             choiceGroup.add(jb);
             jb.addActionListener(chooseReportHandler);
         }
-        customAdditionalDeveloperQueryRadioButton= new JRadioButton("Custom (Additional developer query)");
+        customAdditionalDeveloperQueryRadioButton= new JRadioButton(Query.CUSTOM_QUERY);
         chooseReportPanel.add(customAdditionalDeveloperQueryRadioButton);
         customAdditionalDeveloperQueryRadioButton.addActionListener(chooseReportHandler);
 
@@ -104,6 +98,7 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
+        //FixMe: Closing the login screen is able to bypass to MainUI
         //FixMe: Add more settings option programmatically
         //FixMe: Update database to work without having sql_mode set to null. Query2
         //FixMe: Add Slot condition for Query 1
@@ -134,7 +129,7 @@ public class MainUI extends JDialog {
                 int success = resMsg.getMessage().get("success").asInt();
 
                 if (success == 1) { // Success
-                    GenericTextResultHandler.handleResult(textReportPane1, resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT));
+                    StateMachine.getInstance().getQueryInstance().handleResult(textReportPane1, resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT));
 
                     Log.log(LOG_TAG, "Success to query DB, resultSet is " + resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT).toString());
 
