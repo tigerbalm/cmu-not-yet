@@ -5,11 +5,12 @@
 #include "ParkingState.h"
 #include "EntryGateHelper.h"
 #include "CarDetectedListener.h"
-#include "CommandVerifyReservation.h"
-#include "CmdVerifyReservationRes.h"
 #include "CommandFactory.h"
-#include "CommandReportSlotStatus.h"
+#include "CmdVerifyBookingReq.h"
+#include "CmdVerifyBookingResp.h"
+#include "CmdCarParkedNoti.h"
 #include "Controller.h"
+#include "SlotLedController.h"
 
 #define MODE_WAITING_NUMBER		1
 #define MODE_WAITING_CONFIRM	2
@@ -26,6 +27,8 @@ void ParkingState::exit()
 	Serial.println("ParkingState::exit()");
 
 	mode = MODE_WAITING_CONFIRM;
+	bookingNo = -1;
+	assignedSlot = -1;	
 }
 
 void ParkingState::onMessageReceived(Command *command)
@@ -34,12 +37,16 @@ void ParkingState::onMessageReceived(Command *command)
 
 	if (mode == MODE_WAITING_CONFIRM)
 	{
-		CmdVerifyReservationRes *response = (CmdVerifyReservationRes *)command;
+		CmdVerifyBookingResp *response = (CmdVerifyBookingResp *)command;
 
 		if (response->isSuccess())
 		{
+			assignedSlot = response->getSlotNumber();
+
 			Serial.print("confirm_reservation success : ");
-			Serial.println(response->getSlotNumber());
+			Serial.println(assignedSlot);
+			
+			SlotLedController::getInstance()->on(assignedSlot);
 
 			EntryGateHelper::open();
 			EntryGateHelper::ledOn();
@@ -88,6 +95,7 @@ void ParkingState::waitingNumberInput()
 
 	if (reservation != 0)	// success
 	{
+		bookingNo = reservation;
 		verifyReservation(reservation);		
 	}
 }
@@ -95,11 +103,10 @@ void ParkingState::waitingNumberInput()
 void ParkingState::verifyReservation(int number)
 {
 	// send to server with number
-	CommandVerifyReservation verifyCmd(mqClient);
-	verifyCmd.setReservationNumber(number);
-	verifyCmd.send();
+	CmdVerifyBookingReq* verifyRequest = (CmdVerifyBookingReq*)CommandFactory::getInstance()->createCommand(CMD_HINT_CONFIRM_RESERVATION_REQ);
+	verifyRequest->setReservationNumber(number);
+	verifyRequest->send(mqClient);
 
-	//networkManager->send("verify", number);
 	mode = MODE_WAITING_CONFIRM;
 }
 
@@ -133,12 +140,11 @@ void ParkingState::onSlotOccupied(int slotNum)
 	Serial.println(slotNum);
 
 	if (mode == MODE_WAITING_PLACING) {
-		// TODO: 
-		// 1. server 에 slot 상태 보낸다.
-		// 2. 특별한 경우이므로 보낼때 예약 번호를 같이 보낼 지 결정 필요
-
-		CommandReportSlotStatus cmdStatus(mqClient, slotNum, 1);
-		cmdStatus.send();
+		CmdCarParkedNoti* noti = (CmdCarParkedNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_CAR_PARKED_NOTIFY);
+		noti->setData(bookingNo, slotNum);
+		noti->send(mqClient);
+		
+		SlotLedController::getInstance()->off(assignedSlot);
 
 		EntryGateHelper::ledOff();
 		EntryGateHelper::close();

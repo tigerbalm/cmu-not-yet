@@ -11,7 +11,7 @@
 
 #include "Command.h"
 
-typedef Command* (*CreateCommandFn)(MsgQueClient *_client);
+typedef Command* (*CreateCommandFn)();
 
 class Pair {	
 public:

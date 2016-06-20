@@ -26,7 +26,7 @@ public class Query {
         queryList.add(new GenericQueryHandler(
                 "Average Occupancy (in hours)",
                 new String[]{"First Day", "Last Day", "Hours Occupied", "Occupancy in hours per day"},
-                "select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day (Oops the slot count is not considered!!!)' from transaction"));//select datediff(from_unixtime(1465963300), from_unixtime(1465963199)), from_unixtime(1465963300),from_unixtime(1465963199)
+                "select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day' from transaction"));//select datediff(from_unixtime(1465963300), from_unixtime(1465963199)), from_unixtime(1465963300),from_unixtime(1465963199)
         queryList.add(new GenericQueryHandler(
                 "Peak Usage Hours",
                 new String[]{},
@@ -44,6 +44,21 @@ public class Query {
                     "select 23, @FULLDAYS\n" +
                     ")as fourthCombined, (select @NUM2 :=-1) as r2\n" +
                     "order by t2\n"));//SELECT @row := @row + 1 as row, t.* FROM transaction t, (SELECT @row := 0) r         //SELECT @NUM:=@NUM+1, id FROM transaction
+                //        select @NUM2+1 as 'From time of the day', @NUM2:=t2 as 'To time of the day', truncate(c3, 0) as Usages from (
+                //            select t1 as t2, truncate(@FULLDAYS + (@NUM:= (c2+@NUM)), 0) as c3 from (
+                //            select t1, sum(c1) as c2 from (
+                //                    SELECT (hour(from_unixtime(begin_ts))-1) as t1, (-count(*)) as c1  FROM transaction group by hour(from_unixtime(begin_ts))
+                //            union all
+                //            SELECT hour(from_unixtime(end_ts)), (count(*))  FROM transaction group by hour(from_unixtime(end_ts))
+                //        ) as combinedTable, (SELECT @NUM := 0, @FULLDAYS := sum(datediff(from_unixtime(end_ts), from_unixtime(begin_ts))) from transaction) r
+                //        group by t1
+                //        order by t1 desc
+                //        )as doubleCombined
+                //        union
+                //        select 23, @FULLDAYS
+                //        )as fourthCombined, (select @NUM2 :=-1) as r2
+                //        order by t2
+
         queryList.add(new GenericQueryHandler(
                 "How much time cars were parked in each slot",
                 new String[]{"slot_id", "Hours parked in the particular slot"},

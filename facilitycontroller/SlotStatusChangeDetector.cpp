@@ -28,7 +28,8 @@ void SlotStatusChangeDetector::loop()
 		slot[i]->refresh();
 		if (slot[i]->changed())
 		{
-			slotStatusChangeListener->onSlotChange(i, slot[i]->status());
+			// slot number starts from 1, so i + 1
+			slotStatusChangeListener->onSlotChange(i + 1, slot[i]->status());
 		}
 	}
 }

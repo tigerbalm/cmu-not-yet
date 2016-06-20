@@ -5,8 +5,11 @@
 #include "LeavingState.h"
 #include "ExitGateHelper.h"
 #include "CarDetectedListener.h"
-#include "CmdVerifyReservationRes.h"
 #include "Controller.h"
+#include "CmdPaymentResp.h"
+#include "CmdPaymentReq.h"
+#include "SlotLedController.h"
+#include "CommandFactory.h"
 
 // LEAVING 에 처음 진입하면 차가 EXIT GATE 에 도착하길 기다리는 상태
 // 도착하면, 결제 요청
@@ -20,11 +23,15 @@
 void LeavingState::enter()
 {
 	mode = MODE_WAITING_CAR_AT_EXIT;
+
+	SlotLedController::getInstance()->blinkOn(slot);
 }
 
 void LeavingState::exit()
 {
 	mode = MODE_WAITING_CAR_AT_EXIT;
+
+	SlotLedController::getInstance()->blinkOff(slot);
 }
 
 void LeavingState::loop()
@@ -35,8 +42,9 @@ void LeavingState::loop()
 	switch (mode) {
 	case MODE_WAITING_CAR_AT_EXIT :
 		break;
-	case MODE_WAITING_PAYMENT_RESP :
-		// send_request...
+	case MODE_WAITING_PAYMENT_RESP :		
+		break;
+	case MODE_OPEN_GATE :
 		break;
 	}
 }
@@ -58,13 +66,21 @@ void LeavingState::onMessageReceived(Command *command)
 		//	resp->isSuccess();
 		//}
 		
-		// 결과가 성공이면,
-		ExitGateHelper::ledOn();
-		ExitGateHelper::open();		
-		// change to MODE_OPEN_GATE
-		// 결과가 실패면,
-		// notify to dave
-		// slot led blink...
+		CmdPaymentResp *resp = (CmdPaymentResp *)command;
+		
+		if (resp->isSuccess())
+		{
+			ExitGateHelper::ledOn();
+			ExitGateHelper::open();
+
+			mode = MODE_OPEN_GATE;
+		}
+		else
+		{
+			// notify to dave
+			
+			// slot led blink...
+		}
 	}
 }
 
@@ -84,7 +100,10 @@ void LeavingState::carDetectedOnExit(int status)
 	if (status == CAR_DETECTED)
 	{
 		// send req to server
-		
+		CmdPaymentReq* payRequest = (CmdPaymentReq *)CommandFactory::getInstance()->createCommand(CMD_HINT_PAYMENT_REQ);
+		payRequest->setSlot(slot);
+		payRequest->send(mqClient);
+
 		mode = MODE_WAITING_PAYMENT_RESP;		
 	}
 	else

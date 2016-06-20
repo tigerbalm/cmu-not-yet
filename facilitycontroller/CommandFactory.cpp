@@ -3,13 +3,24 @@
 // 
 
 #include "CommandFactory.h"
-#include "CmdVerifyReservationRes.h"
 
-// http://www.codeproject.com/Articles/363338/Factory-Pattern-in-Cplusplus
+#include "CmdVerifyBookingReq.h"
+#include "CmdVerifyBookingResp.h"
+#include "CmdPaymentReq.h"
+#include "CmdPaymentResp.h"
+#include "CmdCarParkedNoti.h"
+#include "CmdAliveNoti.h"
 
 void CommandFactory::init()
 {
-	add(CMD_HINT_RESERVATION, &CommandVerifyReservation::create);
+	add(CMD_HINT_CONFIRM_RESERVATION_REQ, &CmdVerifyBookingReq::create);
+	add(CMD_HINT_CONFIRM_RESERVATION_RESP, &CmdVerifyBookingResp::create);
+	
+	add(CMD_HINT_PAYMENT_REQ, &CmdPaymentReq::create);
+	add(CMD_HINT_PAYMENT_RESP, &CmdPaymentResp::create);
+
+	add(CMD_HINT_CAR_PARKED_NOTIFY, &CmdCarParkedNoti::create);
+	add(CMD_HINT_MY_STATUS_NOTIFY, &CmdAliveNoti::create);
 }
 
 CreateCommandFn * CommandFactory::find(String topic)
@@ -34,10 +45,8 @@ void CommandFactory::add(char *hint, CreateCommandFn pfnCreate)
 	factoryMap.push_back(p);
 }
 
-CommandFactory::CommandFactory(MsgQueClient * _mqClient)
+CommandFactory::CommandFactory()
 {
-	mqClient = _mqClient;
-
 	init();
 }
 
@@ -49,5 +58,5 @@ Command * CommandFactory::createCommand(const String topic)
 		return new Command();
 	}
 
-	return (*pCreateFnc)(mqClient);
+	return (*pCreateFnc)();
 }

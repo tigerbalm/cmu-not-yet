@@ -3,8 +3,8 @@
 // 
 
 #include "MsgQueClient.h"
-#include "NetworkManager.h"
-#include "CommandWill.h"
+#include "CmdAliveNoti.h"
+#include "CommandFactory.h"
 
 MsgQueClient::MsgQueClient(char* name, PubSubClient &client)
 {
@@ -17,13 +17,18 @@ bool MsgQueClient::connect()
 	Serial.print("MsgQueClient::connect to ");	
 	Serial.println(MQ_SERVER_IP);
 
-	CommandWill will(this);
+	CmdAliveNoti* will = (CmdAliveNoti *)CommandFactory::getInstance()->createCommand(CMD_HINT_MY_STATUS_NOTIFY);
+	will->setStatus(STATUS_DEAD);
 
 	bool connected = pubsubClient->connect(clientName.c_str(), 
-						will.getTopic().c_str(), 1, true, will.getBody().c_str());
+						will->getTopic().c_str(), 1, true, will->getBody().c_str());
 
 	if (connected)
 	{
+		CmdAliveNoti* alive = (CmdAliveNoti *)CommandFactory::getInstance()->createCommand(CMD_HINT_MY_STATUS_NOTIFY);
+		alive->setStatus(STATUS_ALIVE);
+		alive->send(this);
+
 		Serial.println("connection success!!");
 	}
 	else

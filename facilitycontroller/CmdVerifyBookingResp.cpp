@@ -2,9 +2,9 @@
 // 
 // 
 
-#include "CmdVerifyReservationRes.h"
+#include "CmdVerifyBookingResp.h"
 
-void CmdVerifyReservationRes::setBody(String body)
+void CmdVerifyBookingResp::setBody(String body)
 {
 	StaticJsonBuffer<100> jsonBuffer;
 
@@ -26,17 +26,7 @@ void CmdVerifyReservationRes::setBody(String body)
 	}
 }
 
-int CmdVerifyReservationRes::getSlotNumber()
+int CmdVerifyBookingResp::getSlotNumber()
 {
 	return slotNumber;
-}
-
-bool CmdVerifyReservationRes::isSuccess()
-{
-	return success;
-}
-
-String CmdVerifyReservationRes::getFailCause()
-{
-	return failCause;
 }

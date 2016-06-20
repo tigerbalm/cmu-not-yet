@@ -4,13 +4,10 @@
 
 #include "Command.h"
 
+int Command::topicId;
+
 Command::Command()
 {
-}
-
-Command::Command(MsgQueClient *_client)
-{
-	client = _client;
 }
 
 int Command::getFacilityId()
@@ -20,7 +17,7 @@ int Command::getFacilityId()
 
 int Command::getTopicId()
 {
-	return topicId;
+	return Command::topicId ++;
 }
 
 void Command::setTopic(String _topic)
@@ -50,9 +47,9 @@ String Command::getBody()
 	return String();
 }
 
-bool Command::send()
+bool Command::send(MsgQueClient * _client)
 {
-	return client->publish(getTopic(), getBody());
+	return _client->publish(getTopic(), getBody());
 }
 
 String Command::toString()

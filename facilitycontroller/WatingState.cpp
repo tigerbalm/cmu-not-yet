@@ -4,7 +4,6 @@
 
 #include "WatingState.h"
 #include "CarDetectedListener.h"
-#include "CommandReportSlotStatus.h"
 #include "Controller.h"
 
 void WatingState::loop()
@@ -46,10 +45,6 @@ void WatingState::onSlotOccupied(int slotNum)
 {
 	Serial.print("WatingState::onSlotOccupied() - ");
 	Serial.println(slotNum);
-
-	// send server
-	CommandReportSlotStatus cmdStatus(mqClient, slotNum, 1);
-	cmdStatus.send();
 }
 
 void WatingState::onSlotEmptified(int slotNum)
@@ -57,11 +52,8 @@ void WatingState::onSlotEmptified(int slotNum)
 	Serial.print("WatingState::onSlotEmptified() - ");
 	Serial.println(slotNum);
 
-	CommandReportSlotStatus cmdStatus(mqClient, slotNum, 0);
-	cmdStatus.send();
-
 	LeavingState *leavingState = (LeavingState *)controller->getLeavingState();
 	leavingState->setSlotNum(slotNum);
 
-	controller->setState(leavingState);	
+	controller->setState(leavingState);
 }
