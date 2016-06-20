@@ -56,7 +56,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private void startManagers() {
         authenticationManager = AuthenticationManager.getInstance();
-        reservationManager = ReservationManager.getInstance();
+        reservationManager = ReservationManager.getInstance(vertx);
         facilityManager = FacilityManager.getInstance();
         statisticsManager = StatisticsManager.getInstance();
     }
@@ -146,6 +146,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private void updateControllerStatus(Uri uri, NetworkMessage message) {
         final String controllerPhysicalId = UpdateControllerStatusPublishChannel.getControllerPhysicalId(uri);
+        final boolean updated = UpdateControllerStatusPublishChannel.isUpdated(message); if (updated) return;
         final boolean available = UpdateControllerStatusPublishChannel.isAvailable(message);
 
         facilityManager.updateControllerAvailable(controllerPhysicalId, available, ar -> {

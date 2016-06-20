@@ -6,6 +6,7 @@ import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
@@ -15,21 +16,27 @@ import java.util.List;
 public class ReservationManager {
     private static ReservationManager instance = null;
 
+    private final Vertx vertx;
     private final Logger logger;
     private final DatabaseProxy databaseProxy;
 
-    private ReservationManager() {
-        logger = LoggerFactory.getLogger(ReservationManager.class);
-        databaseProxy = DatabaseProxy.getInstance(null);
+    private ReservationManager(Vertx vertx) {
+        this.vertx = vertx;
+        this.logger = LoggerFactory.getLogger(ReservationManager.class);
+        this.databaseProxy = DatabaseProxy.getInstance(null);
     }
 
-    public static ReservationManager getInstance() {
+    public static ReservationManager getInstance(Vertx vertx) {
         synchronized (AuthenticationManager.class) {
             if (instance == null) {
-                instance = new ReservationManager();
+                instance = new ReservationManager(vertx);
             }
             return instance;
         }
+    }
+
+    private void checkExpiredReservations() {
+
     }
 
     public void getReservationByConfirmationNumber(int confirmationNumber, Handler<AsyncResult<JsonObject>> handler) {

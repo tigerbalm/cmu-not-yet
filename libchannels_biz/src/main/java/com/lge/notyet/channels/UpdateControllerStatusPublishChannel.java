@@ -1,6 +1,5 @@
 package com.lge.notyet.channels;
 
-import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
@@ -9,9 +8,6 @@ import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class UpdateControllerStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/controller/%s";
@@ -32,6 +28,11 @@ public class UpdateControllerStatusPublishChannel extends PublishChannel {
 
     public static String getControllerPhysicalId(Uri uri) {
         return (String) uri.getPathSegments().get(2);
+    }
+
+    public static boolean isUpdated(NetworkMessage networkMessage) {
+        JsonObject object = (JsonObject) networkMessage.getMessage();
+        return object.get(KEY_UPDATED) == null ? false : (object.get(KEY_UPDATED).asInt() == 1);
     }
 
     public static boolean isAvailable(NetworkMessage networkMessage) {
