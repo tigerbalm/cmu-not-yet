@@ -98,7 +98,6 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
-        //FixMe: Closing the login screen is able to bypass to MainUI
         //FixMe: Add more settings option programmatically
         //FixMe: Update database to work without having sql_mode set to null. Query2
         //FixMe: Add Slot condition for Query 1
