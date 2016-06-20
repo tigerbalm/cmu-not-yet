@@ -125,23 +125,27 @@ public class LoginPanel implements Screen {
 
             if (success == 1) { // Success
 
+                SessionManager.getInstance().clearSlots();
                 JsonArray slots = resMsg.getMessage().get("slots").asArray();
 
                 for (JsonValue aSlot : slots.values()) {
 
                     JsonObject slot = aSlot.asObject();
+                    Log.logv(LOG_TAG, "Slot=" + slot);
+
                     // mandatory fields
                     int id = slot.get("id").asInt();  // Slot's Unique ID
                     int number = slot.get("number").asInt();
-                    int occupied = slot.get("occupied").asInt();
-                    long occupied_ts = slot.get("occupied_ts").asLong();
-                    int reserved = slot.get("reserved").asInt();
+                    int occupied = slot.get("parked").isNull() ? 0 : slot.get("parked").asInt();
+                    long occupied_ts = slot.get("parked_ts").isNull() ? 0L : slot.get("parked_ts").asLong();
+                    int reserved = slot.get("reserved").isNull() ? 0 : slot.get("reserved").asInt();
                     int controller_id = slot.get("controller_id").asInt();
                     String physical_id = slot.get("controller_physical_id").asString();
                     // optional fields
                     int reservation_id = slot.get("reservation_id").isNull() ? -1 : slot.get("reservation_id").asInt();
                     String user_email = slot.get("email").isNull() ? null : slot.get("email").asString();
                     long reservation_ts = slot.get("reservation_ts").isNull() ? -1 : slot.get("reservation_ts").asLong();
+
                     SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id, reservation_id, user_email, reservation_ts);
                 }
 
@@ -267,96 +271,91 @@ public class LoginPanel implements Screen {
         }
     };
 
-    private final ITaskDoneCallback mLoginDoneCallback = new ITaskDoneCallback() {
+    private final ITaskDoneCallback mLoginDoneCallback = (result, response) -> {
 
-        @Override
-        public void onDone(int result, Object response) {
+        setUserInputEnabled(true);
 
-            setUserInputEnabled(true);
+        if (result == ITaskDoneCallback.FAIL) {
 
-            if (result == ITaskDoneCallback.FAIL) {
+            Log.logd(LOG_TAG, "Failed to login due to timeout");
 
-                Log.logd(LOG_TAG, "Failed to login due to timeout");
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.LOGIN_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.LOGIN_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+        MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
 
-            MqttNetworkMessage resMsg = (MqttNetworkMessage) response;
+        // Response may be wrong, we need to validate it, or handle exception
+        try {
 
-            // Response may be wrong, we need to validate it, or handle exception
-            try {
+            Log.logd(LOG_TAG, "Received response to LoginRequest, message=" + resMsg.getMessage());
 
-                Log.logd(LOG_TAG, "Received response to LoginRequest, message=" + resMsg.getMessage());
+            int success = resMsg.getMessage().get("success").asInt();
 
-                int success = resMsg.getMessage().get("success").asInt();
+            if (success == 1) { // Success
 
-                if (success == 1) { // Success
+                // int userId = resMsg.getMessage().get("id").asInt(); // I will use SessionKey
+                int userType = resMsg.getMessage().get("type").asInt();
+                String session = resMsg.getMessage().get("session_key").asString();
 
-                    // int userId = resMsg.getMessage().get("id").asInt(); // I will use SessionKey
-                    int userType = resMsg.getMessage().get("type").asInt();
-                    String session = resMsg.getMessage().get("session_key").asString();
+                if (userType != 1) { // Attendant
 
-                    if (userType != 1) { // Attendant
-
-                        Log.logd(LOG_TAG, "This is not driver account");
-
-                        JOptionPane.showMessageDialog(getRootPanel(),
-                                Strings.LOGIN_FAILED + ":" + Strings.WRONG_ACCOUNT,
-                                Strings.APPLICATION_NAME,
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (session == null) {
-
-                        Log.logd(LOG_TAG, "Failed to validate response");
-
-                        JOptionPane.showMessageDialog(getRootPanel(),
-                                Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                                Strings.APPLICATION_NAME,
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
-                    SessionManager.getInstance().setKey(session);
-
-                    // Retrieve Facilities
-                    TaskManager.getInstance().runTask(GetFacilityTask.getTask(session, mGetFacilityCallback));
-
-                } else if (success == 0) {
-
-                    Log.logv(LOG_TAG, "Failed to login, with cause=" + resMsg.getMessage().get("cause").asString());
+                    Log.logd(LOG_TAG, "This is not driver account");
 
                     JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.LOGIN_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.LOGIN_FAILED + ":" + Strings.WRONG_ACCOUNT,
                             Strings.APPLICATION_NAME,
-                            JOptionPane.WARNING_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
-                } else {
+                if (session == null) {
 
-                    Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+                    Log.logd(LOG_TAG, "Failed to validate response");
 
                     JOptionPane.showMessageDialog(getRootPanel(),
                             Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
                             Strings.APPLICATION_NAME,
                             JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
-            } catch (Exception e) {
+                SessionManager.getInstance().setKey(session);
 
-                Log.logd(LOG_TAG, "Failed to login, exception occurred");
-                e.printStackTrace();
+                // Retrieve Facilities
+                TaskManager.getInstance().runTask(GetFacilityTask.getTask(session, mGetFacilityCallback));
+
+            } else if (success == 0) {
+
+                Log.logv(LOG_TAG, "Failed to login, with cause=" + resMsg.getMessage().get("cause").asString());
 
                 JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.LOGIN_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.LOGIN_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
                         Strings.APPLICATION_NAME,
                         JOptionPane.ERROR_MESSAGE);
             }
+
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to login, exception occurred");
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.LOGIN_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.ERROR_MESSAGE);
         }
     };
 

@@ -1,10 +1,7 @@
 package com.lge.notyet.attendant.manager;
 
 import com.lge.notyet.attendant.util.Log;
-import com.lge.notyet.channels.GetFacilitiesRequestChannel;
-import com.lge.notyet.channels.GetSlotsRequestChannel;
-import com.lge.notyet.channels.LoginRequestChannel;
-import com.lge.notyet.channels.UpdateSlotStatusSubscribeChannel;
+import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
@@ -85,11 +82,11 @@ public class NetworkConnectionManager {
         return new GetSlotsRequestChannel(mNc, facilityId);
     }
 
-    public UpdateSlotStatusSubscribeChannel createUpdateSlotStatusSubscribeChannel(int physicalId) {
-        return new UpdateSlotStatusSubscribeChannel(mNc, physicalId);
+    public UpdateControllerStatusSubscribeChannel createUpdateControllerStatusSubscribeChannel() {
+        return new UpdateControllerStatusSubscribeChannel(mNc);
     }
 
-    public UpdateSlotStatusSubscribeChannel createUpdateSlotStatusSubscribeChannel() {
-        return new UpdateSlotStatusSubscribeChannel(mNc);
+    public ConfirmExitRequestChannel createConfirmExitRequestChannel(String physicalId) {
+        return new ConfirmExitRequestChannel(mNc, physicalId);
     }
 }

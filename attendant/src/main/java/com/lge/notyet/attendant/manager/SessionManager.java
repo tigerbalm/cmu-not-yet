@@ -5,20 +5,20 @@ import java.util.Set;
 
 public class SessionManager {
 
-    private final static String EMAIL = "email";
-    private final static String KEY = "key";
-
-    private final HashMap<String, String> mSession;
+    private String mSessionKey;
+    private int mFacilityId;
+    private String mFacilityName;
+    private final HashMap<Integer, Controller> mControllers;
     private final HashMap<Integer, Slot> mSlots;
-
-    private int mFacilityId = -1;
-    private String mFacilityName = null;
 
     private static SessionManager sSessionManager = null;
 
     private SessionManager () {
-        mSession = new HashMap<>();
+        mSessionKey = null;
+        mFacilityId = -1;
+        mFacilityName = null;
         mSlots = new HashMap<>();
+        mControllers = new HashMap<>();
     }
 
     public static SessionManager getInstance() {
@@ -30,29 +30,16 @@ public class SessionManager {
         return sSessionManager;
     }
 
-    public String getUserEmail() {
-        return mSession.get(EMAIL);
-    }
-    public String getKey() {
-        return mSession.get(KEY);
-    }
-
-    public void setUserEmail(String email) {
-        mSession.put(EMAIL, email);
-    }
-    public void setKey(String key) {
-        mSession.put(KEY, key);
-    }
+    public void setKey(String sessionKey) { mSessionKey = sessionKey; }
+    public String getKey() { return mSessionKey; }
 
     public void setFacilityInformation(int id, String name) {
         mFacilityId = id;
         mFacilityName = name;
     }
-
     public int getFacilityId() {
         return mFacilityId;
     }
-
     public String getFacilityName() {
         return mFacilityName;
     }
@@ -64,32 +51,35 @@ public class SessionManager {
 
     public void addSlot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, String physical_id, int reservation_id, String user_email, long reservation_ts) {
         mSlots.put(id, new Slot(id, number, occupied, reserved, occupiedTimeStamp, controller_id, physical_id, reservation_id, user_email, reservation_ts));
+        if (!mControllers.containsKey(controller_id)) {
+            mControllers.put(controller_id, new Controller(controller_id, physical_id));
+        }
     }
-
     public Set<Integer> getSlotIds() {
         return mSlots.keySet();
     }
-
     public Slot getSlot(int id) {
         return mSlots.get(id);
     }
 
-    public Slot getSlot(String physical_id, int slot_number) {
-        for (Slot slot : mSlots.values()) {
+    public void clearSlots() {
+        mSlots.clear();
+    }
 
-            if (slot.getPhysicalId().equals(physical_id) && slot.getNumber() == slot_number) {
-                return slot;
-            }
+    public Controller getController(int id) {
+        return mControllers.get(id);
+    }
+    public Controller getController(String physicalId) {
+        for (int id : mControllers.keySet()) {
+            if (mControllers.get(id).getPhysicalId().equals(physicalId)) return mControllers.get(id);
         }
         return null;
     }
 
-    public int getSlotSize() {
-        return mSlots.size();
-    }
-
     public void clear() {
-        mSession.clear();
+        mSessionKey = null;
         clearFacilityInformation();
+        mControllers.clear();
+        clearSlots();
     }
 }

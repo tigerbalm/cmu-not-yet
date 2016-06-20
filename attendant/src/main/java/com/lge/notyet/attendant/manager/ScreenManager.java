@@ -12,9 +12,6 @@ public class ScreenManager {
     private JPanel mCards;
     private final CardLayout mMainCardLayout;
 
-    private String mLastScreenName;
-    private String mCurrentScreenName;
-
     private Screen mLoginPanel;
     private Screen mFacilityMonitorPanel;
 
@@ -48,16 +45,12 @@ public class ScreenManager {
     }
 
     public void showLoginScreen() {
-        mLastScreenName = null;
         mLoginPanel.initScreen();
         mMainCardLayout.show(mCards, mLoginPanel.getName());
-        mCurrentScreenName = mLoginPanel.getName();
     }
 
     public void showFacilityMonitorScreen() {
-        mLastScreenName = mCurrentScreenName;
         mFacilityMonitorPanel.initScreen();
         mMainCardLayout.show(mCards, mFacilityMonitorPanel.getName());
-        mCurrentScreenName = mFacilityMonitorPanel.getName();
     }
 }
