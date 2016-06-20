@@ -1,18 +1,21 @@
 package com.lge.notyet.attendant.ui;
 
-import com.lge.notyet.attendant.manager.NetworkConnectionManager;
-import com.lge.notyet.attendant.manager.ScreenManager;
-import com.lge.notyet.attendant.manager.SessionManager;
-import com.lge.notyet.attendant.manager.Slot;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+import com.lge.notyet.attendant.business.GetSlotListTask;
+import com.lge.notyet.attendant.business.ITaskDoneCallback;
+import com.lge.notyet.attendant.business.RequestManualExitTask;
+import com.lge.notyet.attendant.manager.*;
+import com.lge.notyet.attendant.resource.Strings;
 import com.lge.notyet.attendant.util.Log;
-import com.lge.notyet.channels.UpdateSlotStatusSubscribeChannel;
+import com.lge.notyet.channels.UpdateControllerStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Set;
@@ -34,7 +37,7 @@ public class FacilityMonitorPanel implements Screen {
     private JScrollPane mSpSlotStatus;
     private JLabel mLabelLogout;
 
-    private UpdateSlotStatusSubscribeChannel mUpdateSlotStatusSubscribeChannel = null;
+    private UpdateControllerStatusSubscribeChannel mUpdateControllerStatusSubscribeChannel = null;
 
     private final AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
     private ScheduledFuture<?> mSlotStatusUpdateThread = null;
@@ -57,10 +60,10 @@ public class FacilityMonitorPanel implements Screen {
     @Override
     public void initScreen() {
 
-        if (mUpdateSlotStatusSubscribeChannel == null) {
-            mUpdateSlotStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateSlotStatusSubscribeChannel();
-            mUpdateSlotStatusSubscribeChannel.listen();
-            mUpdateSlotStatusSubscribeChannel.addObserver(mSlotStatusChanged);
+        if (mUpdateControllerStatusSubscribeChannel == null) {
+            mUpdateControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusSubscribeChannel();
+            mUpdateControllerStatusSubscribeChannel.listen();
+            mUpdateControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
         }
 
         mLabelFacilityName.setText(SessionManager.getInstance().getFacilityName());
@@ -71,13 +74,25 @@ public class FacilityMonitorPanel implements Screen {
         for (int slotId : slotIds) {
 
             Slot slot = SessionManager.getInstance().getSlot(slotId);
+            Controller controller = SessionManager.getInstance().getController(slot.getControllerId());
 
             JLabel slotNumber = new JLabel(slot.getControllerId() + "-" + slot.getNumber());
             slotNumber.setHorizontalAlignment(SwingConstants.CENTER);
             slotNumber.setFont(new Font(null, 0, 16));
 
+            boolean isControllerAvailable = controller != null && controller.isAvailable();
             boolean isOccupied = slot.isOccupied();
             boolean isReserved = slot.isReserved();
+
+            JLabel availableStatus;
+            if (!isControllerAvailable) {
+                availableStatus = new JLabel("UNAVAILABLE");
+                availableStatus.setForeground(Color.red);
+                availableStatus.setHorizontalAlignment(SwingConstants.CENTER);
+                availableStatus.setFont(new Font(null, Font.BOLD, 14));
+            } else {
+                availableStatus = new JLabel("");
+            }
 
             JLabel labelStatus;
             if (isOccupied) {
@@ -99,9 +114,7 @@ public class FacilityMonitorPanel implements Screen {
                 labelTime = new JLabel(occupiedTimeSec / 60 + " min(s)");
                 labelTime.setForeground(Color.white);
             } else if (isReserved) {
-
                 Calendar reservedTime = Calendar.getInstance();
-                reservedTime.setTimeInMillis(1466091160L * 1000);
                 reservedTime.setTimeInMillis(slot.getReservedTimeStamp() * 1000);
                 reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
                 SimpleDateFormat dataFormat = new SimpleDateFormat("hh:mm, MM/dd/yy");
@@ -129,6 +142,7 @@ public class FacilityMonitorPanel implements Screen {
 
             JPanel slotPanel = new JPanel(new GridLayout(0, 1));
             slotPanel.add(slotNumber);
+            slotPanel.add(availableStatus);
             slotPanel.add(new JSeparator());
             slotPanel.add(labelStatus);
             slotPanel.add(labelTime);
@@ -141,6 +155,12 @@ public class FacilityMonitorPanel implements Screen {
             } else if(isReserved) {
                 slotPanel.setBackground(new Color(255, 191, 245));
                 slotNumber.setForeground(new Color(24, 27, 143));
+            }
+
+            if (isOccupied) {
+                ManualExitEventListener manualExitEventListener = new ManualExitEventListener(slotId);
+                slotPanel.addKeyListener(manualExitEventListener);
+                slotPanel.addMouseListener(manualExitEventListener);
             }
 
             center.add(slotPanel);
@@ -158,9 +178,9 @@ public class FacilityMonitorPanel implements Screen {
     @Override
     public void disposeScreen() {
 
-        if (mUpdateSlotStatusSubscribeChannel != null) {
-            mUpdateSlotStatusSubscribeChannel.unlisten();
-            mUpdateSlotStatusSubscribeChannel = null;
+        if (mUpdateControllerStatusSubscribeChannel != null) {
+            mUpdateControllerStatusSubscribeChannel.unlisten();
+            mUpdateControllerStatusSubscribeChannel = null;
         }
 
         if (mSlotStatusUpdateThreadStarted.get()) {
@@ -179,42 +199,285 @@ public class FacilityMonitorPanel implements Screen {
         return "FacilityMonitorPanel";
     }
 
-    private void setUserInputEnabled(boolean enabled) {
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Business Logic
 
-    private final IOnNotify mSlotStatusChanged = (networkChannel, uri, message) -> {
+    private class ManualExitEventListener extends MouseAdapter implements KeyListener {
+
+        final int mSlotId;
+        ManualExitEventListener(int slotId) {
+            mSlotId = slotId;
+        }
+
+        private void requestManualExit() {
+
+            int chosen = JOptionPane.showConfirmDialog(getRootPanel(),
+                    Strings.MANUAL_PAYMENT,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.OK_CANCEL_OPTION);
+
+            if (chosen == JOptionPane.OK_OPTION) {
+
+                Slot slot = SessionManager.getInstance().getSlot(mSlotId);
+                if (slot == null) {
+                    Log.logd(LOG_TAG, "No such Slot, slot id=" + mSlotId);
+                    return;
+                }
+                Controller controller = SessionManager.getInstance().getController(slot.getControllerId());
+                if (controller == null) {
+                    Log.logd(LOG_TAG, "No such Controller, controller id=" + slot.getControllerId());
+                    return;
+                }
+
+                TaskManager.getInstance().runTask(RequestManualExitTask.getTask(
+                        SessionManager.getInstance().getKey(),
+                        controller.getPhysicalId(),
+                        slot.getNumber(),
+                        mManualExitTaskCallback));
+            }
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            super.mouseClicked(e);
+            requestManualExit();
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                requestManualExit();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+
+        }
+    }
+
+    private final ITaskDoneCallback mGetSlotListCallback = (result, response) -> {
+
+        if (result == ITaskDoneCallback.FAIL) {
+
+            Log.logd(LOG_TAG, "Failed to get slot list due to timeout");
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.GET_SLOT_LIST_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.WARNING_MESSAGE);
+
+            SessionManager.getInstance().clear();
+            return;
+        }
+
+        MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+
+        // Response may be wrong, we need to validate it, or handle exception
+        try {
+
+            Log.logd(LOG_TAG, "Received response to GetSlotListRequest, message=" + resMsg.getMessage());
+
+            int success = resMsg.getMessage().get("success").asInt();
+
+            if (success == 1) { // Success
+
+                SessionManager.getInstance().clearSlots();
+                JsonArray slots = resMsg.getMessage().get("slots").asArray();
+
+                for (JsonValue aSlot : slots.values()) {
+
+                    JsonObject slot = aSlot.asObject();
+                    Log.logv(LOG_TAG, "Slot=" + slot);
+
+                    // mandatory fields
+                    int id = slot.get("id").asInt();  // Slot's Unique ID
+                    int number = slot.get("number").asInt();
+                    int occupied = slot.get("parked").isNull() ? 0 : slot.get("parked").asInt();
+                    long occupied_ts = slot.get("parked_ts").isNull() ? 0L : slot.get("parked_ts").asLong();
+                    int reserved = slot.get("reserved").isNull() ? 0 : slot.get("reserved").asInt();
+                    int controller_id = slot.get("controller_id").asInt();
+                    String physical_id = slot.get("controller_physical_id").asString();
+                    // optional fields
+                    int reservation_id = slot.get("reservation_id").isNull() ? -1 : slot.get("reservation_id").asInt();
+                    String user_email = slot.get("email").isNull() ? null : slot.get("email").asString();
+                    long reservation_ts = slot.get("reservation_ts").isNull() ? -1 : slot.get("reservation_ts").asLong();
+
+                    SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id, reservation_id, user_email, reservation_ts);
+                }
+
+                initScreen();
+
+            } else if (success == 0) {
+                Log.log(LOG_TAG, "Failed to get slot list, fail cause is " + resMsg.getMessage().get("cause").asString());
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_SLOT_LIST_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+
+                SessionManager.getInstance().clear();
+                ScreenManager.getInstance().showLoginScreen();
+
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to get slot list, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_SLOT_LIST_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+
+                SessionManager.getInstance().clear();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to get slot list, exception occurred");
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.GET_SLOT_LIST_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.ERROR_MESSAGE);
+
+            SessionManager.getInstance().clear();
+            ScreenManager.getInstance().showLoginScreen();
+        }
+    };
+
+
+    private final ITaskDoneCallback mManualExitTaskCallback = (result, response) -> {
+
+        if (result == ITaskDoneCallback.FAIL) {
+
+            Log.logd(LOG_TAG, "Failed to open exit gate manually due to timeout");
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.MANUAL_EXIT_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.WARNING_MESSAGE);
+
+            SessionManager.getInstance().clear();
+            return;
+        }
+
+        MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+
+        // Response may be wrong, we need to validate it, or handle exception
+        try {
+
+            Log.logd(LOG_TAG, "Received response to ManualExiRequest, message=" + resMsg.getMessage());
+
+            int success = resMsg.getMessage().get("success").asInt();
+
+            if (success == 1) { // Success
+
+                TaskManager.getInstance().runTask(GetSlotListTask.getTask(
+                        SessionManager.getInstance().getKey(),
+                        SessionManager.getInstance().getFacilityId(),
+                        mGetSlotListCallback));
+
+            } else if (success == 0) {
+                Log.log(LOG_TAG, "Failed to open exit gate manually, fail cause is " + resMsg.getMessage().get("cause").asString());
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MANUAL_EXIT_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+
+            } else {
+
+                Log.logd(LOG_TAG, "Failed to open exit gate manually, unexpected result=" + success);
+
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MANUAL_EXIT_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to open exit gate manually, exception occurred");
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(getRootPanel(),
+                    Strings.MANUAL_EXIT_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                    Strings.APPLICATION_NAME,
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    };
+
+    private final IOnNotify mControllerStatusChanged = (networkChannel, uri, message) -> {
 
         MqttNetworkMessage notificationMessage = (MqttNetworkMessage)message;
 
         try {
-            Log.logd(LOG_TAG, "mSlotStatusChanged Result=" + notificationMessage.getMessage() + " on topic=" + uri.getLocation());
+            Log.logd(LOG_TAG, "mControllerStatusChanged Result=" + notificationMessage.getMessage() + " on topic=" + uri.getLocation());
 
             String topic = (String) uri.getLocation();
             StringTokenizer topicTokenizer = new StringTokenizer(topic, "/");
 
-            if (topicTokenizer.countTokens() == 4) {
+            if (topicTokenizer.countTokens() == 2) {
 
                 try {
 
                     topicTokenizer.nextToken(); // skip "controller"
                     String physicalId = topicTokenizer.nextToken();
-                    topicTokenizer.nextToken(); // "slot"
-                    int slotNumber = Integer.parseInt(topicTokenizer.nextToken());
-                    int occupied = notificationMessage.getMessage().get("occupied").asInt();
-                    Slot slot = SessionManager.getInstance().getSlot(physicalId, slotNumber);
 
-                    if (slot != null) {
-                        slot.setOccupied(occupied == 1);
+                    Controller controller = SessionManager.getInstance().getController(physicalId);
+
+                    if (controller != null) {
+
+                        boolean isChanged = false;
+                        if (notificationMessage.getMessage().get("available") != null &&
+                                !notificationMessage.getMessage().get("available").isNull()) {
+                            boolean available = notificationMessage.getMessage().get("available").asInt() == 1;
+                            if (controller.isAvailable() != available) {
+                                controller.setAvailable(available);
+                                isChanged = true;
+                            }
+                        }
+
+                        if (!isChanged &&
+                                notificationMessage.getMessage().get("updated") != null &&
+                                !notificationMessage.getMessage().get("updated").isNull()) {
+                            isChanged = notificationMessage.getMessage().get("updated").asInt() == 1;
+                        }
+
+                        if (isChanged) {
+                            TaskManager.getInstance().runTask(GetSlotListTask.getTask(
+                                    SessionManager.getInstance().getKey(),
+                                    SessionManager.getInstance().getFacilityId(),
+                                    mGetSlotListCallback));
+
+                            if (!controller.isAvailable()) {
+                                // TODO : If time is enough, we will change it to modeless Dialog later to show only 1 dialog.
+                                new Thread(() -> {
+                                    JOptionPane.showMessageDialog(getRootPanel(),
+                                            Strings.CONTROLLER_ERROR,
+                                            Strings.APPLICATION_NAME,
+                                            JOptionPane.ERROR_MESSAGE);
+                                }).start();
+                            }
+                        }
+                    } else {
+                        Log.logv(LOG_TAG, "No such controller in session, physicalId=" + physicalId);
                     }
-                    initScreen();
 
                 } catch (NumberFormatException ne) {
                     ne.printStackTrace();
                 }
+            } else {
+                Log.logd(LOG_TAG, "Wrong topic name on ControllerStatusChangedChannel, topic=" + uri.getLocation());
             }
+
         } catch (Exception e) {
 
             Log.logd(LOG_TAG, "Failed to parse notification message, exception occurred");
