@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.12)
 # Database: sure-park
-# Generation Time: 2016-06-19 22:02:40 +0000
+# Generation Time: 2016-06-20 02:02:18 +0000
 # ************************************************************
 
 
@@ -69,7 +69,7 @@ LOCK TABLES `facility` WRITE;
 
 INSERT INTO `facility` (`id`, `name`, `fee`, `fee_unit`, `grace_period`)
 VALUES
-	(1,'Shadyside Parking Lot',5.75,3600,1800),
+	(1,'Logitech Parking Lot',3.50,60,180),
 	(2,'LG Parking Lot',12.25,3600,1800),
 	(3,'CMU Parking Lot',7.00,3600,1800);
 
@@ -117,6 +117,9 @@ CREATE TABLE `reservation` (
   `confirmation_no` int(11) unsigned NOT NULL,
   `reservation_ts` int(11) unsigned NOT NULL,
   `activated` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `fee` decimal(11,2) NOT NULL,
+  `fee_unit` int(11) NOT NULL,
+  `grace_period` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `slot_id` (`slot_id`),
   KEY `user_id` (`user_id`),
@@ -124,16 +127,6 @@ CREATE TABLE `reservation` (
   CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `reservation` WRITE;
-/*!40000 ALTER TABLE `reservation` DISABLE KEYS */;
-
-INSERT INTO `reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`)
-VALUES
-	(31,10,5,4574,1466349,1),
-	(32,3,6,6660,1466350,1);
-
-/*!40000 ALTER TABLE `reservation` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table role
@@ -219,16 +212,16 @@ LOCK TABLES `slot` WRITE;
 INSERT INTO `slot` (`id`, `controller_id`, `number`, `parked`, `reserved`)
 VALUES
 	(1,1,1,0,0),
-	(2,1,2,1,0),
+	(2,1,2,0,0),
 	(3,1,3,0,0),
-	(4,1,4,1,0),
-	(5,2,1,0,1),
-	(6,2,2,0,1),
+	(4,1,4,0,0),
+	(5,2,1,0,0),
+	(6,2,2,0,0),
 	(7,2,3,0,0),
 	(8,2,4,0,0),
 	(9,3,1,0,0),
 	(10,3,2,0,0),
-	(11,4,1,0,0),
+	(11,4,1,0,1),
 	(12,4,2,0,0);
 
 /*!40000 ALTER TABLE `slot` ENABLE KEYS */;
@@ -244,8 +237,8 @@ CREATE TABLE `transaction` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `reservation_id` int(11) NOT NULL,
   `begin_ts` int(11) NOT NULL,
-  `end_ts` int(11) DEFAULT '-1',
-  `revenue` int(11) DEFAULT '-1',
+  `end_ts` int(11) DEFAULT NULL,
+  `revenue` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `reservation_id` (`reservation_id`),
   CONSTRAINT `transaction_ibfk_1` FOREIGN KEY (`reservation_id`) REFERENCES `reservation` (`id`)
