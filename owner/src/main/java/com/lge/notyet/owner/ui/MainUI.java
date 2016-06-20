@@ -19,9 +19,8 @@ public class MainUI extends JDialog {
     private JButton fetchReportButton;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
     private JPanel chooseReportPanel;
-    private JButton configureGracePeriodButton;
+    private JButton configureFacilitiesButton;
     private JTextPane reportTextPane;
-    private JButton configureParkingFeeButton;
     private JPanel chooseMoreSettingsPanel;
     private JTextPane textReportPane1;
     private JPanel graphicalPane;
@@ -40,6 +39,12 @@ public class MainUI extends JDialog {
         fetchReportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onFetchReport();
+            }
+        });
+        configureFacilitiesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new ConfigurationUI().setVisible(true);
             }
         });
     }
