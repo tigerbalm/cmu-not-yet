@@ -76,6 +76,7 @@ public class MainVerticle extends AbstractVerticle {
         new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmReservation(message)).listen();
         new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(message)).listen();
         new CancelReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> cancelReservation(uri, message)).listen();
+        new UpdateFacilityResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateFacility(uri, message)).listen();
     }
 
     private void login(NetworkMessage message) {
@@ -122,6 +123,22 @@ public class MainVerticle extends AbstractVerticle {
                         communicationProxy.responseSuccess(message, ReservableFacilitiesResponseChannel.createResponseObject(facilityObjects));
                     }
                 });
+            }
+        });
+    }
+
+    private void updateFacility(Uri uri, NetworkMessage message) {
+        final int facilityId = UpdateFacilityRequestChannel.getFacilityId(uri);
+        final String name = UpdateFacilityRequestChannel.getFacilityName(message);
+        final double fee = UpdateFacilityRequestChannel.getFee(message);
+        final int feeUnit = UpdateFacilityRequestChannel.getFeeUnit(message);
+        final int gracePeriod = UpdateFacilityRequestChannel.getGracePeriod(message);
+
+        facilityManager.updateFacility(facilityId, name, fee, feeUnit, gracePeriod, ar -> {
+            if (ar.failed()) {
+                communicationProxy.responseFail(message, ar.cause());
+            } else {
+                communicationProxy.responseSuccess(message);
             }
         });
     }
