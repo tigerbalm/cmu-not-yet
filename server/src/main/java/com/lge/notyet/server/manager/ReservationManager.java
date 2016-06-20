@@ -45,11 +45,9 @@ public class ReservationManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
-                            handler.handle(Future.failedFuture("INVALID_CONFIRMATION_NO"));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture("INVALID_CONFIRMATION_NO")));
                         } else {
-                            handler.handle(Future.succeededFuture(objects.get(0)));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(objects.get(0))));
                         }
                     }
                 });
@@ -71,11 +69,9 @@ public class ReservationManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
-                            handler.handle(Future.failedFuture("NO_RESERVATION_EXIST"));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture("NO_RESERVATION_EXIST")));
                         } else {
-                            handler.handle(Future.succeededFuture(objects.get(0)));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(objects.get(0))));
                         }
                     }
                 });
@@ -97,11 +93,9 @@ public class ReservationManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
-                            handler.handle(Future.failedFuture("NO_RESERVATION_EXIST"));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture("NO_RESERVATION_EXIST")));
                         } else {
-                            handler.handle(Future.succeededFuture(objects.get(0)));
-                            databaseProxy.closeConnection(sqlConnection, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(objects.get(0))));
                         }
                     }
                 });
@@ -123,17 +117,15 @@ public class ReservationManager {
                     } else {
                         databaseProxy.updateSlotReserved(sqlConnection, slotId, true, ar3 -> {
                             if (ar3.failed()) {
-                                handler.handle(Future.failedFuture(ar3.cause()));
-                                databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                                databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
                             } else {
-                                databaseProxy.closeConnection(sqlConnection, true, ar -> {});
-                                getReservationByConfirmationNumber(confirmationNumber, ar4 -> {
+                                databaseProxy.closeConnection(sqlConnection, true, ar -> getReservationByConfirmationNumber(confirmationNumber, ar4 -> {
                                     if (ar4.failed()) {
                                         handler.handle(Future.failedFuture(ar4.cause()));
                                     } else {
                                         handler.handle(Future.succeededFuture(ar4.result()));
                                     }
-                                });
+                                }));
                             }
                         });
                     }
@@ -152,9 +144,9 @@ public class ReservationManager {
                 final int beginTs = (int) System.currentTimeMillis() / 1000;
                 databaseProxy.insertTransaction(sqlConnection, reservationId, beginTs, ar2 -> {
                     if (ar2.failed()) {
-                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar2.cause())));
                     } else {
-                        handler.handle(Future.succeededFuture());
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
                     }
                 });
             }
@@ -191,11 +183,9 @@ public class ReservationManager {
                             } else {
                                 databaseProxy.updateSlotReserved(sqlConnection, slotId, false, ar4 -> {
                                     if (ar3.failed()) {
-                                        handler.handle(Future.failedFuture(ar4.cause()));
-                                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
                                     } else {
-                                        handler.handle(Future.succeededFuture());
-                                        databaseProxy.closeConnection(sqlConnection, true, ar -> {});
+                                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
                                     }
                                 });
                             }

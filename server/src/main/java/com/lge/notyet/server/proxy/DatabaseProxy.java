@@ -76,17 +76,9 @@ public class DatabaseProxy {
 
     public void closeConnection(SQLConnection connection, boolean commit, Handler<AsyncResult<Void>> handler) {
         if (commit) {
-            connection.commit(ar -> {
-                connection.close(ar2 -> {
-                    handler.handle(ar);
-                });
-            });
+            connection.commit(ar -> connection.close(ar2 -> handler.handle(ar)));
         } else {
-            connection.rollback(ar -> {
-                connection.close(ar2 -> {
-                    handler.handle(ar);
-                });
-            });
+            connection.rollback(ar -> connection.close(ar2 -> handler.handle(ar)));
         }
     }
 
@@ -379,7 +371,8 @@ public class DatabaseProxy {
     }
 
     public void insertTransaction(SQLConnection connection, int reservationId, int beginTs, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "insert into transaction(reservation_id,begin_ts) values (?,?,?,?)";
+        logger.info("insertTransaction: reservationId=" + reservationId + ", beginTs=" + beginTs);
+        String sql = "insert into transaction(reservation_id,begin_ts) values (?,?)";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(reservationId);
         parameters.add(beginTs);

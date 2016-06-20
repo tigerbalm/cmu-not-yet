@@ -77,6 +77,8 @@ public class MainVerticle extends AbstractVerticle {
         new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(message)).listen();
         new CancelReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> cancelReservation(uri, message)).listen();
         new UpdateFacilityResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateFacility(uri, message)).listen();
+
+        new ConfirmReservationRequestChannel(networkConnection, "arduino1").request(ConfirmReservationRequestChannel.createRequestMessage(2758));
     }
 
     private void login(NetworkMessage message) {
@@ -309,7 +311,7 @@ public class MainVerticle extends AbstractVerticle {
     private void confirmReservation(Uri uri, NetworkMessage message) {
         final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
         final String controllerPhysicalId = ConfirmReservationRequestChannel.getControllerPhysicalId(uri);
-        logger.debug("confirmReservation: confirmationNumber=" + confirmationNumber);
+        logger.info("confirmReservation: confirmationNumber=" + confirmationNumber + ", controllerPhysicalId=" + controllerPhysicalId);
 
         reservationManager.getReservationByConfirmationNumber(confirmationNumber, ar1 -> {
             if (ar1.failed()) {
@@ -319,8 +321,6 @@ public class MainVerticle extends AbstractVerticle {
                 final int reservationId = reservationObject.get("id").asInt();
                 final String reservationControllerPhysicalId = reservationObject.get("controller_physical_id").asString();
                 final int reservationSlotNumber = reservationObject.get("slot_no").asInt();
-                final double reservationFee = reservationObject.get("fee").asDouble();
-                final int reservationFeeUnit = reservationObject.get("fee").asInt();
 
                 if (!controllerPhysicalId.equals(reservationControllerPhysicalId)) {
                     communicationProxy.responseFail(message, "WRONG_CONTROLLER");
