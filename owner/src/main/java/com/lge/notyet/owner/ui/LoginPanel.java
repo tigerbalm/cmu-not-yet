@@ -9,6 +9,8 @@ import com.lge.notyet.owner.util.Log;
 import javax.swing.*;
 import java.awt.event.*;
 
+import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
+
 /**
  * Created by beney.kim on 2016-06-16.
  */
@@ -24,11 +26,12 @@ public class LoginPanel {
 
     public static void main(String[] args){
         JDialog loginDialog = new JDialog();
+        loginDialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         loginDialog.add(new LoginPanel().getRootPanel());
         loginDialog.pack();
         loginDialog.setModal(true);
         loginDialog.setVisible(true);
-        MainUI.main(new String[]{});
+        MainUI.main(args);
     }
     public LoginPanel() {
 

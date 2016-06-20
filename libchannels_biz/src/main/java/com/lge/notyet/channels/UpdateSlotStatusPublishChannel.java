@@ -10,7 +10,7 @@ import com.sun.javafx.binding.StringFormatter;
 
 public class UpdateSlotStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/controller/%s/slot/%d";
-    private static final String KEY_OCCUPIED = "occupied";
+    private static final String KEY_PARKED = "parked";
 
     private final String physicalId;
     private final int slotId;
@@ -34,7 +34,7 @@ public class UpdateSlotStatusPublishChannel extends PublishChannel {
         return Integer.parseInt((String) uri.getPathSegments().get(4));
     }
 
-    public static boolean isOccupied(NetworkMessage networkMessage) {
-        return ((JsonObject) networkMessage.getMessage()).get(KEY_OCCUPIED).asInt() == 1;
+    public static boolean isParked(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_PARKED).asInt() == 1;
     }
 }

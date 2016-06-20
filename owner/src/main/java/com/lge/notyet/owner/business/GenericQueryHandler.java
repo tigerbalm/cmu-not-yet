@@ -1,25 +1,21 @@
 package com.lge.notyet.owner.business;
 
 import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by gladvin.durai on 16-Jun-2016.
  */
-public class GenericTextResultHandler {
-    private static GenericTextResultHandler ourInstance = new GenericTextResultHandler();
+public class GenericQueryHandler extends Query{
 
-    public static GenericTextResultHandler getInstance() {
-        return ourInstance;
+    public GenericQueryHandler(String displayString, String[] columnNames, String sqlQueryString) {
+        super(displayString, columnNames, sqlQueryString);
     }
 
-    private GenericTextResultHandler() {
-    }
-    public static void handleResult(JTextArea resultArea, JsonValue resultSetTable) {
-        String[] colNames= StateMachine.getInstance().getColumnNames();
+    public void handleResult(JTextPane resultArea, JsonValue resultSetTable) {
         JsonArray resultTable = (JsonArray) resultSetTable;
         StringBuilder result= new StringBuilder("");
         if(resultTable.size()==1) {
@@ -27,8 +23,8 @@ public class GenericTextResultHandler {
                 int i=0;
                 JsonArray resultRow2 = (JsonArray) resultRow;
                 for (JsonValue entry : resultRow2) {
-                    if(i<colNames.length)
-                        result.append(colNames[i]).append(":\t").append(entry.toString()).append("\r\n");
+                    if(i<columnNames.length)
+                        result.append(columnNames[i]).append(":\t").append(entry.toString()).append("\r\n");
                     else
                         result.append(entry.toString()).append("\r\n");
                     i++;
@@ -37,7 +33,7 @@ public class GenericTextResultHandler {
             }
         }
         else if(resultTable.size()>1){
-            for(String colName: colNames){
+            for(String colName: columnNames){
                 result.append(colName).append("\t");
             }
             result.append("------------\r\n");
@@ -55,5 +51,9 @@ public class GenericTextResultHandler {
         }
 
         resultArea.setText(result.toString());
+    }
+
+    public void fillMoreSettingPanel(JPanel chooseMoreSettingsPanel) {
+        chooseMoreSettingsPanel.removeAll();
     }
 }
