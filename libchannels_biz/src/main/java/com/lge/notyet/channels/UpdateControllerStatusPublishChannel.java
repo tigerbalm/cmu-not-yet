@@ -6,6 +6,7 @@ import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.PublishChannel;
 import com.lge.notyet.lib.comm.Uri;
+import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
@@ -15,7 +16,7 @@ import java.util.List;
 public class UpdateControllerStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/controller/%s";
     private static final String KEY_AVAILABLE = "available";
-    private static final String KEY_SLOTS = "slots";
+    private static final String KEY_UPDATED = "updated";
 
     private final String controllerPhysicalId;
 
@@ -35,5 +36,11 @@ public class UpdateControllerStatusPublishChannel extends PublishChannel {
 
     public static boolean isAvailable(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_AVAILABLE).asInt() == 1;
+    }
+
+    public static NetworkMessage createUpdatedMessage(boolean updated) {
+        JsonObject object = new JsonObject();
+        object.add(KEY_UPDATED, updated ? 1: 0);
+        return new MqttNetworkMessage(object);
     }
 }
