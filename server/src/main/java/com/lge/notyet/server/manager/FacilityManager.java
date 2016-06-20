@@ -83,6 +83,34 @@ public class FacilityManager {
         });
     }
 
+    public void getFacility(int facilityId, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("getFacility: facilityId=" + facilityId);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectFacility(sqlConnection, facilityId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar -> {
+                        });
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        if (objects.isEmpty()) {
+                            databaseProxy.closeConnection(sqlConnection, ar -> {
+                            });
+                        } else {
+                            handler.handle(Future.succeededFuture(objects.get(0)));
+                            databaseProxy.closeConnection(sqlConnection, ar -> {
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     public void getFacilities(int userId, Handler<AsyncResult<List<JsonObject>>> handler) {
         logger.info("getFacilities: userId=" + userId);
         databaseProxy.openConnection(ar1 -> {
