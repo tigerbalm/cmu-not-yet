@@ -19,7 +19,7 @@ class WatingState :public State {
 public:
 	void loop();
 
-	WatingState(MsgQueClient *_client, StateChangeListener *_listener) : State(_client, _listener) {};
+	WatingState(MsgQueClient *_client, Controller *_controller) : State(_client, _controller) {};
 
 	void onMessageReceived(Command *command);
 

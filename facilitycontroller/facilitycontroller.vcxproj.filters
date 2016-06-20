@@ -13,8 +13,17 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\commands">
-      <UniqueIdentifier>{29468fe9-12c3-48aa-8102-19642f7627bc}</UniqueIdentifier>
+    <Filter Include="Source Files\Command">
+      <UniqueIdentifier>{c28146e0-736b-4377-9e1b-02ee0e2b6afa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\State">
+      <UniqueIdentifier>{484238ee-c90d-4093-9b23-ee676c6ac4d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Command">
+      <UniqueIdentifier>{cd0f8c74-8ad0-41ca-874c-aaf25ea477e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\State">
+      <UniqueIdentifier>{00f21f5f-b0a1-4e0b-b7c4-a184a5b37fa4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,18 +48,6 @@
     <ClInclude Include="GateCarDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LeavingState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkManagerListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParkingState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Slot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -63,37 +60,10 @@
     <ClInclude Include="SlotStatusChangeListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="State.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StateChangeListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SureParkPinHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WatingState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Command.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandVerifyReservation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandReportSlotStatus.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandRequestPayment.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FacilityConfiguration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CmdVerifyReservationRes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ExitGateHelper.h">
@@ -105,11 +75,44 @@
     <ClInclude Include="MsgQueClientStatusListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CmdVerifyReservationRes.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandFactory.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandReportSlotStatus.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandRequestPayment.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandVerifyReservation.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
     <ClInclude Include="CommandWill.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Command</Filter>
     </ClInclude>
     <ClInclude Include="Pair.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
+    <ClInclude Include="WatingState.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
+    <ClInclude Include="ParkingState.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
+    <ClInclude Include="LeavingState.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
+    <ClInclude Include="StateChangeListener.h">
+      <Filter>Header Files\State</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,18 +131,6 @@
     <ClCompile Include="GateCarDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LeavingState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkManagerListener.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParkingState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Slot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -149,41 +140,47 @@
     <ClCompile Include="SlotStatusChangeListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StateChangeListener.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WatingState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Command.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandVerifyReservation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandReportSlotStatus.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandRequestPayment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CmdVerifyReservationRes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ExitGateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MsgQueClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Command.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandFactory.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandReportSlotStatus.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandRequestPayment.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandVerifyReservation.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
     <ClCompile Include="CommandWill.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdVerifyReservationRes.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="LeavingState.cpp">
+      <Filter>Source Files\State</Filter>
+    </ClCompile>
+    <ClCompile Include="WatingState.cpp">
+      <Filter>Source Files\State</Filter>
+    </ClCompile>
+    <ClCompile Include="StateChangeListener.cpp">
+      <Filter>Source Files\State</Filter>
+    </ClCompile>
+    <ClCompile Include="ParkingState.cpp">
+      <Filter>Source Files\State</Filter>
     </ClCompile>
     <ClCompile Include="Pair.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Command</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

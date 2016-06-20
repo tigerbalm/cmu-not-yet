@@ -147,12 +147,6 @@
     </ClInclude>
     <ClInclude Include="MsgQueClient.h" />
     <ClInclude Include="MsgQueClientStatusListener.h" />
-    <ClInclude Include="NetworkManager.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="NetworkManagerListener.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
     <ClInclude Include="Pair.h" />
     <ClInclude Include="ParkingState.h">
       <FileType>CppCode</FileType>
@@ -199,8 +193,6 @@
     <ClCompile Include="GateCarDetector.cpp" />
     <ClCompile Include="LeavingState.cpp" />
     <ClCompile Include="MsgQueClient.cpp" />
-    <ClCompile Include="NetworkManager.cpp" />
-    <ClCompile Include="NetworkManagerListener.cpp" />
     <ClCompile Include="Pair.cpp" />
     <ClCompile Include="ParkingState.cpp" />
     <ClCompile Include="Slot.cpp" />

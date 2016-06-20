@@ -22,7 +22,9 @@ public:
 	void waitingNumberInput();
 	void verifyReservation(int number);	
 
-	ParkingState(MsgQueClient *_client, StateChangeListener *_listener);
+	ParkingState(MsgQueClient *_client, Controller *_controller);
+		
+	void exit();
 
 	void onMessageReceived(Command *command);
 
