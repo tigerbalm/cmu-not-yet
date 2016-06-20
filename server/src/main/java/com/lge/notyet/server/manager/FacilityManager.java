@@ -1,6 +1,7 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.server.exception.SureParkException;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -46,7 +47,7 @@ public class FacilityManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.size() != 1) {
-                            handler.handle(Future.failedFuture("NO_SLOT_EXIST"));
+                            handler.handle(Future.failedFuture(SureParkException.createNoSlotExistException()));
                             databaseProxy.closeConnection(sqlConnection, ar -> {
                             });
                         } else {

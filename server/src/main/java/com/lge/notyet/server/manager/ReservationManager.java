@@ -1,6 +1,7 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.server.exception.SureParkException;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -45,7 +46,7 @@ public class ReservationManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
-                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture("INVALID_CONFIRMATION_NO")));
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(SureParkException.createInvalidConfirmationNumberException())));
                         } else {
                             databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(objects.get(0))));
                         }
@@ -69,7 +70,7 @@ public class ReservationManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
-                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture("NO_RESERVATION_EXIST")));
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(SureParkException.createNoReservationExistException())));
                         } else {
                             databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(objects.get(0))));
                         }
@@ -93,7 +94,7 @@ public class ReservationManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
-                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture("NO_RESERVATION_EXIST")));
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(SureParkException.createNoReservationExistException())));
                         } else {
                             databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(objects.get(0))));
                         }
@@ -117,7 +118,7 @@ public class ReservationManager {
                     } else {
                         List<JsonObject> objects = ar2.result();
                         if (objects.isEmpty()) {
-                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture("NO_RESERVATION_EXIST")));
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(SureParkException.createNoReservationExistException())));
                         } else {
                             databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(objects.get(0))));
                         }

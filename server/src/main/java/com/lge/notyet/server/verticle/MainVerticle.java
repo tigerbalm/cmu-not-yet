@@ -38,7 +38,7 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(final Future<Void> startFuture) throws Exception {
         logger = LoggerFactory.getLogger(MainVerticle.class);
-        communicationProxy = CommunicationProxy.getInstance(vertx);
+        communicationProxy = CommunicationProxy.getInstance();
         databaseProxy = DatabaseProxy.getInstance(vertx);
 
         Future<Void> communicationReady = communicationProxy.start(BROKER_HOST, REDUNDANCY);
