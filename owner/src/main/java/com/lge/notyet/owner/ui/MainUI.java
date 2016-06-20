@@ -98,6 +98,7 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
+        //FixMe: Add GUI output to the results
         //FixMe: Add more settings option programmatically
         //FixMe: Update database to work without having sql_mode set to null. Query2
         //FixMe: Add Slot condition for Query 1
