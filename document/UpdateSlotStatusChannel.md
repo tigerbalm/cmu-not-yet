@@ -8,7 +8,7 @@
 
 ## Body
 
-###When car is parked at slot #
+### When car is parked at slot #
 
 ```
 {

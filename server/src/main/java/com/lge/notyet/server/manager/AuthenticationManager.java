@@ -1,6 +1,7 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.server.exception.SureParkException;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -50,7 +51,7 @@ public class AuthenticationManager {
                     } else {
                         final boolean existentUser = ar2.result().size() > 0;
                         if (existentUser) {
-                            handler.handle(Future.failedFuture("EXISTENT_USER"));
+                            handler.handle(Future.failedFuture(SureParkException.createExistentUserException()));
                             databaseProxy.closeConnection(sqlConnection, false, ar -> {});
                         } else {
                             databaseProxy.insertUser(sqlConnection, email, password, cardNumber, cardExpiration, userType, ar3 -> {
@@ -92,7 +93,7 @@ public class AuthenticationManager {
                     } else {
                         List<JsonObject> userObjects = ar2.result();
                         if (userObjects.size() != 1) {
-                            handler.handle(Future.failedFuture("INVALID_SESSION"));
+                            handler.handle(Future.failedFuture(SureParkException.createInvalidSessionException()));
                             databaseProxy.closeConnection(sqlConnection, ar4 -> {});
                         } else {
                             handler.handle(Future.succeededFuture(userObjects.get(0)));
@@ -118,7 +119,7 @@ public class AuthenticationManager {
                     } else {
                         List<JsonObject> userObjects = ar2.result();
                         if (userObjects.size() != 1) {
-                            handler.handle(Future.failedFuture("INVALID_EMAIL_PASSWORD"));
+                            handler.handle(Future.failedFuture(SureParkException.createInvalidEmailPasswordException()));
                             databaseProxy.closeConnection(sqlConnection, ar4 -> {});
                         } else {
                             handler.handle(Future.succeededFuture(userObjects.get(0)));
@@ -138,7 +139,7 @@ public class AuthenticationManager {
             } else {
                 final JsonObject userObject = ar.result();
                 if (userObject.get("type").asInt() != userType) {
-                    handler.handle(Future.failedFuture("NO_AUTHORIZATION"));
+                    handler.handle(Future.failedFuture(SureParkException.createNoAuthorizationException()));
                 } else {
                     handler.handle(Future.succeededFuture());
                 }

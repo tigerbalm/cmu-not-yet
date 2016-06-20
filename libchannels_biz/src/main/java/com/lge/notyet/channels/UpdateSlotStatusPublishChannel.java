@@ -11,6 +11,7 @@ import com.sun.javafx.binding.StringFormatter;
 public class UpdateSlotStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/controller/%s/slot/%d";
     private static final String KEY_PARKED = "parked";
+    private static final String KEY_CONFIRMATION_NUMBER = "confirmation_no";
 
     private final String physicalId;
     private final int slotId;
@@ -36,5 +37,9 @@ public class UpdateSlotStatusPublishChannel extends PublishChannel {
 
     public static boolean isParked(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_PARKED).asInt() == 1;
+    }
+
+    public static boolean getConfirmationNumber(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_CONFIRMATION_NUMBER).asInt() == 1;
     }
 }

@@ -29,7 +29,18 @@
 ```
 {
   'success': 1
-  'confirmation_no': {confirmation number}
+  'id' : 1,
+  'reservation_ts' : 1466460, // epoch in seconds
+  'confirmation_no' : 7705,
+  'user_id' : 1,
+  'user_email' : "reshout@gmail.com",
+  'slot_id' : 3,
+  'slot_no' : 3,
+  'controller_id' : 6,
+  'controller_physical_id' : "p1",
+  'facility_id' : 1,
+  'facility_name':"ShadySide",
+  'expiration_ts': 1466640
 }
 ```
 

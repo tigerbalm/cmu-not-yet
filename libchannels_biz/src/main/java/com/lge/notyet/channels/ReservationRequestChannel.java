@@ -29,7 +29,7 @@ public class ReservationRequestChannel extends ClientChannelRegistry {
         return ((JsonObject) networkMessage.getMessage()).get("session_key").asString();
     }
 
-    public static int getReservationTimestamp(NetworkMessage networkMessage) {
+    public static int getReservationTs(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get("reservation_ts").asInt();
     }
 

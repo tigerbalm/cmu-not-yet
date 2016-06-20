@@ -3,6 +3,7 @@ package com.lge.notyet.server.proxy;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
+import com.lge.notyet.server.exception.SureParkException;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -14,19 +15,17 @@ import java.net.UnknownHostException;
 public class CommunicationProxy {
     private static CommunicationProxy instance = null;
 
-    private Vertx vertx;
     private Logger logger;
     private INetworkConnection networkConnection;
 
-    private CommunicationProxy(Vertx vertx) {
-        this.vertx = vertx;
+    private CommunicationProxy() {
         this.logger = LoggerFactory.getLogger(CommunicationProxy.class);
     }
 
-    public static CommunicationProxy getInstance(Vertx vertx) {
+    public static CommunicationProxy getInstance() {
         synchronized (CommunicationProxy.class) {
             if (instance == null) {
-                instance = new CommunicationProxy(vertx);
+                instance = new CommunicationProxy();
             }
             return instance;
         }
@@ -97,6 +96,11 @@ public class CommunicationProxy {
     }
 
     public void responseFail(NetworkMessage message, Throwable cause) {
+        if (cause instanceof SureParkException) {
+        } else {
+            cause = SureParkException.createInternalServerErrorException();
+            cause.printStackTrace();
+        }
         responseFail(message, cause.getMessage());
     }
 }

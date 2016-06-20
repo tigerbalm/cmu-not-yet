@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 public class MainVerticle extends AbstractVerticle {
-    private static final String BROKER_HOST = "localhost";
+    private static final String BROKER_HOST = "192.168.1.21"; // "localhost";
     private static final boolean REDUNDANCY = false;
     private static final String DB_HOST = "localhost";
     private static final String DB_USERNAME = "dba";
@@ -38,7 +38,7 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(final Future<Void> startFuture) throws Exception {
         logger = LoggerFactory.getLogger(MainVerticle.class);
-        communicationProxy = CommunicationProxy.getInstance(vertx);
+        communicationProxy = CommunicationProxy.getInstance();
         databaseProxy = DatabaseProxy.getInstance(vertx);
 
         Future<Void> communicationReady = communicationProxy.start(BROKER_HOST, REDUNDANCY);
@@ -56,7 +56,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private void startManagers() {
         authenticationManager = AuthenticationManager.getInstance();
-        reservationManager = ReservationManager.getInstance();
+        reservationManager = ReservationManager.getInstance(vertx);
         facilityManager = FacilityManager.getInstance();
         statisticsManager = StatisticsManager.getInstance();
     }
@@ -73,7 +73,8 @@ public class MainVerticle extends AbstractVerticle {
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
         new GetDBQueryResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
         new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
-        new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmReservation(uri, message)).listen();
+        new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmEnter(uri, message)).listen();
+        new ConfirmExitResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmLeave(uri, message)).listen();
         new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(message)).listen();
         new CancelReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> cancelReservation(uri, message)).listen();
         new UpdateFacilityResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateFacility(uri, message)).listen();
@@ -145,6 +146,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private void updateControllerStatus(Uri uri, NetworkMessage message) {
         final String controllerPhysicalId = UpdateControllerStatusPublishChannel.getControllerPhysicalId(uri);
+        final boolean updated = UpdateControllerStatusPublishChannel.isUpdated(message); if (updated) return;
         final boolean available = UpdateControllerStatusPublishChannel.isAvailable(message);
 
         facilityManager.updateControllerAvailable(controllerPhysicalId, available, ar -> {
@@ -264,7 +266,7 @@ public class MainVerticle extends AbstractVerticle {
     private void makeReservation(Uri uri, NetworkMessage message) {
         final String sessionKey = ReservationRequestChannel.getSessionKey(message);
         final int facilityId = ReservationRequestChannel.getFacilityId(uri);
-        final int reservationTimestamp = ReservationRequestChannel.getReservationTimestamp(message);
+        final int reservationTs = ReservationRequestChannel.getReservationTs(message);
 
         authenticationManager.getSessionUser(sessionKey, ar1 -> {
             if (ar1.failed()) {
@@ -290,10 +292,13 @@ public class MainVerticle extends AbstractVerticle {
                                     final double fee = facilityObject.get("fee").asDouble();
                                     final int feeUnit = facilityObject.get("fee_unit").asInt();
                                     final int gracePeriod = facilityObject.get("grace_period").asInt();
-                                    reservationManager.makeReservation(userId, slotId, reservationTimestamp, confirmationNumber, fee, feeUnit, gracePeriod, ar4 -> {
+                                    reservationManager.makeReservation(userId, slotId, reservationTs, confirmationNumber, fee, feeUnit, gracePeriod, ar4 -> {
                                         if (ar4.failed()) {
                                             communicationProxy.responseFail(message, ar4.cause());
                                         } else {
+                                            final JsonObject reservationObject = ar4.result();
+                                            final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                                            notifyControllerUpdated(controllerPhysicalId);
                                             communicationProxy.responseSuccess(message, ar4.result());
                                         }
                                     });
@@ -306,10 +311,10 @@ public class MainVerticle extends AbstractVerticle {
         });
     }
 
-    private void confirmReservation(Uri uri, NetworkMessage message) {
+    private void confirmEnter(Uri uri, NetworkMessage message) {
         final int confirmationNumber = ConfirmReservationRequestChannel.getConfirmationNumber(message);
         final String controllerPhysicalId = ConfirmReservationRequestChannel.getControllerPhysicalId(uri);
-        logger.info("confirmReservation: confirmationNumber=" + confirmationNumber + ", controllerPhysicalId=" + controllerPhysicalId);
+        logger.info("confirmEnter: confirmationNumber=" + confirmationNumber + ", controllerPhysicalId=" + controllerPhysicalId);
 
         reservationManager.getReservationByConfirmationNumber(confirmationNumber, ar1 -> {
             if (ar1.failed()) {
@@ -331,6 +336,20 @@ public class MainVerticle extends AbstractVerticle {
                         }
                     });
                 }
+            }
+        });
+    }
+
+    private void confirmLeave(Uri uri, NetworkMessage message) {
+        final String controllerPhysicalId = ConfirmExitRequestChannel.getControllerPhysicalId(uri);
+        final int slotNumber = ConfirmExitRequestChannel.getSlotNumber(message);
+        logger.debug("confirmLeave: controllerPhysicalId=" + controllerPhysicalId + ", slotNumber=" + slotNumber);
+
+        reservationManager.finalizeReservation(controllerPhysicalId, slotNumber, ar1 -> {
+            if (ar1.failed()) {
+                communicationProxy.responseFail(message, ar1.cause());
+            } else {
+                communicationProxy.responseSuccess(message);
             }
         });
     }
@@ -369,15 +388,28 @@ public class MainVerticle extends AbstractVerticle {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                reservationManager.removeReservation(reservationId, ar2 -> {
+                reservationManager.getReservation(reservationId, ar2 -> {
                     if (ar2.failed()) {
                         communicationProxy.responseFail(message, ar2.cause());
                     } else {
-                        communicationProxy.responseSuccess(message, new JsonObject());
+                        final JsonObject reservationObject = ar2.result();
+                        reservationManager.removeReservation(reservationId, ar3 -> {
+                            if (ar2.failed()) {
+                                communicationProxy.responseFail(message, ar3.cause());
+                            } else {
+                                final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                                notifyControllerUpdated(controllerPhysicalId);
+                                communicationProxy.responseSuccess(message);
+                            }
+                        });
                     }
                 });
             }
         });
+    }
+
+    private void notifyControllerUpdated(String controllerPhysicalId) {
+        new UpdateControllerStatusPublishChannel(communicationProxy.getNetworkConnection(), controllerPhysicalId).notify(UpdateControllerStatusPublishChannel.createUpdatedMessage(true));
     }
 
     @Override
