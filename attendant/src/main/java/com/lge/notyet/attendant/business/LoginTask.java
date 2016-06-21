@@ -46,7 +46,7 @@ public class LoginTask implements Callable<Void> {
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             try {
-                Log.logd(LOG_TAG, "mLoginResult Result=" + message.getMessage());
+                Log.logv(LOG_TAG, "mLoginResult Result=" + message.getMessage());
                 mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {

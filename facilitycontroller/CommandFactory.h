@@ -12,7 +12,7 @@ class CommandFactory
 
 	void init();
 	void add(char *hint, CreateCommandFn pfnCreate);
-	CreateCommandFn* find(String topic);
+	CreateCommandFn find(String topic);
 
 	CommandFactory();
 public :

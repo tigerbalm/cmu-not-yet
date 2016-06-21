@@ -3,6 +3,7 @@ package com.lge.notyet.owner.manager;
 import com.lge.notyet.channels.GetDBQueryRequestChannel;
 import com.lge.notyet.channels.GetFacilitiesRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
+import com.lge.notyet.channels.UpdateFacilityRequestChannel;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkConnection;
@@ -79,5 +80,9 @@ public class NetworkConnectionManager {
 
     public GetFacilitiesRequestChannel createGetFacilitiesRequestChannel() {
         return new GetFacilitiesRequestChannel(mNc);
+    }
+
+    public UpdateFacilityRequestChannel createUpdateFacilityRequestChannel(String facilityID) {
+        return new UpdateFacilityRequestChannel(mNc, Integer.parseInt(facilityID));
     }
 }

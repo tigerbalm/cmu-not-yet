@@ -11,6 +11,7 @@ import com.sun.javafx.binding.StringFormatter;
 
 public class UpdateFacilityRequestChannel extends ClientChannelRegistry {
     private final static String TOPIC = "/facility/%d/request";
+    private final static String KEY_SESSION_KEY = "session_key";
     private final static String KEY_NAME = "name";
     private final static String KEY_FEE = "fee";
     private final static String KEY_FEE_UNIT = "fee_unit";
@@ -46,5 +47,15 @@ public class UpdateFacilityRequestChannel extends ClientChannelRegistry {
 
     public static int getGracePeriod(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_GRACE_PERIOD).asInt();
+    }
+
+    public static MqttNetworkMessage createRequestMessage(String sessionKey, String name, String fee, String fee_unit, String grace_period) {
+        JsonObject requestObject = new JsonObject();
+        requestObject.add(KEY_SESSION_KEY, sessionKey);
+        requestObject.add(KEY_NAME, name);
+        requestObject.add(KEY_FEE, Double.parseDouble(fee));
+        requestObject.add(KEY_FEE_UNIT, Integer.parseInt(fee_unit));
+        requestObject.add(KEY_GRACE_PERIOD, Integer.parseInt(grace_period));
+        return new MqttNetworkMessage(requestObject);
     }
 }

@@ -49,10 +49,12 @@ public class SessionManager {
         mFacilityName = null;
     }
 
-    public void addSlot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, String physical_id, int reservation_id, String user_email, long reservation_ts) {
+    public void addSlot(int id, int number, boolean occupied, boolean reserved, long occupiedTimeStamp, int controller_id, String physical_id, int reservation_id, String user_email, long reservation_ts, boolean is_controller_activated) {
         mSlots.put(id, new Slot(id, number, occupied, reserved, occupiedTimeStamp, controller_id, physical_id, reservation_id, user_email, reservation_ts));
         if (!mControllers.containsKey(controller_id)) {
-            mControllers.put(controller_id, new Controller(controller_id, physical_id));
+            Controller controller = new Controller(controller_id, physical_id);
+            controller.setAvailable(is_controller_activated);
+            mControllers.put(controller_id, controller);
         }
     }
     public Set<Integer> getSlotIds() {

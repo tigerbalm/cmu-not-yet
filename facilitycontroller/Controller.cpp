@@ -12,6 +12,8 @@ Controller::Controller(MsgQueClient & client)
 
 void Controller::setup()
 {	
+	Serial.println("Controller::setup() - start");
+
 	waitingState = new WatingState(msgQueClient, this);
 	parkingState = new ParkingState(msgQueClient, this);
 	leavingState = new LeavingState(msgQueClient, this);
@@ -22,11 +24,16 @@ void Controller::setup()
 	exitGateCarDetector = new GateCarDetector(this, EXIT_BEAM_RECEIVER);
 
 	slotStatusChangeDetector = new SlotStatusChangeDetector(this);
+
+	Serial.println("Controller::setup() - end");
 }
 
 void Controller::setState(State* newState)
 {
-	currentState->exit();
+	if (currentState != NULL)
+	{ 
+		currentState->exit();
+	}	
 
 	currentState = newState;
 	
@@ -55,7 +62,13 @@ State* Controller::getLeavingState()
 
 void Controller::loop()
 {
-	//Serial.println("Controller::loop()");	
+	//Serial.println("Controller::loop()");
+
+	if (entryGateCarDetector == NULL) {
+		Serial.println("entryGate null");
+		delay(1000);
+	}
+
 	entryGateCarDetector->loop();
 	exitGateCarDetector->loop();
 	slotStatusChangeDetector->loop();

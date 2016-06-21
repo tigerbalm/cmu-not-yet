@@ -148,6 +148,7 @@
     <ClInclude Include="LeavingState.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="SlotLedController.h" />
     <ClInclude Include="MsgQueClient.h" />
     <ClInclude Include="MsgQueClientStatusListener.h" />
     <ClInclude Include="Pair.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="ExitGateHelper.cpp" />
     <ClCompile Include="GateCarDetector.cpp" />
     <ClCompile Include="LeavingState.cpp" />
+    <ClCompile Include="SlotLedController.cpp" />
     <ClCompile Include="MsgQueClient.cpp" />
     <ClCompile Include="Pair.cpp" />
     <ClCompile Include="ParkingState.cpp" />

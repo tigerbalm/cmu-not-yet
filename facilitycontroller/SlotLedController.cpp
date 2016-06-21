@@ -40,17 +40,19 @@ void SlotLedController::off(int slot)
 
 void SlotLedController::blinkOn(int slot)
 {
-	SlotPinPair *pair = findPair(slot);
-	pair->blink = true;
+	SlotPinPair **pair = findPair(slot);
+	(*pair)->blink = true;
 
 	blinkCount++;
 }
 
 void SlotLedController::blinkOff(int slot)
 {
-	SlotPinPair *pair = findPair(slot);
-	pair->blink = false;
+	SlotPinPair **pair = findPair(slot);
+	(*pair)->blink = false;
 	
+	led((*pair)->pin, LOW);
+
 	blinkCount--;
 }
 
@@ -64,31 +66,37 @@ int SlotLedController::findPin(int slot)
 		{
 			return pair.pin;
 		}
+
+		++itr;
 	}
 
 	return -1;
 }
 
-SlotPinPair* SlotLedController::findPair(int slot)
+SlotPinPair** SlotLedController::findPair(int slot)
 {
 	for (SimpleList<SlotPinPair>::iterator itr = slots.begin(); itr != slots.end();)
 	{
-		SlotPinPair pair = *itr;
+		SlotPinPair* pair = itr;
 
-		if (pair.slot == slot)
+		if (pair->slot == slot)
 		{
 			return &pair;
 		}
+
+		++itr;
 	}
 
 	return NULL;
 }
 
 void SlotLedController::loop()
-{
+{	
 	long now = millis();
-	if (blinkCount > 0 && now - lastBlinkAttempt > 300)
+	if (blinkCount > 0 && now - lastBlinkAttempt > 500)
 	{
+		Serial.println("SlotLedController::blinkloop");
+
 		lastBlinkAttempt = now;
 
 		for (SimpleList<SlotPinPair>::iterator itr = slots.begin(); itr != slots.end();)
@@ -97,8 +105,22 @@ void SlotLedController::loop()
 
 			if (pair.blink)
 			{
+				Serial.println(pair.pin);
+				Serial.println(bBlinkOn);
+
 				led(pair.pin, bBlinkOn ? HIGH : LOW);
 			}
+
+			++itr;
 		}
+
+		if (bBlinkOn == true) 
+		{
+			bBlinkOn = false; 
+		}
+		else
+		{
+			bBlinkOn = true;
+		}		
 	}	
 }

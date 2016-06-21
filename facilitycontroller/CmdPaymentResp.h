@@ -14,6 +14,8 @@
 class CmdPaymentResp : public Response
 {	
 public:
+	String getTopic();
+	void setBody(String body);
 	static Command* create() { return new CmdPaymentResp(); }
 };
 
