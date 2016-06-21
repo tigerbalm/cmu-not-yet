@@ -22,7 +22,7 @@ import java.util.Random;
 import static com.lge.notyet.server.manager.ReservationManager.*;
 
 public class MainVerticle extends AbstractVerticle {
-    private static final String BROKER_HOST = "localhost";
+    private static final String BROKER_HOST = "192.168.1.21";
     private static final boolean REDUNDANCY = false;
     private static final String DB_HOST = "localhost";
     private static final String DB_USERNAME = "dba";
@@ -202,19 +202,37 @@ public class MainVerticle extends AbstractVerticle {
         final String controllerPhysicalId = SlotStatusPublishChannel.getControllerPhysicalId(uri);
         final int slotNumber = SlotStatusPublishChannel.getSlotNumber(uri);
         final boolean parked = SlotStatusPublishChannel.isParked(message);
+        final int confirmationNumber = SlotStatusPublishChannel.getConfirmationNumber(message);
 
         facilityManager.getSlot(controllerPhysicalId, slotNumber, ar1 -> {
             if (ar1.failed()) {
                 ar1.cause().printStackTrace();
             } else {
                 final JsonObject slotObject = ar1.result();
-                final int slotId = slotObject.get("id").asInt();
-                facilityManager.updateSlotParked(slotId, parked, ar2 -> {
+                final int parkedSlotId = slotObject.get("id").asInt();
+                facilityManager.updateSlotParked(parkedSlotId, parked, ar2 -> {
                     if (ar2.failed()) {
                         ar2.cause().printStackTrace();
                     } else {
                         logger.info("updateSlotStatus: slot=" + slotObject + " updated parked=" + parked);
-                        notifyControllerUpdated(controllerPhysicalId);
+                        reservationManager.getReservationByConfirmationNumber(confirmationNumber, ar3 -> {
+                            if (ar3.failed()) {
+                                ar3.cause().printStackTrace();
+                            } else {
+                                final JsonObject reservationObject = ar3.result();
+                                final int reservationId = reservationObject.get("id").asInt();
+                                final int reservedSlotId = reservationObject.get("slot_id").asInt();
+                                if (parkedSlotId != reservedSlotId) {
+                                    logger.info("updateSlotStatus: parked incorrectly, perform slot reallocation now");
+                                    reservationManager.reallocateSlot(reservationId, parkedSlotId, reservedSlotId, ar -> {
+                                        notifyControllerUpdated(controllerPhysicalId);
+                                    });
+                                } else {
+                                    logger.info("updateSlotStatus: parked correctly, reservation=" + reservationObject);
+                                    notifyControllerUpdated(controllerPhysicalId);
+                                }
+                            }
+                        });
                     }
                 });
             }
