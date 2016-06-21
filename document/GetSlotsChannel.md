@@ -1,3 +1,9 @@
+# Description
+
+- Request: Attendant
+- Respond: Business Server
+- This channel is used to get slot lists which is belong to a facility managed by the attendant.
+
 # Request
 
 ## Topic

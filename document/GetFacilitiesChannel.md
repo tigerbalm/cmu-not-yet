@@ -1,3 +1,9 @@
+# Description
+
+- Request: Attendant or Owner
+- Respond: Business Server
+- This channel is used to request facility list which is assigned to attendant or belong to owner. 
+
 # Request
 
 ## Topic

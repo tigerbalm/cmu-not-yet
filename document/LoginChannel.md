@@ -1,3 +1,9 @@
+# Description
+
+- Request: Driver, Attendant and Owner
+- Respond: Business Server
+- This channel is used to login into the system.
+
 # Request
 
 ## Topic
