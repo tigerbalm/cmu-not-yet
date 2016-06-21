@@ -68,6 +68,7 @@ public class MainUI extends JDialog {
     }
 
     private void createUIComponents() {
+        chooseMoreSettingsPanel= new JPanel(new GridLayout(1,0));
         ActionListener chooseReportHandler= new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -75,7 +76,7 @@ public class MainUI extends JDialog {
             }
             public void readReportChoiceAndDoMoreSettings(ActionEvent e){
                 StateMachine.getInstance().setQuery(choiceGroup.getSelection().getActionCommand(), customAdditionalDeveloperQueryRadioButton.isSelected());
-                if(e!=null) {//Not required for the first time initialization phase.
+                if(chooseMoreSettingsPanel!=null) {//Not required for the first time initialization phase.
                     StateMachine.getInstance().getQueryInstance().fillMoreSettingPanel(chooseMoreSettingsPanel);
                 }
 
@@ -103,7 +104,6 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
-        //FixMe: Add more settings option programmatically
         //FixMe: Add sampling based on time for Query 1
         //FixMe: Update database to work without having sql_mode set to null. Query2
         //FixMe: Field names take from SQL response, instead of maintaining a redundant copy.
