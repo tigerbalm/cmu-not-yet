@@ -97,4 +97,8 @@ public class NetworkConnectionManager {
     public CancelReservationRequestChannel createCancelReservationRequestChannel(int reservationId) {
         return new CancelReservationRequestChannel(mNc, reservationId);
     }
+
+    public UpdateControllerStatusSubscribeChannel createUpdateControllerStatusChannel() {
+        return new UpdateControllerStatusSubscribeChannel(mNc);
+    }
 }

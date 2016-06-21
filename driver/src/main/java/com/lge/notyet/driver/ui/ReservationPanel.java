@@ -13,6 +13,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import javax.swing.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -92,22 +93,20 @@ public class ReservationPanel implements Screen {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Business Logic
 
-    private long mRequestedTime = 0L;
-    private int mRequestedFacilityId = 0;
-
     public ReservationPanel() {
 
         // Make a reservation
         mBtnMakeReservation.addActionListener(e -> {
 
             // Reserved Time
-            mRequestedTime = ((JSpinner.DateEditor) mJSpinnerHour.getEditor()).getModel().getDate().getTime()/1000;
+            Log.log(LOG_TAG, "" + Instant.now().toEpochMilli() + "/" + Instant.now().getEpochSecond());
+            long requestedTime = ((JSpinner.DateEditor) mJSpinnerHour.getEditor()).getModel().getDate().getTime()/1000;
 
             // Reserved Location
             String location = (String) mCbLocation.getSelectedItem();
-            mRequestedFacilityId = SessionManager.getInstance().getFacilityId(location);
+            int requestedFacilityId = SessionManager.getInstance().getFacilityId(location);
 
-            TaskManager.getInstance().runTask(MakeReservationTask.getTask(mRequestedFacilityId, mRequestedTime, mReservationDoneCallback));
+            TaskManager.getInstance().runTask(MakeReservationTask.getTask(requestedFacilityId, requestedTime, mReservationDoneCallback));
 
             setUserInputEnabled(false);
         });
@@ -161,10 +160,12 @@ public class ReservationPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to make reservation due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.MAKE_RESERVATION_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MAKE_RESERVATION_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
             return;
         }
 
@@ -178,14 +179,20 @@ public class ReservationPanel implements Screen {
 
             if (success == 1) { // Success
 
-                int confirmationNumber = resMsg.getMessage().get("confirmation_no").asInt();
                 int reservationId = resMsg.getMessage().get("id").asInt();
-                SessionManager.getInstance().setReservationInformation(mRequestedTime, confirmationNumber, mRequestedFacilityId, reservationId);
+                long reservationTime = resMsg.getMessage().get("reservation_ts").asLong();
+                int confirmationNumber = resMsg.getMessage().get("confirmation_no").asInt();
+                int facilityId = resMsg.getMessage().get("facility_id").asInt();
+                String controllerPhysicalId = resMsg.getMessage().get("controller_physical_id").asString();
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MAKE_RESERVATION_DONE + confirmationNumber,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.PLAIN_MESSAGE);
+                SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId, controllerPhysicalId);
+
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.MAKE_RESERVATION_DONE + confirmationNumber,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.PLAIN_MESSAGE);
+                }).start();
 
                 ScreenManager.getInstance().showReservationHistoryScreen();
 
@@ -193,18 +200,22 @@ public class ReservationPanel implements Screen {
 
                 Log.logd(LOG_TAG, "Failed to make reservation, with cause=" + resMsg.getMessage().get("cause").asString());
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MAKE_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.MAKE_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
             } else {
 
                 Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MAKE_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.MAKE_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
             }
 
         } catch (Exception e) {
@@ -212,10 +223,12 @@ public class ReservationPanel implements Screen {
             Log.logd(LOG_TAG, "Failed to make reservation, exception occurred");
             e.printStackTrace();
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.MAKE_RESERVATION_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MAKE_RESERVATION_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
         }
     };
 

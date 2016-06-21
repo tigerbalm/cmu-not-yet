@@ -95,4 +95,14 @@ public class ScreenManager {
         mMainCardLayout.show(mCards, mLastScreenName);
         mLastScreenName = null;
     }
+
+    public Screen getCurrentScreen() {
+
+        if (mCurrentScreenName.equals(mLoginPanel.getName())) return mLoginPanel;
+        if (mCurrentScreenName.equals(mReservationPanel.getName())) return mReservationPanel;
+        if (mCurrentScreenName.equals(mReservationHistoryPanel.getName())) return mReservationHistoryPanel;
+        if (mCurrentScreenName.equals(mSignupPanel.getName())) return mSignupPanel;
+        if (mCurrentScreenName.equals(mModifyAccountPanel.getName())) return mModifyAccountPanel;
+        return null;
+    }
 }

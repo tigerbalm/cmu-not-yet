@@ -18,6 +18,7 @@ public class Strings {
     public static final String CANCEL_RESERVATION_FAILED = "Failed to cancel reservation";
     public static final String SIGN_UP_FAILED = "Failed to signup";
     public static final String MODIFY_ACCOUNT_FAILED = "Failed to modify account information";
+    public static final String CONTROLLER_ERROR = "Your reservation could be cancel due to facility problem";
 
     public static final String WRONG_ACCOUNT = "You tried to access with wrong account";
     public static final String SERVER_ERROR = "Server error";

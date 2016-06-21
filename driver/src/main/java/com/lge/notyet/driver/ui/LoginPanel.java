@@ -73,10 +73,12 @@ public class LoginPanel implements Screen {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.INFORMATION_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.INFORMATION_MESSAGE);
+                }).start();
             }
         });
 
@@ -86,10 +88,12 @@ public class LoginPanel implements Screen {
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.INFORMATION_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.INFORMATION_MESSAGE);
+                }).start();
             }
         });
     }
@@ -129,11 +133,12 @@ public class LoginPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to check reservation due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
-
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
             SessionManager.getInstance().clear();
             return;
         }
@@ -153,9 +158,10 @@ public class LoginPanel implements Screen {
                 long reservationTime = resMsg.getMessage().get("reservation_ts").asLong();
                 int confirmationNumber = resMsg.getMessage().get("confirmation_no").asInt();
                 int facilityId = resMsg.getMessage().get("facility_id").asInt();
+                String controllerPhysicalId = resMsg.getMessage().get("controller_physical_id").asString();
                 // String facilityName = resMsg.getMessage().get("facility_name").asString(); // We will retrieve it from SessionManager
 
-                SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId);
+                SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId, controllerPhysicalId);
                 ScreenManager.getInstance().showReservationHistoryScreen();
 
             } else if (success == 0) {
@@ -168,11 +174,12 @@ public class LoginPanel implements Screen {
 
                 Log.logd(LOG_TAG, "Failed to check reservation, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
-						
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
                 SessionManager.getInstance().clear();
             }
 
@@ -181,11 +188,12 @@ public class LoginPanel implements Screen {
             Log.logd(LOG_TAG, "Failed to check reservation, exception occurred");
             e.printStackTrace();
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
-
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_RESERVATION_INFO_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
             SessionManager.getInstance().clear();
         }
     };
@@ -196,11 +204,12 @@ public class LoginPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to update facility list due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.UPDATE_FACILITY_LIST_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
-
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.UPDATE_FACILITY_LIST_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
             SessionManager.getInstance().clear();
             return;
         }
@@ -233,22 +242,24 @@ public class LoginPanel implements Screen {
 
                 Log.logv(LOG_TAG, "Failed update facility list, with cause=" + resMsg.getMessage().get("cause").asString());
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.UPDATE_FACILITY_LIST_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
-
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.UPDATE_FACILITY_LIST_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
                 SessionManager.getInstance().clear();
 
             } else {
 
                 Log.logd(LOG_TAG, "Failed to update facility list, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.UPDATE_FACILITY_LIST_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
-						
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.UPDATE_FACILITY_LIST_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
 				SessionManager.getInstance().clear();
             }
 
@@ -257,10 +268,12 @@ public class LoginPanel implements Screen {
             Log.logd(LOG_TAG, "Failed to update facility list, exception occurred");
             e.printStackTrace();
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.UPDATE_FACILITY_LIST_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.UPDATE_FACILITY_LIST_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
 
             SessionManager.getInstance().clear();
         }
@@ -277,10 +290,12 @@ public class LoginPanel implements Screen {
 
                 Log.logd(LOG_TAG, "Failed to login due to timeout");
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.LOGIN_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.LOGIN_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
                 return;
             }
 
@@ -305,10 +320,12 @@ public class LoginPanel implements Screen {
 
                         Log.logd(LOG_TAG, "This is not driver account");
 
-                        JOptionPane.showMessageDialog(getRootPanel(),
-                                Strings.LOGIN_FAILED + ":" + Strings.WRONG_ACCOUNT,
-                                Strings.APPLICATION_NAME,
-                                JOptionPane.ERROR_MESSAGE);
+                        new Thread(() -> {
+                            JOptionPane.showMessageDialog(getRootPanel(),
+                                    Strings.LOGIN_FAILED + ":" + Strings.WRONG_ACCOUNT,
+                                    Strings.APPLICATION_NAME,
+                                    JOptionPane.ERROR_MESSAGE);
+                        }).start();
                         return;
                     }
 
@@ -316,10 +333,12 @@ public class LoginPanel implements Screen {
 
                         Log.logd(LOG_TAG, "Failed to validate response");
 
-                        JOptionPane.showMessageDialog(getRootPanel(),
-                                Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                                Strings.APPLICATION_NAME,
-                                JOptionPane.ERROR_MESSAGE);
+                        new Thread(() -> {
+                            JOptionPane.showMessageDialog(getRootPanel(),
+                                    Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                                    Strings.APPLICATION_NAME,
+                                    JOptionPane.ERROR_MESSAGE);
+                        }).start();
                         return;
                     }
 
@@ -335,19 +354,23 @@ public class LoginPanel implements Screen {
 
                     Log.logv(LOG_TAG, "Failed to login, with cause=" + resMsg.getMessage().get("cause").asString());
 
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.LOGIN_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                            Strings.APPLICATION_NAME,
-                            JOptionPane.WARNING_MESSAGE);
+                    new Thread(() -> {
+                        JOptionPane.showMessageDialog(getRootPanel(),
+                                Strings.LOGIN_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                                Strings.APPLICATION_NAME,
+                                JOptionPane.WARNING_MESSAGE);
+                    }).start();
 
                 } else {
 
                     Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
 
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                            Strings.APPLICATION_NAME,
-                            JOptionPane.ERROR_MESSAGE);
+                    new Thread(() -> {
+                        JOptionPane.showMessageDialog(getRootPanel(),
+                                Strings.LOGIN_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                                Strings.APPLICATION_NAME,
+                                JOptionPane.ERROR_MESSAGE);
+                    }).start();
                 }
 
             } catch (Exception e) {
@@ -355,10 +378,12 @@ public class LoginPanel implements Screen {
                 Log.logd(LOG_TAG, "Failed to login, exception occurred");
                 e.printStackTrace();
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.LOGIN_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.LOGIN_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
             }
         }
     };
@@ -366,7 +391,6 @@ public class LoginPanel implements Screen {
     private void doLogin() {
 
         if (SessionManager.getInstance().getKey() != null) {
-
             JOptionPane.showMessageDialog(getRootPanel(),
                     Strings.ALREADY_LOGIN,
                     Strings.APPLICATION_NAME,

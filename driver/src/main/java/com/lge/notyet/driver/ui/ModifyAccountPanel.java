@@ -85,18 +85,22 @@ public class ModifyAccountPanel implements Screen {
             String userPassword = new String(mTfUserPassword.getPassword());
 
             if (userEmailAddress == null || userEmailAddress.length() == 0) {
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.INPUT_EMAIL_ADDRESS,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.INPUT_EMAIL_ADDRESS,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
                 return;
             }
 
             if (userPassword.length() == 0) {
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.INPUT_PASSWORD,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.INPUT_PASSWORD,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
                 return;
             }
 
@@ -108,10 +112,12 @@ public class ModifyAccountPanel implements Screen {
                     || !NumberUtils.isPositiveIntegerNumber(creditCardNumber)
                     || (creditCardNumber.length() != 15 && creditCardNumber.length() != 16)) {
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.INPUT_CREDIT_CARD_NUMBER + ", example: 1234567890123456",
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.INPUT_CREDIT_CARD_NUMBER + ", example: 1234567890123456",
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
                 return;
             }
 
@@ -121,10 +127,12 @@ public class ModifyAccountPanel implements Screen {
                     || NumberUtils.toInt(creditCardMonth) < 0
                     || NumberUtils.toInt(creditCardMonth) > 12) {
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.INPUT_CREDIT_EXPIRE_DATE + ", example: 01/20" ,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.INPUT_CREDIT_EXPIRE_DATE + ", example: 01/20" ,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
                 return;
             }
 
@@ -132,10 +140,12 @@ public class ModifyAccountPanel implements Screen {
                     || NumberUtils.isNegativeIntegerNumber(TfCreditCardYear)
                     || TfCreditCardYear.length() != 2) {
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.INPUT_CREDIT_EXPIRE_DATE + ", example: 01/20" ,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.INPUT_CREDIT_EXPIRE_DATE + ", example: 01/20" ,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
                 return;
             }
 
@@ -147,6 +157,7 @@ public class ModifyAccountPanel implements Screen {
                     mTfCreditCardMonth.getText() + "/" + mTfCreditCardYear.getText(),
                     mTfCreditCardCVC.getText(),
                     mModifyAccountCallback));
+
         });
     }
 
@@ -158,10 +169,12 @@ public class ModifyAccountPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to modify account due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.MODIFY_ACCOUNT_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MODIFY_ACCOUNT_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
             return;
         }
 
@@ -182,29 +195,34 @@ public class ModifyAccountPanel implements Screen {
 
                 Log.logd(LOG_TAG, "Failed to modify account, with cause=" + resMsg.getMessage().get("cause").asString());
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MODIFY_ACCOUNT_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.MODIFY_ACCOUNT_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
             } else {
 
                 Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MODIFY_ACCOUNT_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.MODIFY_ACCOUNT_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
             }
 
         } catch (Exception e) {
 
             Log.logd(LOG_TAG, "Failed to modify account, exception occurred");
             e.printStackTrace();
-
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.MODIFY_ACCOUNT_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MODIFY_ACCOUNT_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
         }
     };
 }
