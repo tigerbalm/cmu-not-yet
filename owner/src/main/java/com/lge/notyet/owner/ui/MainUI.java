@@ -19,9 +19,8 @@ public class MainUI extends JDialog {
     private JButton fetchReportButton;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
     private JPanel chooseReportPanel;
-    private JButton configureGracePeriodButton;
+    private JButton configureFacilitiesButton;
     private JTextPane reportTextPane;
-    private JButton configureParkingFeeButton;
     private JPanel chooseMoreSettingsPanel;
     private JTextPane textReportPane1;
     private JPanel graphicalPane;
@@ -40,6 +39,12 @@ public class MainUI extends JDialog {
         fetchReportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onFetchReport();
+            }
+        });
+        configureFacilitiesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new ConfigurationUI().setVisible(true);
             }
         });
     }
@@ -98,14 +103,19 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
-        //FixMe: Add GUI output to the results
+        //FixMe: Configure grace period & fees
         //FixMe: Add more settings option programmatically
+        //FixMe: Add sampling based on time for Query 1
         //FixMe: Update database to work without having sql_mode set to null. Query2
-        //FixMe: Add Slot condition for Query 1
         //FixMe: Field names take from SQL response, instead of maintaining a redundant copy.
         //FixMe: Do a formatted output of the report
         //FixMe: Handle error conditions of server, by showing a popup
         //FixMe: Make event handler for Ctrl+L key on main window for Log window to be visible.
+        //FixMe: Make dummy input values.->
+            //  INSERT INTO `sure-park`.`reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`, `fee`, `fee_unit`, `grace_period`) VALUES ('1', '1', '1', '1', '1', '1', '1', '1', '1');
+            // INSERT INTO `sure-park`.`transaction` (`id`, `reservation_id`, `begin_ts`, `end_ts`, `revenue`) VALUES ('1', '1', '1466368729', '1466372329', '400');
+
+        //FixMe: Add GUI output to the results
     }
     private ITaskDoneCallback mQueryResponseCallback = new ITaskDoneCallback() {
 

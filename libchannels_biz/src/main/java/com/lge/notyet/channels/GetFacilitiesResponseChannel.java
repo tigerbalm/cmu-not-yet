@@ -11,6 +11,7 @@ import java.util.List;
 
 public class GetFacilitiesResponseChannel extends ServerChannelRegistry {
     private final static String TOPIC = "/facilities/get/#";
+    public final static String KEY_RESULT= "facilities";
 
     public GetFacilitiesResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
@@ -25,7 +26,7 @@ public class GetFacilitiesResponseChannel extends ServerChannelRegistry {
         JsonObject responseObject = new JsonObject();
         JsonArray facilityObjectArray = new JsonArray();
         facilityObjectList.forEach(facilityObjectArray::add);
-        responseObject.add("facilities", facilityObjectArray);
+        responseObject.add(KEY_RESULT, facilityObjectArray);
         return responseObject;
     }
 }

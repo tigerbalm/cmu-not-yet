@@ -39,68 +39,69 @@ public class MqttNetworkConnection extends BaseNetworkConnection {
 
         @Override
         public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-
-            if (mqttMessage == null) {
-                throw new NullPointerException("received null message on topic=" + topic);
-            }
-
-            JsonObject message;
-            String payload = new String(mqttMessage.getPayload());
             try {
-                message = JsonObject.readFrom(payload);
-                if (message == null) {
-                    throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage + " on topic=" + topic);
+                if (mqttMessage == null) {
+                    throw new NullPointerException("received null message on topic=" + topic);
                 }
-            } catch (Exception ex) {
-                message = new JsonObject().add(MqttConstants.MSG_TYPE_KEY, NetworkMessage.MESSAGE_TYPE_NOTIFICATION).add("data", payload);
-            }
 
-            int messageType = NetworkMessage.MESSAGE_TYPE_UNKNOWN;
-
-            try {
-                messageType = message.get(MqttConstants.MSG_TYPE_KEY).asInt();
-            } catch (Exception e) {
-                // We will throw this exception, now, but can be added some handling later.
-            }
-
-            if (topic == null) {
-                logv("received message=" + message + " on null topic");
-            }
-
-            MqttNetworkMessage networkMsg = MqttNetworkMessage.build(message);
-            networkMsg.removeMessageType();
-
-            logv("received message=" + message + " on topic=" + topic + ", messageType=" + messageType);
-
-            if (messageType == NetworkMessage.MESSAGE_TYPE_REQUEST) {
+                JsonObject message;
+                String payload = new String(mqttMessage.getPayload());
                 try {
-                    networkMsg.makeResponseInfo(mMqttAsyncClient, topic);
-                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onRequest(channel, new MqttUri(topic), networkMsg));
-                } catch (UnsupportedOperationException uoe) {
-                    log(uoe.toString());
-                    throw uoe;
-                }
-            }
-            else if (messageType == NetworkMessage.MESSAGE_TYPE_RESPONSE) {
-                if (topic != null && mRequestChannelMap.containsKey(topic)) {
-                    NetworkChannel requestedNc = mRequestChannelMap.get(topic);
-
-                    if (requestedNc != null) {
-                        requestedNc.onResponse(requestedNc, new MqttUri(topic), networkMsg);
+                    message = JsonObject.readFrom(payload);
+                    if (message == null) {
+                        throw new NullPointerException("fail to read JsonObject from message=" + mqttMessage + " on topic=" + topic);
                     }
-
-                    mRequestChannelMap.remove(topic);
-                    mMqttAsyncClient.unsubscribe(topic);
+                } catch (Exception ex) {
+                    message = new JsonObject().add(MqttConstants.MSG_TYPE_KEY, NetworkMessage.MESSAGE_TYPE_NOTIFICATION).add("data", payload);
                 }
-            }
-            else if (messageType == NetworkMessage.MESSAGE_TYPE_NOTIFICATION) {
+
+                int messageType = NetworkMessage.MESSAGE_TYPE_UNKNOWN;
+
                 try {
-
-                    mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onNotify(channel, new MqttUri(topic), networkMsg));
-                } catch (UnsupportedOperationException uoe) {
-                    log(uoe.toString());
-                    throw uoe;
+                    messageType = message.get(MqttConstants.MSG_TYPE_KEY).asInt();
+                } catch (Exception e) {
+                    // We will throw this exception, now, but can be added some handling later.
                 }
+
+                if (topic == null) {
+                    logv("received message=" + message + " on null topic");
+                }
+
+                MqttNetworkMessage networkMsg = MqttNetworkMessage.build(message);
+                networkMsg.removeMessageType();
+
+                logv("received message=" + message + " on topic=" + topic + ", messageType=" + messageType);
+
+                if (messageType == NetworkMessage.MESSAGE_TYPE_REQUEST) {
+                    try {
+                        networkMsg.makeResponseInfo(mMqttAsyncClient, topic);
+                        mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onRequest(channel, new MqttUri(topic), networkMsg));
+                    } catch (UnsupportedOperationException uoe) {
+                        log(uoe.toString());
+                        throw uoe;
+                    }
+                } else if (messageType == NetworkMessage.MESSAGE_TYPE_RESPONSE) {
+                    if (topic != null && mRequestChannelMap.containsKey(topic)) {
+                        NetworkChannel requestedNc = mRequestChannelMap.get(topic);
+
+                        if (requestedNc != null) {
+                            requestedNc.onResponse(requestedNc, new MqttUri(topic), networkMsg);
+                        }
+
+                        mRequestChannelMap.remove(topic);
+                        mMqttAsyncClient.unsubscribe(topic);
+                    }
+                } else if (messageType == NetworkMessage.MESSAGE_TYPE_NOTIFICATION) {
+                    try {
+
+                        mSubscribers.values().stream().filter(nc -> nc.getChannelDescription().isSuperOf(new MqttUri(topic))).forEach(channel -> channel.onNotify(channel, new MqttUri(topic), networkMsg));
+                    } catch (UnsupportedOperationException uoe) {
+                        log(uoe.toString());
+                        throw uoe;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 

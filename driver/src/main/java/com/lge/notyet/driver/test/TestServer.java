@@ -7,6 +7,7 @@ import com.lge.notyet.lib.comm.mqtt.*;
 import com.lge.notyet.lib.comm.util.Log;
 
 import java.net.InetAddress;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +52,7 @@ public class TestServer {
             response.getMessage().add("confirmation_no", 3333);
             response.getMessage().add("id", 1);
             response.getMessage().add("facility_id", 1);
+            response.getMessage().add("controller_physical_id" ,"1");
         }
 
         Log.logd(LOG_TAG, "UpdateFacilityList Requested Received=" + message.getMessage());
@@ -98,6 +100,9 @@ public class TestServer {
         response.getMessage().add("success", 1);
         response.getMessage().add("id", 1);
         response.getMessage().add("confirmation_no", 10);
+        response.getMessage().add("controller_physical_id" ,"1");
+        response.getMessage().add("reservation_ts", Instant.now().getEpochSecond());
+        response.getMessage().add("facility_id", 1);
         Log.logd(LOG_TAG, "Reservation Requested Received=" + message.getMessage());
         message.responseFor(response);
     };

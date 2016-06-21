@@ -39,7 +39,7 @@ public class RequestManualExitTask implements Callable<Void> {
         MqttNetworkMessage reqMsg = ConfirmExitRequestChannel.createRequestMessage(mSlotNumber);
         reqMsg.getMessage().add("session_key", mSessionKey);
 
-        Log.logd(LOG_TAG, "request Manual Exit, message=" + reqMsg);
+        Log.logv(LOG_TAG, "request Manual Exit, message=" + reqMsg);
         boolean ret = fc.request(reqMsg);
         if (mTaskDoneCallback != null && !ret) {
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
@@ -53,7 +53,7 @@ public class RequestManualExitTask implements Callable<Void> {
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             try {
-                Log.logd(LOG_TAG, "mManualExitResult Result=" + message.getMessage());
+                Log.logv(LOG_TAG, "mManualExitResult Result=" + message.getMessage());
                 mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {

@@ -9,12 +9,8 @@ import com.lge.notyet.driver.resource.Strings;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.driver.util.NumberUtils;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import com.sun.deploy.util.StringUtils;
-import com.sun.org.apache.xpath.internal.operations.Number;
 
 import javax.swing.*;
-import javax.swing.text.NumberFormatter;
-import java.text.NumberFormat;
 
 public class SignupPanel implements Screen {
 
@@ -152,10 +148,12 @@ public class SignupPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to sing up due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.SIGN_UP_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.SIGN_UP_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
             return;
         }
 
@@ -176,18 +174,22 @@ public class SignupPanel implements Screen {
 
                 Log.logd(LOG_TAG, "Failed to sing up, with cause=" + resMsg.getMessage().get("cause").asString());
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.SIGN_UP_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.SIGN_UP_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
             } else {
 
                 Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.SIGN_UP_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.SIGN_UP_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
             }
 
         } catch (Exception e) {
@@ -195,10 +197,12 @@ public class SignupPanel implements Screen {
             Log.logd(LOG_TAG, "Failed to sing up, exception occurred");
             e.printStackTrace();
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.SIGN_UP_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.SIGN_UP_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
         }
     };
 }

@@ -2,7 +2,6 @@ package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ITaskDoneCallback;
 import com.lge.notyet.driver.business.ReservationCancelTask;
-import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.manager.TaskManager;
@@ -135,10 +134,12 @@ public class ReservationHistoryPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to cancel reservation due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
             return;
         }
 
@@ -159,18 +160,22 @@ public class ReservationHistoryPanel implements Screen {
 
                 Log.logd(LOG_TAG, "Failed to signup, with cause=" + resMsg.getMessage().get("cause").asString());
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.CANCEL_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.CANCEL_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
             } else {
 
                 Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
             }
 
         } catch (Exception e) {
@@ -178,10 +183,12 @@ public class ReservationHistoryPanel implements Screen {
             Log.logd(LOG_TAG, "Failed to cancel reservation due to timeout");
             e.printStackTrace();
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.CANCEL_RESERVATION_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
         }
     };
 }
