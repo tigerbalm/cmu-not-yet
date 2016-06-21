@@ -98,7 +98,7 @@ public class NetworkConnectionManager {
         return new CancelReservationRequestChannel(mNc, reservationId);
     }
 
-    public UpdateControllerStatusSubscribeChannel createUpdateControllerStatusChannel() {
-        return new UpdateControllerStatusSubscribeChannel(mNc);
+    public ControllerStatusSubscribeChannel createUpdateControllerStatusChannel() {
+        return new ControllerStatusSubscribeChannel(mNc);
     }
 }

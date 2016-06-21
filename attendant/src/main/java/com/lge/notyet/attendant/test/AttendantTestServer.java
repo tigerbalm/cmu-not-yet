@@ -129,7 +129,7 @@ public class AttendantTestServer {
     private LoginResponseChannel mLoginResponseChannel = null;
     private GetFacilitiesResponseChannel mGetFacilitiesResponseChannel = null;
     private GetSlotsResponseChannel mGetSlotsResponseChannel = null;
-    private UpdateControllerStatusPublishChannel mUpdateControllerStatusPublishChannel = null;
+    private ControllerStatusPublishChannel mControllerStatusPublishChannel = null;
     private ConfirmExitResponseChannel mConfirmExitResponseChannel = null;
 
     private AttendantTestServer() {
@@ -138,7 +138,7 @@ public class AttendantTestServer {
         mLoginResponseChannel = new LoginResponseChannel(mNc);
         mGetFacilitiesResponseChannel = new GetFacilitiesResponseChannel(mNc);
         mGetSlotsResponseChannel = new GetSlotsResponseChannel(mNc);
-        mUpdateControllerStatusPublishChannel = new UpdateControllerStatusPublishChannel(mNc, "3");
+        mControllerStatusPublishChannel = new ControllerStatusPublishChannel(mNc, "3");
         mConfirmExitResponseChannel = new ConfirmExitResponseChannel(mNc);
 
         mSlotList.add(new JsonObject().add("id", 1).add("number", 1).add("parked", 1).add("parked_ts", 1466021160L).
@@ -181,7 +181,7 @@ public class AttendantTestServer {
             MqttNetworkMessage notifyMsg = new MqttNetworkMessage(new JsonObject());
             notifyMsg.getMessage().add("available", (isAvailable ? 0:1));
             isAvailable = !isAvailable;
-            mUpdateControllerStatusPublishChannel.notify(notifyMsg);
+            mControllerStatusPublishChannel.notify(notifyMsg);
         }
     }
 

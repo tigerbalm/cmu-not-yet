@@ -105,8 +105,8 @@ public class MainVerticle extends AbstractVerticle {
         new SignUpResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> signUp(message)).listen();
         new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
-        new UpdateControllerStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateControllerStatus(uri, message)).listen();
-        new UpdateSlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
+        new ControllerStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateControllerStatus(uri, message)).listen();
+        new SlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
         new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(message)).listen();
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
         new GetDBQueryResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
@@ -184,9 +184,9 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void updateControllerStatus(Uri uri, NetworkMessage message) {
-        final String controllerPhysicalId = UpdateControllerStatusPublishChannel.getControllerPhysicalId(uri);
-        final boolean updated = UpdateControllerStatusPublishChannel.isUpdated(message); if (updated) return;
-        final boolean available = UpdateControllerStatusPublishChannel.isAvailable(message);
+        final String controllerPhysicalId = ControllerStatusPublishChannel.getControllerPhysicalId(uri);
+        final boolean updated = ControllerStatusPublishChannel.isUpdated(message); if (updated) return;
+        final boolean available = ControllerStatusPublishChannel.isAvailable(message);
 
         facilityManager.updateControllerAvailable(controllerPhysicalId, available, ar -> {
             if (ar.failed()) {
@@ -198,9 +198,9 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void updateSlotStatus(Uri uri, NetworkMessage message) {
-        final String controllerPhysicalId = UpdateSlotStatusPublishChannel.getControllerPhysicalId(uri);
-        final int slotNumber = UpdateSlotStatusPublishChannel.getSlotNumber(uri);
-        final boolean parked = UpdateSlotStatusPublishChannel.isParked(message);
+        final String controllerPhysicalId = SlotStatusPublishChannel.getControllerPhysicalId(uri);
+        final int slotNumber = SlotStatusPublishChannel.getSlotNumber(uri);
+        final boolean parked = SlotStatusPublishChannel.isParked(message);
 
         facilityManager.getSlot(controllerPhysicalId, slotNumber, ar1 -> {
             if (ar1.failed()) {
@@ -462,7 +462,7 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void notifyControllerUpdated(String controllerPhysicalId) {
-        new UpdateControllerStatusPublishChannel(communicationProxy.getNetworkConnection(), controllerPhysicalId).notify(UpdateControllerStatusPublishChannel.createUpdatedMessage(true));
+        new ControllerStatusPublishChannel(communicationProxy.getNetworkConnection(), controllerPhysicalId).notify(ControllerStatusPublishChannel.createUpdatedMessage(true));
     }
 
     @Override

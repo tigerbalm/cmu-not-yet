@@ -8,7 +8,7 @@ import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
-public class UpdateSlotStatusPublishChannel extends PublishChannel {
+public class SlotStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/controller/%s/slot/%d";
     private static final String KEY_PARKED = "parked";
     private static final String KEY_CONFIRMATION_NUMBER = "confirmation_no";
@@ -16,7 +16,7 @@ public class UpdateSlotStatusPublishChannel extends PublishChannel {
     private final String physicalId;
     private final int slotId;
 
-    public UpdateSlotStatusPublishChannel(INetworkConnection networkConnection, String physicalId, int slotId) {
+    public SlotStatusPublishChannel(INetworkConnection networkConnection, String physicalId, int slotId) {
         super(networkConnection);
         this.physicalId = physicalId;
         this.slotId = slotId;
