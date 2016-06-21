@@ -103,7 +103,7 @@ public class ConfigurationUI extends JDialog {
                         facilitySelected.add(tempRadioButton);
                         tempRadioButton.setActionCommand(tempFacilityID);
                         tempPanel.add(tempRadioButton);
-                        tempPanel.add(tempFacilityData.name= new JTextField(facilityDetails.get("name").toString()));
+                        tempPanel.add(tempFacilityData.name= new JTextField(facilityDetails.get("name").asString()));
                         facilityList.add(tempPanel);
                         facilityList.add(tempFacilityData.fee= new JTextField(facilityDetails.get("fee").toString()));
                         facilityList.add(tempFacilityData.fee_unit= new JTextField(facilityDetails.get("fee_unit").toString()));

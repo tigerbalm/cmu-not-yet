@@ -6,7 +6,7 @@ import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
 public class UpdateFacilityResponseChannel extends ServerChannelRegistry {
-    private final static String mTopic = "/facility/+/request/#";
+    private final static String mTopic = "/facility/+/update/#";
 
     public UpdateFacilityResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
