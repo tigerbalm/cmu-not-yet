@@ -27,7 +27,7 @@ class SlotLedController
 	void led(int pin, int onoff);
 
 	int findPin(int slot);
-	SlotPinPair * findPair(int slot);
+	SlotPinPair** findPair(int slot);
 public:
 	static SlotLedController *getInstance()
 	{

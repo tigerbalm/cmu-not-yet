@@ -18,16 +18,23 @@ bool MsgQueClient::connect()
 	Serial.println(MQ_SERVER_IP);
 
 	CmdAliveNoti* will = (CmdAliveNoti *)CommandFactory::getInstance()->createCommand(CMD_HINT_MY_STATUS_NOTIFY);
+	if (will == NULL)
+	{
+		Serial.println("will is null");
+		return false;
+	}
+
 	will->setStatus(STATUS_DEAD);
 
+	Serial.println(will->getTopic());
+	Serial.println(will->getBody());
+
 	bool connected = pubsubClient->connect(clientName.c_str(), 
-						will->getTopic().c_str(), 1, true, will->getBody().c_str());
+						will->getTopic().c_str(), 1, false, will->getBody().c_str());
 
 	if (connected)
 	{
-		CmdAliveNoti* alive = (CmdAliveNoti *)CommandFactory::getInstance()->createCommand(CMD_HINT_MY_STATUS_NOTIFY);
-		alive->setStatus(STATUS_ALIVE);
-		alive->send(this);
+		subscribeAll();
 
 		Serial.println("connection success!!");
 	}
@@ -45,6 +52,22 @@ bool MsgQueClient::disconnect()
 	pubsubClient->disconnect();
 
 	return connected();
+}
+
+bool MsgQueClient::subscribeAll()
+{
+	Command * reservation = CommandFactory::getInstance()->createCommand(CMD_HINT_CONFIRM_RESERVATION_RESP);
+	pubsubClient->subscribe(reservation->getTopic().c_str());
+	Serial.print("subscribe : ");
+	Serial.println(reservation->getTopic().c_str());
+	delete reservation;
+
+	Command * payment = CommandFactory::getInstance()->createCommand(CMD_HINT_PAYMENT_RESP);
+	Serial.print("subscribe : ");
+	Serial.println(payment->getTopic().c_str());
+	delay(2000);
+	pubsubClient->subscribe(payment->getTopic().c_str());
+	delete payment;
 }
 
 bool MsgQueClient::subscribe(String topic)
@@ -84,7 +107,9 @@ void MsgQueClient::unsubscribeCacheTopics(String topic)
 		{
 			cacheTopics.erase(itr);
 			return;
-		}		
+		}
+
+		++itr;
 	}
 }
 
@@ -112,6 +137,8 @@ void MsgQueClient::subscribeCacheTopics()
 		pubsubClient->subscribe(t.c_str());
 
 		cacheTopics.erase(itr);
+
+		++itr;
 	}
 }
 

@@ -23,16 +23,23 @@ void CommandFactory::init()
 	add(CMD_HINT_MY_STATUS_NOTIFY, &CmdAliveNoti::create);
 }
 
-CreateCommandFn * CommandFactory::find(String topic)
+CreateCommandFn CommandFactory::find(String topic)
 {
+	Serial.println("CommandFactory::find");
+
 	for (SimpleList<Pair>::iterator itr = factoryMap.begin(); itr != factoryMap.end();)
 	{
 		Pair pair = *itr;
 
-		if (topic.indexOf(pair.hint) > 0)
+		if (topic.indexOf(pair.hint) >= 0)
 		{
-			return &pair.pfnCreate;
+			Serial.print("fount hint: ");
+			Serial.println(pair.hint);
+			delay(1000);
+			return (pair.pfnCreate);
 		}
+
+		++itr;
 	}
 
 	return NULL;
@@ -52,11 +59,18 @@ CommandFactory::CommandFactory()
 
 Command * CommandFactory::createCommand(const String topic)
 {
-	CreateCommandFn *pCreateFnc = find(topic);
+	Serial.print("CommandFactory::createCommand : ");
+	Serial.println(topic);
+
+	CreateCommandFn pCreateFnc = find(topic);
 
 	if (pCreateFnc == NULL) {
+		Serial.println("pCreateFnc is null");
 		return new Command();
 	}
+	
+	Serial.println("pCreateFnc found");
+	delay(200);
 
-	return (*pCreateFnc)();
+	return (pCreateFnc)();
 }
