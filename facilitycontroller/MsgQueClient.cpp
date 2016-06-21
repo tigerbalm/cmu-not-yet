@@ -18,12 +18,6 @@ bool MsgQueClient::connect()
 	Serial.println(MQ_SERVER_IP);
 
 	CmdAliveNoti* will = (CmdAliveNoti *)CommandFactory::getInstance()->createCommand(CMD_HINT_MY_STATUS_NOTIFY);
-	if (will == NULL)
-	{
-		Serial.println("will is null");
-		return false;
-	}
-
 	will->setStatus(STATUS_DEAD);
 
 	Serial.println(will->getTopic());
@@ -58,14 +52,9 @@ bool MsgQueClient::subscribeAll()
 {
 	Command * reservation = CommandFactory::getInstance()->createCommand(CMD_HINT_CONFIRM_RESERVATION_RESP);
 	pubsubClient->subscribe(reservation->getTopic().c_str());
-	Serial.print("subscribe : ");
-	Serial.println(reservation->getTopic().c_str());
 	delete reservation;
 
 	Command * payment = CommandFactory::getInstance()->createCommand(CMD_HINT_PAYMENT_RESP);
-	Serial.print("subscribe : ");
-	Serial.println(payment->getTopic().c_str());
-	delay(2000);
 	pubsubClient->subscribe(payment->getTopic().c_str());
 	delete payment;
 }
