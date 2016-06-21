@@ -67,7 +67,7 @@ public class ReservationManager {
                         final List<JsonObject> reservationObjectList = ar2.result();
                         for (JsonObject reservationObject : reservationObjectList) {
                             final int reservationId = reservationObject.get("id").asInt();
-                            removeReservation(reservationId, ar -> {
+                            cancelReservation(reservationId, ar -> {
                                 if (ar.succeeded()) {
                                     listenerSet.forEach(listener -> listener.onReservationExpired(reservationId));
                                 }
@@ -289,8 +289,8 @@ public class ReservationManager {
         });
     }
 
-    public void removeReservation(int reservationId, Handler<AsyncResult<Void>> handler) {
-        logger.info("removeReservation: reservationId=" + reservationId);
+    public void cancelReservation(int reservationId, Handler<AsyncResult<Void>> handler) {
+        logger.info("cancelReservation: reservationId=" + reservationId);
         getReservation(reservationId, ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));

@@ -357,6 +357,7 @@ public class MainVerticle extends AbstractVerticle {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
+                notifyControllerUpdated(controllerPhysicalId);
                 communicationProxy.responseSuccess(message);
             }
         });
@@ -401,7 +402,7 @@ public class MainVerticle extends AbstractVerticle {
                         communicationProxy.responseFail(message, ar2.cause());
                     } else {
                         final JsonObject reservationObject = ar2.result();
-                        reservationManager.removeReservation(reservationId, ar3 -> {
+                        reservationManager.cancelReservation(reservationId, ar3 -> {
                             if (ar2.failed()) {
                                 communicationProxy.responseFail(message, ar3.cause());
                             } else {
