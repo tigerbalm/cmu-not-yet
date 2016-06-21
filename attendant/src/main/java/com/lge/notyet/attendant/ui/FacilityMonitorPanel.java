@@ -309,7 +309,7 @@ public class FacilityMonitorPanel implements Screen {
                     int reservation_id = slot.get("reservation_id").isNull() ? -1 : slot.get("reservation_id").asInt();
                     String user_email = slot.get("email").isNull() ? null : slot.get("email").asString();
                     long reservation_ts = slot.get("reservation_ts").isNull() ? -1 : slot.get("reservation_ts").asLong();
-                    boolean is_controller_activated = slot.get("activated").isNull() || slot.get("activated").asBoolean();
+                    boolean is_controller_activated = slot.get("available").isNull() || (slot.get("available").asInt() != 0);
 
                     SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id, reservation_id, user_email, reservation_ts, is_controller_activated);
                 }
