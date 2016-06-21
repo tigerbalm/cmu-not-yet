@@ -86,6 +86,10 @@ public class NetworkConnectionManager {
         return new ControllerStatusSubscribeChannel(mNc);
     }
 
+    public ControllerErrorReportSubscribeChannel createControllerErrorReportSubscribeChannel() {
+        return new ControllerErrorReportSubscribeChannel(mNc);
+    }
+
     public ConfirmExitRequestChannel createConfirmExitRequestChannel(String physicalId) {
         return new ConfirmExitRequestChannel(mNc, physicalId);
     }

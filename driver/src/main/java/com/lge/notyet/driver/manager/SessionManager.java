@@ -1,14 +1,6 @@
 package com.lge.notyet.driver.manager;
 
-import com.lge.notyet.channels.ControllerStatusSubscribeChannel;
-import com.lge.notyet.driver.resource.Strings;
-import com.lge.notyet.driver.util.Log;
-import com.lge.notyet.lib.comm.IOnNotify;
-import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-
-import javax.swing.*;
 import java.util.HashMap;
-import java.util.StringTokenizer;
 
 public class SessionManager {
 
@@ -25,8 +17,11 @@ public class SessionManager {
     private long mReservedTime = 0L;
     private int mReservedConfirmationNumber = 0;
     private int mReservedFacilityId = 0;
-    private int mReservedId = 0;
+    private int mReservedId = -1;
+    private boolean mIsUnderTransaction = false;
+
     private String mControllerPhysicalId = null;
+    private boolean mControllerAvailable = true;
 
     private static SessionManager sSessionManager = null;
 
@@ -76,8 +71,6 @@ public class SessionManager {
         mReservedFacilityId = reservedFacilityId;
         mReservedId = reservationId;
         mControllerPhysicalId = controllerPhysicalId;
-
-        startListenFacilityStatus();
     }
 
     public long getReservationTime() {
@@ -96,11 +89,29 @@ public class SessionManager {
         return mControllerPhysicalId;
     }
 
+    public boolean isControllerAvailable() {
+        return mControllerAvailable;
+    }
+    public void setControllerAvailable(boolean controllerAvailable) {
+        mControllerAvailable = controllerAvailable;
+    }
+
+    public void setUnderTransaction(boolean iUnderTransaction) {
+        mIsUnderTransaction = iUnderTransaction;
+    }
+
+    public boolean getUnderTransaction() {
+        return mIsUnderTransaction;
+    }
+
     public void clearReservationInformation() {
         mReservedTime = 0L;
         mReservedConfirmationNumber = 0;
         mReservedFacilityId = 0;
-        mReservedId = 0;
+        mReservedId = -1;
+        mIsUnderTransaction = false;
+        mControllerPhysicalId = null;
+        mControllerAvailable = true;
     }
 
     public void addFacility(int id, String name) {
@@ -140,83 +151,5 @@ public class SessionManager {
         mSession.clear();
         mFacilityList.clear();
         clearReservationInformation();
-        stopListenFacilityStatus();
     }
-
-    private boolean mControllerAvailable = true;
-    private ControllerStatusSubscribeChannel mControllerStatusSubscribeChannel = null;
-
-    private void startListenFacilityStatus() {
-
-        if (mControllerStatusSubscribeChannel == null) {
-            mControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusChannel();
-            mControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
-            mControllerStatusSubscribeChannel.listen();
-        }
-    }
-
-    private void stopListenFacilityStatus() {
-
-        if (mControllerStatusSubscribeChannel != null) {
-            mControllerStatusSubscribeChannel.unlisten();
-            mControllerStatusSubscribeChannel.removeObserver(mControllerStatusChanged);
-            mControllerStatusSubscribeChannel = null;
-        }
-    }
-
-    private final IOnNotify mControllerStatusChanged = (networkChannel, uri, message) -> {
-
-        String LOG_TAG = "mControllerStatusChanged";
-        MqttNetworkMessage notificationMessage = (MqttNetworkMessage)message;
-
-        try {
-            Log.logd(LOG_TAG, "mControllerStatusChanged Result=" + notificationMessage.getMessage() + " on topic=" + uri.getLocation());
-
-            String topic = (String) uri.getLocation();
-            StringTokenizer topicTokenizer = new StringTokenizer(topic, "/");
-
-            if (topicTokenizer.countTokens() == 2) {
-
-                try {
-
-                    topicTokenizer.nextToken(); // skip "controller"
-                    String physicalId = topicTokenizer.nextToken();
-
-                    if (physicalId != null && physicalId.equals(mControllerPhysicalId)) {
-
-                        boolean available = true;
-                        if (notificationMessage.getMessage().get("available") != null &&
-                                !notificationMessage.getMessage().get("available").isNull()) {
-                            available = notificationMessage.getMessage().get("available").asInt() == 1;
-                        }
-
-                        if (mControllerAvailable && !available) {
-                            // TODO : If time is enough, we will change it to modeless Dialog later to show only 1 dialog.
-                            new Thread(() -> {
-                                JOptionPane.showMessageDialog(ScreenManager.getInstance().getCurrentScreen().getRootPanel(),
-                                        Strings.CONTROLLER_ERROR + ":" + Strings.CONTACT_ATTENDANT,
-                                        Strings.APPLICATION_NAME,
-                                        JOptionPane.ERROR_MESSAGE);
-                            }).start();
-                        }
-
-                        mControllerAvailable = available;
-
-                    } else {
-                        Log.logv(LOG_TAG, "No such controller in session, physicalId=" + physicalId);
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Log.logd(LOG_TAG, "Wrong topic name on ControllerStatusChangedChannel, topic=" + uri.getLocation());
-            }
-
-        } catch (Exception e) {
-
-            Log.logd(LOG_TAG, "Failed to parse notification message, exception occurred");
-            e.printStackTrace();
-        }
-    };
 }

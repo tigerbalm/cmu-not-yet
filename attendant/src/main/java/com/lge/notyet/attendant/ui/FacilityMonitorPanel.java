@@ -9,6 +9,7 @@ import com.lge.notyet.attendant.business.RequestManualExitTask;
 import com.lge.notyet.attendant.manager.*;
 import com.lge.notyet.attendant.resource.Strings;
 import com.lge.notyet.attendant.util.Log;
+import com.lge.notyet.channels.ControllerErrorReportSubscribeChannel;
 import com.lge.notyet.channels.ControllerStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
@@ -38,6 +39,7 @@ public class FacilityMonitorPanel implements Screen {
     private JLabel mLabelLogout;
 
     private ControllerStatusSubscribeChannel mControllerStatusSubscribeChannel = null;
+    private ControllerErrorReportSubscribeChannel mControllerErrorReportSubscribeChannel = null;
 
     private final AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
     private ScheduledFuture<?> mSlotStatusUpdateThread = null;
@@ -64,6 +66,12 @@ public class FacilityMonitorPanel implements Screen {
             mControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusSubscribeChannel();
             mControllerStatusSubscribeChannel.listen();
             mControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
+        }
+
+        if (mControllerErrorReportSubscribeChannel == null) {
+            mControllerErrorReportSubscribeChannel = NetworkConnectionManager.getInstance().createControllerErrorReportSubscribeChannel();
+            mControllerErrorReportSubscribeChannel.listen();
+            mControllerErrorReportSubscribeChannel.addObserver(mControllerErrorReported);
         }
 
         mLabelFacilityName.setText(SessionManager.getInstance().getFacilityName());
@@ -478,11 +486,68 @@ public class FacilityMonitorPanel implements Screen {
                                 // TODO : If time is enough, we will change it to modeless Dialog later to show only 1 dialog.
                                 new Thread(() -> {
                                     JOptionPane.showMessageDialog(getRootPanel(),
-                                            Strings.CONTROLLER_ERROR,
+                                            Strings.CONTROLLER_UNAVAILABLE + controller.getPhysicalId(),
                                             Strings.APPLICATION_NAME,
                                             JOptionPane.ERROR_MESSAGE);
                                 }).start();
                             }
+                        }
+                    } else {
+                        Log.logv(LOG_TAG, "No such controller in session, physicalId=" + physicalId);
+                    }
+
+                } catch (NumberFormatException ne) {
+                    ne.printStackTrace();
+                }
+            } else {
+                Log.logd(LOG_TAG, "Wrong topic name on ControllerStatusChangedChannel, topic=" + uri.getLocation());
+            }
+
+        } catch (Exception e) {
+
+            Log.logd(LOG_TAG, "Failed to parse notification message, exception occurred");
+            e.printStackTrace();
+        }
+    };
+
+
+    private final IOnNotify mControllerErrorReported = (networkChannel, uri, message) -> {
+
+        MqttNetworkMessage notificationMessage = (MqttNetworkMessage)message;
+
+        try {
+            Log.logd(LOG_TAG, "mControllerErrorReported Result=" + notificationMessage.getMessage() + " on topic=" + uri.getLocation());
+
+            String topic = (String) uri.getLocation();
+            StringTokenizer topicTokenizer = new StringTokenizer(topic, "/");
+
+            if (topicTokenizer.countTokens() == 2) {
+
+                try {
+
+                    topicTokenizer.nextToken(); // skip "controller"
+                    String physicalId = topicTokenizer.nextToken();
+
+                    Controller controller = SessionManager.getInstance().getController(physicalId);
+
+                    final String errorMessage;
+                    if (notificationMessage.getMessage().get("message") != null &&
+                            !notificationMessage.getMessage().get("message").isNull()) {
+                        errorMessage = notificationMessage.getMessage().get("message").asString();
+                    } else {
+                        errorMessage = "";
+                    }
+
+                    if (controller != null) {
+                        if (!controller.isAvailable()) {
+                            // TODO : If time is enough, we will change it to modeless Dialog later to show only 1 dialog.
+                            new Thread(() -> {
+                                JOptionPane.showMessageDialog(getRootPanel(),
+                                        Strings.CONTROLLER_ERROR_REPORT + controller.getPhysicalId() + "\n" + errorMessage,
+                                        Strings.APPLICATION_NAME,
+                                        JOptionPane.ERROR_MESSAGE);
+                            }).start();
+
                         }
                     } else {
                         Log.logv(LOG_TAG, "No such controller in session, physicalId=" + physicalId);

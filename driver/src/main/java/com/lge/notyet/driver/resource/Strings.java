@@ -19,6 +19,8 @@ public class Strings {
     public static final String SIGN_UP_FAILED = "Failed to signup";
     public static final String MODIFY_ACCOUNT_FAILED = "Failed to modify account information";
     public static final String CONTROLLER_ERROR = "Your reservation could be cancel due to facility problem";
+    public static final String GRACE_PERIOD_TIMEOUT = "Your reservation is canceled because you did not show up";
+    public static final String BYE_CUSTOMER = "Thanks! Bye";
 
     public static final String WRONG_ACCOUNT = "You tried to access with wrong account";
     public static final String SERVER_ERROR = "Server error";
