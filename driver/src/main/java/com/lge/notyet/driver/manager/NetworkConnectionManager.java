@@ -101,4 +101,8 @@ public class NetworkConnectionManager {
     public ControllerStatusSubscribeChannel createUpdateControllerStatusChannel() {
         return new ControllerStatusSubscribeChannel(mNc);
     }
+
+    public ReservationStatusSubscribeChannel createReservationStatusSubscribeChannel(int reservationId) {
+        return new ReservationStatusSubscribeChannel(mNc, reservationId);
+    }
 }
