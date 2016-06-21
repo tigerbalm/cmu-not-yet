@@ -9,7 +9,7 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_reservation/request/_id
+/controller/{physical_id}/confirm_reservation/request/{req_id}
 ```
 
 ## Body
@@ -24,9 +24,13 @@
 ## Topic
 
 ```
-/controller/+/confirm_reservation/#
+/controller/{physical_id}/confirm_reservation/response/{req_id}
 ```
 
+- Subscribe : 
+   (Server side) /controller/+/confirm_reservation/#
+   (Client side) /controller/{physical_id}/confirm_reservation/response/#
+   
 ## Body
 
 ### Success

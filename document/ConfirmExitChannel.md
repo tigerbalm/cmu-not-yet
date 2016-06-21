@@ -9,7 +9,7 @@
 ## Topic
 
 ```
-/controller/{physical_id}/confirm_exit
+/controller/{physical_id}/confirm_exit/request/{req_id}
 ```
 
 ## Body
@@ -24,9 +24,12 @@
 ## Topic
 
 ```
-/controller/+/confirm_exit/#
+/controller/{physical_id}/confirm_exit/response/{req_id}
 ```
-
+- Subscribe : 
+   (Server side) /controller/+/confirm_exit/#
+   (Client side) /controller/{physical_id}/confirm_exit/response/#
+   
 ## Body
 
 ### Success
