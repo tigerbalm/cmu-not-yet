@@ -1,5 +1,6 @@
 package com.lge.notyet.server.verticle;
 
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkConnection;
@@ -9,6 +10,7 @@ import com.lge.notyet.server.manager.AuthenticationManager;
 import com.lge.notyet.server.manager.ReservationManager;
 import com.lge.notyet.server.manager.FacilityManager;
 import com.lge.notyet.server.manager.StatisticsManager;
+import com.lge.notyet.server.model.Statistics;
 import com.lge.notyet.server.model.User;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
@@ -318,7 +320,10 @@ public class MainVerticle extends AbstractVerticle {
                     if (ar2.failed()) {
                         communicationProxy.responseFail(message, ar2.cause());
                     } else {
-                        communicationProxy.responseSuccess(message, GetDBQueryResponseChannel.createResponseObject(ar2.result()));
+                        final Statistics statistics = ar2.result();
+                        final List<String> colunmnameList = statistics.getColunmnameList();
+                        final List<JsonArray> valuesList = statistics.getValuesList();
+                        communicationProxy.responseSuccess(message, GetDBQueryResponseChannel.createResponseObject(colunmnameList, valuesList));
                     }
                 });
             }

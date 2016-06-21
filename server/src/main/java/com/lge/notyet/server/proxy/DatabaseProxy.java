@@ -2,6 +2,7 @@ package com.lge.notyet.server.proxy;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.server.model.Statistics;
 import io.vertx.core.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -106,11 +107,14 @@ public class DatabaseProxy {
         }));
     }
 
-    public void rawQuery(SQLConnection connection, String sql, Handler<AsyncResult<List<JsonArray>>> resultHandler) {
-        connection.query(sql, ar -> resultHandler.handle(new AsyncResult<List<JsonArray>>() {
+    public void rawQuery(SQLConnection connection, String sql, Handler<AsyncResult<Statistics>> resultHandler) {
+        connection.query(sql, ar -> resultHandler.handle(new AsyncResult<Statistics>() {
             @Override
-            public List<JsonArray> result() {
-                return ar.result().getResults().stream().map(row -> JsonArray.readFrom(row.toString())).collect(Collectors.toList());
+            public Statistics result() {
+                List<String> colunmnameList = ar.result().getColumnNames();
+                List<JsonArray> valuesList = ar.result().getResults().stream().map(row -> JsonArray.readFrom(row.toString())).collect(Collectors.toList());
+                Statistics statistics = new Statistics(colunmnameList, valuesList);
+                return statistics;
             }
 
             @Override
