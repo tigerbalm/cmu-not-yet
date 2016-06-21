@@ -267,10 +267,12 @@ public class FacilityMonitorPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to get slot list due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.GET_SLOT_LIST_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_SLOT_LIST_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
 
             SessionManager.getInstance().clear();
             return;
@@ -316,10 +318,12 @@ public class FacilityMonitorPanel implements Screen {
             } else if (success == 0) {
                 Log.log(LOG_TAG, "Failed to get slot list, fail cause is " + resMsg.getMessage().get("cause").asString());
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.GET_SLOT_LIST_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.GET_SLOT_LIST_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
 
                 SessionManager.getInstance().clear();
                 ScreenManager.getInstance().showLoginScreen();
@@ -328,10 +332,12 @@ public class FacilityMonitorPanel implements Screen {
 
                 Log.logd(LOG_TAG, "Failed to get slot list, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.GET_SLOT_LIST_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.GET_SLOT_LIST_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
 
                 SessionManager.getInstance().clear();
                 ScreenManager.getInstance().showLoginScreen();
@@ -342,10 +348,12 @@ public class FacilityMonitorPanel implements Screen {
             Log.logd(LOG_TAG, "Failed to get slot list, exception occurred");
             e.printStackTrace();
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.GET_SLOT_LIST_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.GET_SLOT_LIST_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
 
             SessionManager.getInstance().clear();
             ScreenManager.getInstance().showLoginScreen();
@@ -359,10 +367,12 @@ public class FacilityMonitorPanel implements Screen {
 
             Log.logd(LOG_TAG, "Failed to open exit gate manually due to timeout");
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.MANUAL_EXIT_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MANUAL_EXIT_FAILED + ":" + Strings.NETWORK_CONNECTION_ERROR,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+            }).start();
 
             SessionManager.getInstance().clear();
             return;
@@ -387,19 +397,23 @@ public class FacilityMonitorPanel implements Screen {
             } else if (success == 0) {
                 Log.log(LOG_TAG, "Failed to open exit gate manually, fail cause is " + resMsg.getMessage().get("cause").asString());
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MANUAL_EXIT_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.WARNING_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.MANUAL_EXIT_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.WARNING_MESSAGE);
+                }).start();
 
             } else {
 
                 Log.logd(LOG_TAG, "Failed to open exit gate manually, unexpected result=" + success);
 
-                JOptionPane.showMessageDialog(getRootPanel(),
-                        Strings.MANUAL_EXIT_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
-                        Strings.APPLICATION_NAME,
-                        JOptionPane.ERROR_MESSAGE);
+                new Thread(() -> {
+                    JOptionPane.showMessageDialog(getRootPanel(),
+                            Strings.MANUAL_EXIT_FAILED + ":" + Strings.SERVER_ERROR + ", " + Strings.CONTACT_ATTENDANT,
+                            Strings.APPLICATION_NAME,
+                            JOptionPane.ERROR_MESSAGE);
+                }).start();
             }
 
         } catch (Exception e) {
@@ -407,10 +421,12 @@ public class FacilityMonitorPanel implements Screen {
             Log.logd(LOG_TAG, "Failed to open exit gate manually, exception occurred");
             e.printStackTrace();
 
-            JOptionPane.showMessageDialog(getRootPanel(),
-                    Strings.MANUAL_EXIT_FAILED + ":" + Strings.CONTACT_ATTENDANT,
-                    Strings.APPLICATION_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+            new Thread(() -> {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MANUAL_EXIT_FAILED + ":" + Strings.CONTACT_ATTENDANT,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.ERROR_MESSAGE);
+            }).start();
         }
     };
 
