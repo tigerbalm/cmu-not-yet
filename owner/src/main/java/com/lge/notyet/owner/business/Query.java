@@ -26,10 +26,11 @@ public class Query {
         queryList.add(new GenericQueryHandler(
                 "Average Occupancy (in hours)",
                 new String[]{"First Day", "Last Day", "Hours Occupied", "Occupancy in hours per day"},
-                "select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day' from transaction"));//select datediff(from_unixtime(1465963300), from_unixtime(1465963199)), from_unixtime(1465963300),from_unixtime(1465963199)
+                "select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day' from transaction"));
+                //select datediff(from_unixtime(1465963300), from_unixtime(1465963199)), from_unixtime(1465963300),from_unixtime(1465963199)
         queryList.add(new GenericQueryHandler(
                 "Peak Usage Hours",
-                new String[]{},
+                new String[]{"From time of the day", "To time of the day", "Usages"},
                 "select @NUM2+1 as 'From time of the day', @NUM2:=t2 as 'To time of the day', truncate(c3, 0) as Usages from (\n" +
                     "select t1 as t2, truncate(@FULLDAYS + (@NUM:= (c2+@NUM)), 0) as c3 from (\n" +
                     "select t1, sum(c1) as c2 from (\n" +
@@ -73,13 +74,11 @@ public class Query {
                 "It is invalid now, will be filled by user in text area") {
             JTextArea customQuery = new JTextArea();
             JScrollPane textScrollPane = new JScrollPane(customQuery);
-            {
-                //customQuery.set
-            }
 
             @Override
             public void fillMoreSettingPanel(JPanel chooseMoreSettingsPanel) {
                 chooseMoreSettingsPanel.removeAll();
+                chooseMoreSettingsPanel.setLayout(new GridLayout(1,1));
                 customQuery.setText(sqlQueryString);
                 chooseMoreSettingsPanel.add(textScrollPane);
                 chooseMoreSettingsPanel.revalidate();

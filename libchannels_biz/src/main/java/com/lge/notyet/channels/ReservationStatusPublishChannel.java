@@ -11,7 +11,7 @@ import com.sun.javafx.binding.StringFormatter;
 
 public class ReservationStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/reservation/%d";
-    private static final String KEY_EXPIRED = "available";
+    private static final String KEY_EXPIRED = "expired";
     private static final String KEY_TRANSACTION = "transaction";
 
     private final int reservationId;
@@ -30,25 +30,10 @@ public class ReservationStatusPublishChannel extends PublishChannel {
         return (String) uri.getPathSegments().get(2);
     }
 
-    public static boolean isExpired(NetworkMessage networkMessage) {
-        JsonObject object = (JsonObject) networkMessage.getMessage();
-        return object.get(KEY_EXPIRED) != null;
-    }
-
-    public static boolean isPaid(NetworkMessage networkMessage) {
-        JsonObject object = (JsonObject) networkMessage.getMessage();
-        return object.get(KEY_TRANSACTION) != null;
-    }
-
     public static NetworkMessage createExpiredMessage() {
         JsonObject object = new JsonObject();
         object.add(KEY_EXPIRED, 1);
         return new MqttNetworkMessage(object);
-    }
-
-    public static NetworkMessage createPaidMessage(JsonObject reservationObject) {
-        reservationObject.add(KEY_TRANSACTION, 1);
-        return new MqttNetworkMessage(reservationObject);
     }
 
     public static NetworkMessage createTransactionStartedMessage(JsonObject reservationObject) {

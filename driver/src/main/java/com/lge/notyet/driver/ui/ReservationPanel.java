@@ -89,6 +89,28 @@ public class ReservationPanel implements Screen {
         mCbLocation.setEnabled(enabled);
     }
 
+    private void updateReservationTimeUI() {
+
+        Calendar calNewYork = Calendar.getInstance();
+        calNewYork.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+        calNewYork.add(Calendar.MINUTE, 1);
+
+        Calendar maxTime = Calendar.getInstance();
+        maxTime.add(Calendar.HOUR_OF_DAY, 3);
+        calNewYork.add(Calendar.MINUTE, 5);
+        maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+
+        Calendar minTime = Calendar.getInstance();
+        minTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+
+        SpinnerDateModel model = (SpinnerDateModel)mJSpinnerHour.getModel();
+        SimpleDateFormat format = ((JSpinner.DateEditor) mJSpinnerHour.getEditor()).getFormat();
+        format.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+        model.setValue(calNewYork.getTime());
+        model.setStart(minTime.getTime());
+        model.setEnd(maxTime.getTime());
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Business Logic
 
@@ -98,8 +120,17 @@ public class ReservationPanel implements Screen {
         mBtnMakeReservation.addActionListener(e -> {
 
             // Reserved Time
-            Log.log(LOG_TAG, "" + Instant.now().toEpochMilli() + "/" + Instant.now().getEpochSecond());
+            Log.logv(LOG_TAG, "" + Instant.now().toEpochMilli() + "/" + Instant.now().getEpochSecond());
             long requestedTime = ((JSpinner.DateEditor) mJSpinnerHour.getEditor()).getModel().getDate().getTime()/1000;
+
+            if (requestedTime < Instant.now().getEpochSecond()) {
+                JOptionPane.showMessageDialog(getRootPanel(),
+                        Strings.MAKE_RESERVATION_FAILED + ":" + Strings.TIME_ALREADY_PASSED,
+                        Strings.APPLICATION_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+                updateReservationTimeUI();
+                return;
+            }
 
             // Reserved Location
             String location = (String) mCbLocation.getSelectedItem();

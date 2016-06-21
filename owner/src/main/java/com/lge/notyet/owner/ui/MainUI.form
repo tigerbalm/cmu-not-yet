@@ -114,7 +114,7 @@
                 </border>
                 <children/>
               </grid>
-              <grid id="ad8f7" binding="chooseMoreSettingsPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+              <grid id="ad8f7" binding="chooseMoreSettingsPanel" custom-create="true" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
                     <minimum-size width="800" height="100"/>
@@ -166,7 +166,9 @@
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <enabled value="false"/>
+                </properties>
                 <border type="none"/>
                 <children/>
               </grid>

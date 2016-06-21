@@ -39,7 +39,7 @@ public class SlotStatusPublishChannel extends PublishChannel {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_PARKED).asInt() == 1;
     }
 
-    public static boolean getConfirmationNumber(NetworkMessage networkMessage) {
-        return ((JsonObject) networkMessage.getMessage()).get(KEY_CONFIRMATION_NUMBER).asInt() == 1;
+    public static int getConfirmationNumber(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_CONFIRMATION_NUMBER).asInt();
     }
 }
