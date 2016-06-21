@@ -73,9 +73,6 @@ public class Query {
                 "It is invalid now, will be filled by user in text area") {
             JTextArea customQuery = new JTextArea();
             JScrollPane textScrollPane = new JScrollPane(customQuery);
-            {
-                //customQuery.set
-            }
 
             @Override
             public void fillMoreSettingPanel(JPanel chooseMoreSettingsPanel) {

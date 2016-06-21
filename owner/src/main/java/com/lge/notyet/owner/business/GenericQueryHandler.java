@@ -11,6 +11,7 @@ import java.awt.*;
  */
 public class GenericQueryHandler extends Query{
 
+
     public GenericQueryHandler(String displayString, String[] columnNames, String sqlQueryString) {
         super(displayString, columnNames, sqlQueryString);
     }
@@ -55,5 +56,6 @@ public class GenericQueryHandler extends Query{
 
     public void fillMoreSettingPanel(JPanel chooseMoreSettingsPanel) {
         chooseMoreSettingsPanel.removeAll();
+        chooseMoreSettingsPanel.revalidate();
     }
 }
