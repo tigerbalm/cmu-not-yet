@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 public class MainVerticle extends AbstractVerticle {
-    private static final String BROKER_HOST = "localhost";
+    private static final String BROKER_HOST = "192.168.1.21"; // "localhost";
     private static final boolean REDUNDANCY = false;
     private static final String DB_HOST = "localhost";
     private static final String DB_USERNAME = "dba";
@@ -56,7 +56,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private void startManagers() {
         authenticationManager = AuthenticationManager.getInstance();
-        reservationManager = ReservationManager.getInstance();
+        reservationManager = ReservationManager.getInstance(vertx);
         facilityManager = FacilityManager.getInstance();
         statisticsManager = StatisticsManager.getInstance();
     }
@@ -146,6 +146,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private void updateControllerStatus(Uri uri, NetworkMessage message) {
         final String controllerPhysicalId = UpdateControllerStatusPublishChannel.getControllerPhysicalId(uri);
+        final boolean updated = UpdateControllerStatusPublishChannel.isUpdated(message); if (updated) return;
         final boolean available = UpdateControllerStatusPublishChannel.isAvailable(message);
 
         facilityManager.updateControllerAvailable(controllerPhysicalId, available, ar -> {
@@ -295,6 +296,9 @@ public class MainVerticle extends AbstractVerticle {
                                         if (ar4.failed()) {
                                             communicationProxy.responseFail(message, ar4.cause());
                                         } else {
+                                            final JsonObject reservationObject = ar4.result();
+                                            final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                                            notifyControllerUpdated(controllerPhysicalId);
                                             communicationProxy.responseSuccess(message, ar4.result());
                                         }
                                     });
@@ -384,15 +388,28 @@ public class MainVerticle extends AbstractVerticle {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                reservationManager.removeReservation(reservationId, ar2 -> {
+                reservationManager.getReservation(reservationId, ar2 -> {
                     if (ar2.failed()) {
                         communicationProxy.responseFail(message, ar2.cause());
                     } else {
-                        communicationProxy.responseSuccess(message, new JsonObject());
+                        final JsonObject reservationObject = ar2.result();
+                        reservationManager.removeReservation(reservationId, ar3 -> {
+                            if (ar2.failed()) {
+                                communicationProxy.responseFail(message, ar3.cause());
+                            } else {
+                                final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                                notifyControllerUpdated(controllerPhysicalId);
+                                communicationProxy.responseSuccess(message);
+                            }
+                        });
                     }
                 });
             }
         });
+    }
+
+    private void notifyControllerUpdated(String controllerPhysicalId) {
+        new UpdateControllerStatusPublishChannel(communicationProxy.getNetworkConnection(), controllerPhysicalId).notify(UpdateControllerStatusPublishChannel.createUpdatedMessage(true));
     }
 
     @Override

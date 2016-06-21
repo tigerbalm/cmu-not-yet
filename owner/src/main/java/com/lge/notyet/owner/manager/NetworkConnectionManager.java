@@ -1,6 +1,7 @@
 package com.lge.notyet.owner.manager;
 
 import com.lge.notyet.channels.GetDBQueryRequestChannel;
+import com.lge.notyet.channels.GetFacilitiesRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.lib.comm.INetworkCallback;
 import com.lge.notyet.lib.comm.INetworkConnection;
@@ -49,9 +50,9 @@ public class NetworkConnectionManager {
                 mNc.connect(
                         //InetAddress.getLoopbackAddress(),
                         //InetAddress.getByName("192.168.1.20"),
-                        InetAddress.getByName("192.168.1.21"),
+                        //InetAddress.getByName("192.168.1.21"),
                         //InetAddress.getByName("128.237.175.140"),
-                        //InetAddress.getByName("localhost"),
+                        InetAddress.getByName("localhost"),
                         //InetAddress.getByName("128.237.212.113"),
                         //InetAddress.getByName("128.237.206.5"),
                         //InetAddress.getByName("10.245.148.224"),
@@ -74,5 +75,9 @@ public class NetworkConnectionManager {
 
     public GetDBQueryRequestChannel createGetDBQueryRequestChannel() {
         return new GetDBQueryRequestChannel(mNc);
+    }
+
+    public GetFacilitiesRequestChannel createGetFacilitiesRequestChannel() {
+        return new GetFacilitiesRequestChannel(mNc);
     }
 }

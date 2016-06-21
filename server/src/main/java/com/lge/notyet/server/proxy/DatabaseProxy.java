@@ -278,8 +278,10 @@ public class DatabaseProxy {
 
     public void selectReservation(SQLConnection connection, int reservationId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservation: reservationId=" + reservationId);
-        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, slot_id, slot.number as slot_no" +
+        String sql = "select reservation.id, slot.id as slot_id, fee, fee_unit, expiration_ts, begin_ts, controller.physical_id as controller_physical_id" +
                 " from reservation inner join slot on reservation.slot_id=slot.id" +
+                " inner join controller on slot.controller_id=controller.id" +
+                " left join transaction on transaction.reservation_id=reservation.id" +
                 " where reservation.id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(reservationId);
@@ -291,7 +293,7 @@ public class DatabaseProxy {
         String sql = "select reservation.id, slot.id as slot_id, fee, fee_unit, expiration_ts, begin_ts" +
                 " from reservation inner join slot on reservation.slot_id=slot.id" +
                 " inner join controller on slot.controller_id=controller.id" +
-                " inner join transaction on transaction.reservation_id=reservation.id" +
+                " left join transaction on transaction.reservation_id=reservation.id" +
                 " where physical_id=? and slot.number=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(controllerPhysicalId);
