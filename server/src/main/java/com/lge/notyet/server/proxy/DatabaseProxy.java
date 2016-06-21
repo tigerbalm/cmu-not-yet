@@ -306,7 +306,7 @@ public class DatabaseProxy {
         logger.info("selectReservation: currentTs=" + currentTs);
         String sql = "select *" +
                 " from reservation" +
-                " where expiration_ts>=?";
+                " where expiration_ts<=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(currentTs);
         queryWithParams(connection, sql, parameters, resultHandler);

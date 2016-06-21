@@ -68,6 +68,7 @@ public class ReservationManager {
                         ar2.cause().printStackTrace();
                     } else {
                         final List<JsonObject> reservationObjectList = ar2.result();
+                        logger.info("checkExpiredReservations: expired reservations=" + reservationObjectList);
                         for (JsonObject reservationObject : reservationObjectList) {
                             final int reservationId = reservationObject.get("id").asInt();
                             cancelReservation(reservationId, ar -> {
