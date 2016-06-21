@@ -96,15 +96,18 @@ void LeavingState::carDetectedOnExit(int status)
 {
 	Serial.print("LeavingState::carDetectedOnExit() - ");
 	Serial.println(status);
-
+	
 	if (status == CAR_DETECTED)
 	{
-		// send req to server
-		CmdPaymentReq* payRequest = (CmdPaymentReq *)CommandFactory::getInstance()->createCommand(CMD_HINT_PAYMENT_REQ);
-		payRequest->setSlot(slot);
-		payRequest->send(mqClient);
+		if (mode == MODE_WAITING_CAR_AT_EXIT)
+		{
+			// send req to server
+			CmdPaymentReq* payRequest = (CmdPaymentReq *)CommandFactory::getInstance()->createCommand(CMD_HINT_PAYMENT_REQ);
+			payRequest->setSlot(slot);
+			payRequest->send(mqClient);
 
-		mode = MODE_WAITING_PAYMENT_RESP;		
+			mode = MODE_WAITING_PAYMENT_RESP;
+		}
 	}
 	else
 	{

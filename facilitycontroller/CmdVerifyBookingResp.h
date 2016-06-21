@@ -10,6 +10,7 @@ class CmdVerifyBookingResp : public Response
 	int slotNumber;
 
 public:
+	String getTopic();
 	void setBody(String body);
 	int getSlotNumber();
 

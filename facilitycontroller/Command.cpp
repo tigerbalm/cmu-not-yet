@@ -27,6 +27,7 @@ void Command::setTopic(String _topic)
 
 String Command::getTopic()
 {
+	Serial.println("Command::getTopic()");
 	return topic;
 }
 
@@ -49,6 +50,10 @@ String Command::getBody()
 
 bool Command::send(MsgQueClient * _client)
 {
+	Serial.print("Command::send(MsgQueClient * _client) ");
+	Serial.println(getTopic());
+	Serial.println(getBody());
+
 	return _client->publish(getTopic(), getBody());
 }
 

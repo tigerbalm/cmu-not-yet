@@ -38,6 +38,7 @@ public:
 	
 	bool connect();
 	bool disconnect();
+	bool subscribeAll();
 	bool subscribe(String topic);
 	bool unsubscribe(String topic);
 	void unsubscribeCacheTopics(String topic);

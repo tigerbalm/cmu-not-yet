@@ -4,6 +4,19 @@
 
 #include "CmdVerifyBookingResp.h"
 
+String CmdVerifyBookingResp::getTopic()
+{
+	Serial.println("CmdVerifyBookingResp::getTopic()");
+
+	String topic = "/controller/";
+	topic += getFacilityId();
+	topic += "/";
+	topic += CMD_HINT_CONFIRM_RESERVATION_RESP;
+	topic += "/#";
+
+	return topic;
+}
+
 void CmdVerifyBookingResp::setBody(String body)
 {
 	StaticJsonBuffer<100> jsonBuffer;

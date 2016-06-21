@@ -15,7 +15,7 @@ String CmdPaymentReq::getTopic()
 	str += FACILITY_ID;
 	str += "/";
 	str += CMD_HINT_PAYMENT_REQ;
-	str += "/request/";
+	str += "/";
 	str += getTopicId();
 
 	return str;

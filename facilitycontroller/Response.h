@@ -18,6 +18,8 @@ protected:
 	String failCause;
 
 public:
+	virtual String getTopic() = 0;
+	virtual void setBody(String body) = 0;
 	virtual bool isSuccess() { return success; };
 	virtual String getFailCause() { return failCause; };
 };

@@ -45,7 +45,7 @@ void GateCarDetector::loop()
 	if (state == previousState) {
 		return;
 	}
-
+	
 	if (state == PIN_STATE_DETECTED) {
 		Serial.println("car is detected on gate.");
 		carDetectedListener->onCarChangeDetected(gatePin, CAR_DETECTED);

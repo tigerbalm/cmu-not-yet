@@ -15,7 +15,7 @@ String CmdVerifyBookingReq::getTopic()
 	str += FACILITY_ID;
 	str += "/";
 	str += CMD_HINT_CONFIRM_RESERVATION_REQ;
-	str += "/request/";
+	str += "/";
 	str += getTopicId();
 
 	return str;
