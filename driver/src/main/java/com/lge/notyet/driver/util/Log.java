@@ -1,5 +1,9 @@
 package com.lge.notyet.driver.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.TimeZone;
+
 public class Log {
 
     private static final boolean LOGV = false;
@@ -9,12 +13,25 @@ public class Log {
     }
 
     public static void logd(String tag, String log) {
-        System.out.println(System.currentTimeMillis() + " [" + tag + "] " + log);
+
+        Calendar reservedTime = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.sss, MM/dd/yyyy z");
+        sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+        String reservedTimeString = sdf.format(reservedTime.getTime());
+
+        System.out.println(reservedTimeString + " [" + tag + "] " + log);
     }
 
     public static void logv(String tag, String log) {
+
         if (!LOGV) {
-            System.out.println(System.currentTimeMillis() + " [" + tag + "] " + log);
+
+            Calendar reservedTime = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.sss, MM/dd/yyyy z");
+            sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+            String reservedTimeString = sdf.format(reservedTime.getTime());
+
+            System.out.println(reservedTimeString + " [" + tag + "] " + log);
         }
     }
 }

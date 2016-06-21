@@ -43,7 +43,7 @@ public class GetFacilityTask implements Callable<Void> {
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             try {
-                Log.logd(LOG_TAG, "mGetFacilityResult Result=" + message.getMessage());
+                Log.logv(LOG_TAG, "mGetFacilityResult Result=" + message.getMessage());
                 mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {
