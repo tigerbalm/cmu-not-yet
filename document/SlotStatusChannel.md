@@ -1,7 +1,7 @@
 # Description
 
-- Request: Controller
-- Respond: Business Server, Attendant
+- Publish: Controller
+- Subscriber: Business Server, Attendant
 - This channel is used to notify slot status when is occupied or empty. 
 
 # Publish

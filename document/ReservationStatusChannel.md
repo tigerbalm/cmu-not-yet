@@ -1,40 +1,40 @@
 # Description
 
-- Publish: Facility
-- Subscribe: Business Server, Attendant, Driver
-- This channel is used to notify controller's available status.
+- Publish: Business Server
+- Subscriber: Driver
+- This channel is used to notify reservation status when driver is arrived at parking facility, leaving or grace period is timed out. 
 
 # Publish
 
 ## Topic
 
 ```
-/controller/{controller_physical_id}
+/reservation/%d
 ```
 
 ## Body
 
-### When status updated
+### When car is arrived and passed the entry gate #
 
 ```
 {
-  'updated': 1
+  'transaction': 1
 }
 ```
 
-### When connected
+### When car is leaving and passed the exit gate #
 
 ```
 {
-  'available': 1,
+  'transaction': 0
 }
 ```
 
-### When disconnected (Will Message)
+### When grace period is timed out #
 
 ```
 {
-  'available': 0
+ 'expired': 1
 }
 ```
 
@@ -44,7 +44,6 @@ If you use MQTT connection, following key/value is added in body automatically w
 But when you received the message from channel, it does not exist.
 Hence, you have to add and remove following pair to communicate with other library or entity. i.e. Arduino MQTT library.
 If there is no this pair, the received element regards it as notification.
-
 
 ## Additional body for MQTT
 
