@@ -191,6 +191,17 @@ public class ConfigurationUI extends JDialog {
                 int success = resMsg.getMessage().get("success").asInt();
 
                 if (success == 1) { // Success
+                    JOptionPane pane = new JOptionPane("Successfully updated", JOptionPane.INFORMATION_MESSAGE);
+                    JDialog dialog = pane.createDialog(ConfigurationUI.this, "Configuration Updation");
+                    new Timer(2*1000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        }
+                    }).start();
+                    dialog.setModal(true);
+                    dialog.setVisible(true);
 
                     Log.log(LOG_TAG, "Success to UpdateFacilities");
 
