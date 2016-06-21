@@ -64,7 +64,13 @@ public class MainVerticle extends AbstractVerticle {
 
     private void registerListeners() {
         reservationManager.registerListener(reservationId -> {
-            // TODO
+            reservationManager.getReservation(reservationId, ar -> {
+                if (ar.succeeded()) {
+                    final JsonObject reservationObject = ar.result();
+                    final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                    notifyControllerUpdated(controllerPhysicalId);
+                }
+            });
         });
     }
 
