@@ -142,6 +142,7 @@ public class MainVerticle extends AbstractVerticle {
         final int feeUnit = UpdateFacilityRequestChannel.getFeeUnit(message);
         final int gracePeriod = UpdateFacilityRequestChannel.getGracePeriod(message);
 
+        // TODO: check session_key
         facilityManager.updateFacility(facilityId, name, fee, feeUnit, gracePeriod, ar -> {
             if (ar.failed()) {
                 communicationProxy.responseFail(message, ar.cause());
