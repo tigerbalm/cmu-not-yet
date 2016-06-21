@@ -3,7 +3,7 @@
 ## Topic
 
 ```
-/facility/{facility_id}/request
+/facility/{facility_id}/update
 ```
 
 ## Body
@@ -22,7 +22,7 @@
 ## Topic
 
 ```
-/facility/{facility_id}/response/#
+/facility/{facility_id}/update/#
 ```
 
 ## Body

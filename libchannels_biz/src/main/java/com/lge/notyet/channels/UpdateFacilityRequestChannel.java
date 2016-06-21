@@ -10,7 +10,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
 public class UpdateFacilityRequestChannel extends ClientChannelRegistry {
-    private final static String TOPIC = "/facility/%d/request";
+    private final static String TOPIC = "/facility/%d/update";
     private final static String KEY_SESSION_KEY = "session_key";
     private final static String KEY_NAME = "name";
     private final static String KEY_FEE = "fee";
