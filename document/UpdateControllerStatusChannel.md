@@ -1,3 +1,9 @@
+# Description
+
+- Request: Facility
+- Respond: Business Server, Attendant, Driver
+- This channel is used to notify controller's available status.
+
 # Publish
 
 ## Topic
