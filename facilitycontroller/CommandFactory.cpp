@@ -25,17 +25,12 @@ void CommandFactory::init()
 
 CreateCommandFn CommandFactory::find(String topic)
 {
-	Serial.println("CommandFactory::find");
-
 	for (SimpleList<Pair>::iterator itr = factoryMap.begin(); itr != factoryMap.end();)
 	{
 		Pair pair = *itr;
 
 		if (topic.indexOf(pair.hint) >= 0)
-		{
-			Serial.print("fount hint: ");
-			Serial.println(pair.hint);
-			delay(1000);
+		{			
 			return (pair.pfnCreate);
 		}
 
@@ -59,18 +54,12 @@ CommandFactory::CommandFactory()
 
 Command * CommandFactory::createCommand(const String topic)
 {
-	Serial.print("CommandFactory::createCommand : ");
-	Serial.println(topic);
-
 	CreateCommandFn pCreateFnc = find(topic);
 
 	if (pCreateFnc == NULL) {
 		Serial.println("pCreateFnc is null");
 		return new Command();
 	}
-	
-	Serial.println("pCreateFnc found");
-	delay(200);
 
 	return (pCreateFnc)();
 }

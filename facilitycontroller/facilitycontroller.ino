@@ -49,8 +49,6 @@ Servo exitGateServo;
 
 void psCallback(char* topic, byte* payload, unsigned int length)
 {	
-//	return;
-
 	Serial.println(topic);
 	Serial.println((char *)payload);
 
