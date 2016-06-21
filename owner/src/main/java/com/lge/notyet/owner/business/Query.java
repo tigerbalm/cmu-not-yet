@@ -30,7 +30,7 @@ public class Query {
                 //select datediff(from_unixtime(1465963300), from_unixtime(1465963199)), from_unixtime(1465963300),from_unixtime(1465963199)
         queryList.add(new GenericQueryHandler(
                 "Peak Usage Hours",
-                new String[]{},
+                new String[]{"From time of the day", "To time of the day", "Usages"},
                 "select @NUM2+1 as 'From time of the day', @NUM2:=t2 as 'To time of the day', truncate(c3, 0) as Usages from (\n" +
                     "select t1 as t2, truncate(@FULLDAYS + (@NUM:= (c2+@NUM)), 0) as c3 from (\n" +
                     "select t1, sum(c1) as c2 from (\n" +
@@ -78,6 +78,7 @@ public class Query {
             @Override
             public void fillMoreSettingPanel(JPanel chooseMoreSettingsPanel) {
                 chooseMoreSettingsPanel.removeAll();
+                chooseMoreSettingsPanel.setLayout(new GridLayout(1,1));
                 customQuery.setText(sqlQueryString);
                 chooseMoreSettingsPanel.add(textScrollPane);
                 chooseMoreSettingsPanel.revalidate();
