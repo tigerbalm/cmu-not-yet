@@ -6,12 +6,12 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
-public class ReservationRequestChannel extends ClientChannelRegistry {
-    private final static String TOPIC = "/facility/%d/reservation";
+public class MakeReservationRequestChannel extends ClientChannelRegistry {
+    private final static String TOPIC = "/facility/%d/make_reservation";
 
     private int facilityId = 0;
 
-    public ReservationRequestChannel(INetworkConnection networkConnection, int facilityId) {
+    public MakeReservationRequestChannel(INetworkConnection networkConnection, int facilityId) {
         super(networkConnection);
         this.facilityId = facilityId;
     }

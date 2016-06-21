@@ -1,6 +1,6 @@
 package com.lge.notyet.driver.manager;
 
-import com.lge.notyet.channels.UpdateControllerStatusSubscribeChannel;
+import com.lge.notyet.channels.ControllerStatusSubscribeChannel;
 import com.lge.notyet.driver.resource.Strings;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.IOnNotify;
@@ -144,23 +144,23 @@ public class SessionManager {
     }
 
     private boolean mControllerAvailable = true;
-    private UpdateControllerStatusSubscribeChannel mUpdateControllerStatusSubscribeChannel = null;
+    private ControllerStatusSubscribeChannel mControllerStatusSubscribeChannel = null;
 
     private void startListenFacilityStatus() {
 
-        if (mUpdateControllerStatusSubscribeChannel == null) {
-            mUpdateControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusChannel();
-            mUpdateControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
-            mUpdateControllerStatusSubscribeChannel.listen();
+        if (mControllerStatusSubscribeChannel == null) {
+            mControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusChannel();
+            mControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
+            mControllerStatusSubscribeChannel.listen();
         }
     }
 
     private void stopListenFacilityStatus() {
 
-        if (mUpdateControllerStatusSubscribeChannel != null) {
-            mUpdateControllerStatusSubscribeChannel.unlisten();
-            mUpdateControllerStatusSubscribeChannel.removeObserver(mControllerStatusChanged);
-            mUpdateControllerStatusSubscribeChannel = null;
+        if (mControllerStatusSubscribeChannel != null) {
+            mControllerStatusSubscribeChannel.unlisten();
+            mControllerStatusSubscribeChannel.removeObserver(mControllerStatusChanged);
+            mControllerStatusSubscribeChannel = null;
         }
     }
 

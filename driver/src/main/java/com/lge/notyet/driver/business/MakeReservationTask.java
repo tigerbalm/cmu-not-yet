@@ -1,6 +1,6 @@
 package com.lge.notyet.driver.business;
 
-import com.lge.notyet.channels.ReservationRequestChannel;
+import com.lge.notyet.channels.MakeReservationRequestChannel;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.SessionManager;
 import com.lge.notyet.driver.util.Log;
@@ -30,11 +30,11 @@ public class MakeReservationTask implements Callable<Void> {
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
 
-        ReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
+        MakeReservationRequestChannel rc = ncm.createReservationChannel(mFacilityId);
         rc.addObserver(mMakeReservationResult);
         rc.addTimeoutObserver(mMakeReservationTimeout);
 
-        boolean ret = rc.request(ReservationRequestChannel.createRequestMessage(SessionManager.getInstance().getKey(), mRequestTime));
+        boolean ret = rc.request(MakeReservationRequestChannel.createRequestMessage(SessionManager.getInstance().getKey(), mRequestTime));
         if (mTaskDoneCallback != null && !ret) {
             mTaskDoneCallback.onDone(ITaskDoneCallback.FAIL, null);
         }

@@ -9,7 +9,7 @@ import com.lge.notyet.attendant.business.RequestManualExitTask;
 import com.lge.notyet.attendant.manager.*;
 import com.lge.notyet.attendant.resource.Strings;
 import com.lge.notyet.attendant.util.Log;
-import com.lge.notyet.channels.UpdateControllerStatusSubscribeChannel;
+import com.lge.notyet.channels.ControllerStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
@@ -37,7 +37,7 @@ public class FacilityMonitorPanel implements Screen {
     private JScrollPane mSpSlotStatus;
     private JLabel mLabelLogout;
 
-    private UpdateControllerStatusSubscribeChannel mUpdateControllerStatusSubscribeChannel = null;
+    private ControllerStatusSubscribeChannel mControllerStatusSubscribeChannel = null;
 
     private final AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
     private ScheduledFuture<?> mSlotStatusUpdateThread = null;
@@ -60,10 +60,10 @@ public class FacilityMonitorPanel implements Screen {
     @Override
     public void initScreen() {
 
-        if (mUpdateControllerStatusSubscribeChannel == null) {
-            mUpdateControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusSubscribeChannel();
-            mUpdateControllerStatusSubscribeChannel.listen();
-            mUpdateControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
+        if (mControllerStatusSubscribeChannel == null) {
+            mControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusSubscribeChannel();
+            mControllerStatusSubscribeChannel.listen();
+            mControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
         }
 
         mLabelFacilityName.setText(SessionManager.getInstance().getFacilityName());
@@ -178,9 +178,9 @@ public class FacilityMonitorPanel implements Screen {
     @Override
     public void disposeScreen() {
 
-        if (mUpdateControllerStatusSubscribeChannel != null) {
-            mUpdateControllerStatusSubscribeChannel.unlisten();
-            mUpdateControllerStatusSubscribeChannel = null;
+        if (mControllerStatusSubscribeChannel != null) {
+            mControllerStatusSubscribeChannel.unlisten();
+            mControllerStatusSubscribeChannel = null;
         }
 
         if (mSlotStatusUpdateThreadStarted.get()) {

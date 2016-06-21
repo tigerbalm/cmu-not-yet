@@ -9,14 +9,14 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
-public class UpdateControllerStatusPublishChannel extends PublishChannel {
+public class ControllerStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/controller/%s";
     private static final String KEY_AVAILABLE = "available";
     private static final String KEY_UPDATED = "updated";
 
     private final String controllerPhysicalId;
 
-    public UpdateControllerStatusPublishChannel(INetworkConnection networkConnection, String controllerPhysicalId) {
+    public ControllerStatusPublishChannel(INetworkConnection networkConnection, String controllerPhysicalId) {
         super(networkConnection);
         this.controllerPhysicalId = controllerPhysicalId;
     }

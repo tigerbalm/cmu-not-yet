@@ -5,10 +5,10 @@ import com.lge.notyet.lib.comm.ServerChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
-public class ReservationResponseChannel extends ServerChannelRegistry {
-    private final static String mTopic = "/facility/+/reservation/#";
+public class MakeReservationResponseChannel extends ServerChannelRegistry {
+    private final static String mTopic = "/facility/+/make_reservation/#";
 
-    public ReservationResponseChannel(INetworkConnection networkConnection) {
+    public MakeReservationResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
     }
 

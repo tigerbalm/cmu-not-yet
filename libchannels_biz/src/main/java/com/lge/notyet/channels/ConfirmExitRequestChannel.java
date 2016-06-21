@@ -26,7 +26,7 @@ public class ConfirmExitRequestChannel extends ClientChannelRegistry {
     }
 
     public static String getControllerPhysicalId(Uri uri) {
-        return (String) uri.getPathSegments().get(1);
+        return (String) uri.getPathSegments().get(2);
     }
 
     public static int getSlotNumber(NetworkMessage networkMessage) {

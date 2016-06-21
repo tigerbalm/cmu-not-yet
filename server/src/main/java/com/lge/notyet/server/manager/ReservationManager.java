@@ -30,6 +30,8 @@ public class ReservationManager {
 
     public interface Listener {
         void onReservationExpired(int reservationId);
+        void onTransactionStarted(int reservationId);
+        void onTransactionEnded(int reservationId);
     }
 
     public void registerListener(Listener listener) {
@@ -67,7 +69,7 @@ public class ReservationManager {
                         final List<JsonObject> reservationObjectList = ar2.result();
                         for (JsonObject reservationObject : reservationObjectList) {
                             final int reservationId = reservationObject.get("id").asInt();
-                            removeReservation(reservationId, ar -> {
+                            cancelReservation(reservationId, ar -> {
                                 if (ar.succeeded()) {
                                     listenerSet.forEach(listener -> listener.onReservationExpired(reservationId));
                                 }
@@ -254,6 +256,7 @@ public class ReservationManager {
                                                    if (ar6.failed()) {
                                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar6.cause())));
                                                    } else {
+                                                       listenerSet.forEach(listener -> listener.onTransactionEnded(reservationId));
                                                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
                                                    }
                                                });
@@ -282,6 +285,7 @@ public class ReservationManager {
                         databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar2.cause())));
                     } else {
                         vertx.cancelTimer(timerMap.get(reservationId));
+                        listenerSet.forEach(listener -> listener.onTransactionStarted(reservationId));
                         databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
                     }
                 });
@@ -289,8 +293,8 @@ public class ReservationManager {
         });
     }
 
-    public void removeReservation(int reservationId, Handler<AsyncResult<Void>> handler) {
-        logger.info("removeReservation: reservationId=" + reservationId);
+    public void cancelReservation(int reservationId, Handler<AsyncResult<Void>> handler) {
+        logger.info("cancelReservation: reservationId=" + reservationId);
         getReservation(reservationId, ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -301,7 +305,7 @@ public class ReservationManager {
                         handler.handle(Future.failedFuture(ar2.cause()));
                     } else {
                         final SQLConnection sqlConnection = ar2.result();
-                        databaseProxy.deleteReservation(sqlConnection, reservationId, ar3 -> {
+                        databaseProxy.updateReservationActivated(sqlConnection, reservationId, false, ar3 -> {
                             if (ar3.failed()) {
                                 handler.handle(Future.failedFuture(ar3.cause()));
                                 databaseProxy.closeConnection(sqlConnection, false, ar -> {});

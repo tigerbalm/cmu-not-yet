@@ -70,8 +70,8 @@ public class NetworkConnectionManager {
         }
     }
 
-    public ReservationRequestChannel createReservationChannel(int facility) {
-        return new ReservationRequestChannel(mNc, facility);
+    public MakeReservationRequestChannel createReservationChannel(int facility) {
+        return new MakeReservationRequestChannel(mNc, facility);
     }
 
     public LoginRequestChannel createLoginChannel() {
@@ -98,7 +98,7 @@ public class NetworkConnectionManager {
         return new CancelReservationRequestChannel(mNc, reservationId);
     }
 
-    public UpdateControllerStatusSubscribeChannel createUpdateControllerStatusChannel() {
-        return new UpdateControllerStatusSubscribeChannel(mNc);
+    public ControllerStatusSubscribeChannel createUpdateControllerStatusChannel() {
+        return new ControllerStatusSubscribeChannel(mNc);
     }
 }
