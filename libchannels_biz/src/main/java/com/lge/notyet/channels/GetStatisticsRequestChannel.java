@@ -10,7 +10,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
 public class GetStatisticsRequestChannel extends ClientChannelRegistry {
-    private final static String TOPIC = "/facility/dbquery/get";
+    private final static String TOPIC = "/facility/statistics/get";
     private final static String KEY_SESSION_KEY = "session_key";
     private final static String KEY_DB_QUERY_KEY = "dbquery_key";
 
