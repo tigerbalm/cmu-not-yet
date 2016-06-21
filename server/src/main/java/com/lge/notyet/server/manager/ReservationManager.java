@@ -301,7 +301,7 @@ public class ReservationManager {
                         handler.handle(Future.failedFuture(ar2.cause()));
                     } else {
                         final SQLConnection sqlConnection = ar2.result();
-                        databaseProxy.deleteReservation(sqlConnection, reservationId, ar3 -> {
+                        databaseProxy.updateReservationActivated(sqlConnection, reservationId, false, ar3 -> {
                             if (ar3.failed()) {
                                 handler.handle(Future.failedFuture(ar3.cause()));
                                 databaseProxy.closeConnection(sqlConnection, false, ar -> {});

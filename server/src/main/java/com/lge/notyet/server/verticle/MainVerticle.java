@@ -47,6 +47,7 @@ public class MainVerticle extends AbstractVerticle {
             if (ar.succeeded()) {
                 startFuture.complete();
                 startManagers();
+                registerListeners();
                 listenChannels();
             } else {
                 startFuture.fail(ar.cause());
@@ -59,6 +60,12 @@ public class MainVerticle extends AbstractVerticle {
         reservationManager = ReservationManager.getInstance(vertx);
         facilityManager = FacilityManager.getInstance();
         statisticsManager = StatisticsManager.getInstance();
+    }
+
+    private void registerListeners() {
+        reservationManager.registerListener(reservationId -> {
+            // TODO
+        });
     }
 
     private void listenChannels() {
@@ -174,6 +181,7 @@ public class MainVerticle extends AbstractVerticle {
                         ar2.cause().printStackTrace();
                     } else {
                         logger.info("updateSlotStatus: slot=" + slotObject + " updated parked=" + parked);
+                        notifyControllerUpdated(controllerPhysicalId);
                     }
                 });
             }
