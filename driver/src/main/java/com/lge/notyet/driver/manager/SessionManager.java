@@ -144,9 +144,9 @@ public class SessionManager {
     }
 
     private boolean mControllerAvailable = true;
-    UpdateControllerStatusSubscribeChannel mUpdateControllerStatusSubscribeChannel = null;
+    private UpdateControllerStatusSubscribeChannel mUpdateControllerStatusSubscribeChannel = null;
 
-    public void startListenFacilityStatus() {
+    private void startListenFacilityStatus() {
 
         if (mUpdateControllerStatusSubscribeChannel == null) {
             mUpdateControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusChannel();
@@ -155,7 +155,7 @@ public class SessionManager {
         }
     }
 
-    public void stopListenFacilityStatus() {
+    private void stopListenFacilityStatus() {
 
         if (mUpdateControllerStatusSubscribeChannel != null) {
             mUpdateControllerStatusSubscribeChannel.unlisten();

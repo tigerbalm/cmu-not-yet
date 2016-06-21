@@ -9,12 +9,8 @@ import com.lge.notyet.driver.resource.Strings;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.driver.util.NumberUtils;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import com.sun.deploy.util.StringUtils;
-import com.sun.org.apache.xpath.internal.operations.Number;
 
 import javax.swing.*;
-import javax.swing.text.NumberFormatter;
-import java.text.NumberFormat;
 
 public class SignupPanel implements Screen {
 
