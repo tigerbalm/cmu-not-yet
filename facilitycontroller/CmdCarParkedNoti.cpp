@@ -28,7 +28,7 @@ String CmdCarParkedNoti::getBody()
 
 	JsonObject& root = jsonBuffer.createObject();
 	root["parked"] = 1;
-	root["reservation_no"] = bookingNo;
+	root["confirmation_no"] = bookingNo;
 	root["_msg_type_"] = 0;
 
 	String body;
