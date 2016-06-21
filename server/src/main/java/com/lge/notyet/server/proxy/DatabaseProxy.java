@@ -408,6 +408,15 @@ public class DatabaseProxy {
         updateWithParams(connection, sql, parameters, resultHandler);
     }
 
+    public void updateReservationSlot(SQLConnection connection, int reservationId, int slotId,  Handler<AsyncResult<JsonArray>> resultHandler) {
+        logger.info("updateReservationSlot: reservationId=" + reservationId + ", slotId=" + slotId);
+        String sql = "update reservation set slot_id=? where id=?";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(slotId);
+        parameters.add(reservationId);
+        updateWithParams(connection, sql, parameters, resultHandler);
+    }
+
     public void updateTransaction(SQLConnection connection, int reservationIdId, int endTs, double revenue, Handler<AsyncResult<JsonArray>> resultHandler) {
         logger.info("updateTransaction: reservationId=" + reservationIdId + ", endTs=" + endTs + ", revenue=" + revenue);
         String sql = "update transaction set end_ts=?, revenue=? where reservation_id=?";

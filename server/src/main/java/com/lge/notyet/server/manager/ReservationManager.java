@@ -3,7 +3,6 @@ package com.lge.notyet.server.manager;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.server.exception.InvalidConfirmationNumberException;
 import com.lge.notyet.server.exception.NoReservationExistException;
-import com.lge.notyet.server.exception.SureParkException;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -218,6 +217,35 @@ public class ReservationManager {
                             }
                         });
                     }
+                });
+            }
+        });
+    }
+
+    public void reallocateSlot(int reservationId, int parkedSlotId, int reservedSlotId, Handler<AsyncResult<Void>> handler) {
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.updateReservationSlot(sqlConnection, reservationId, parkedSlotId, ar2 -> {
+                   if (ar2.failed()) {
+                       databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar2.cause())));
+                   } else {
+                       databaseProxy.updateSlotReserved(sqlConnection, parkedSlotId, true, ar3 -> {
+                           if (ar3.failed()) {
+                               databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
+                           } else {
+                               databaseProxy.updateSlotReserved(sqlConnection, reservedSlotId, true, ar4 -> {
+                                   if (ar4.failed()) {
+                                       databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
+                                   } else {
+                                       databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                                   }
+                               });
+                           }
+                       });
+                   }
                 });
             }
         });
