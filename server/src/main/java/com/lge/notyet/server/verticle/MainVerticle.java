@@ -112,7 +112,7 @@ public class MainVerticle extends AbstractVerticle {
         new SlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
         new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(message)).listen();
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
-        new GetDBQueryResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
+        new GetStatisticsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
         new MakeReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
         new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmEnter(uri, message)).listen();
         new ConfirmExitResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmLeave(uri, message)).listen();
@@ -309,8 +309,8 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void getStatistics(NetworkMessage message) {
-        final String sessionKey = GetDBQueryRequestChannel.getSessionKey(message);
-        final String query = GetDBQueryRequestChannel.getKeyDbqueryKey(message);
+        final String sessionKey = GetStatisticsRequestChannel.getSessionKey(message);
+        final String query = GetStatisticsRequestChannel.getKeyDbqueryKey(message);
 
         authenticationManager.checkUserType(sessionKey, User.USER_TYPE_OWNER, ar1 -> {
             if (ar1.failed()) {
@@ -323,7 +323,7 @@ public class MainVerticle extends AbstractVerticle {
                         final Statistics statistics = ar2.result();
                         final List<String> colunmnameList = statistics.getColunmnameList();
                         final List<JsonArray> valuesList = statistics.getValuesList();
-                        communicationProxy.responseSuccess(message, GetDBQueryResponseChannel.createResponseObject(colunmnameList, valuesList));
+                        communicationProxy.responseSuccess(message, GetStatisticsResponseChannel.createResponseObject(colunmnameList, valuesList));
                     }
                 });
             }

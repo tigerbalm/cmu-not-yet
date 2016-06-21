@@ -1,6 +1,6 @@
 package com.lge.notyet.owner.manager;
 
-import com.lge.notyet.channels.GetDBQueryRequestChannel;
+import com.lge.notyet.channels.GetStatisticsRequestChannel;
 import com.lge.notyet.channels.GetFacilitiesRequestChannel;
 import com.lge.notyet.channels.LoginRequestChannel;
 import com.lge.notyet.channels.UpdateFacilityRequestChannel;
@@ -74,8 +74,8 @@ public class NetworkConnectionManager {
         return new LoginRequestChannel(mNc);
     }
 
-    public GetDBQueryRequestChannel createGetDBQueryRequestChannel() {
-        return new GetDBQueryRequestChannel(mNc);
+    public GetStatisticsRequestChannel createGetDBQueryRequestChannel() {
+        return new GetStatisticsRequestChannel(mNc);
     }
 
     public GetFacilitiesRequestChannel createGetFacilitiesRequestChannel() {

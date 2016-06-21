@@ -1,11 +1,11 @@
 //package com.lge.notyet.owner.ui;
 //
 //import com.eclipsesource.json.JsonValue;
-//import com.lge.notyet.channels.GetDBQueryResponseChannel;
+//import com.lge.notyet.channels.GetStatisticsResponseChannel;
 //import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 //import com.lge.notyet.owner.business.GenericQueryHandler;
 //import com.lge.notyet.owner.business.StateMachine;
-//import com.lge.notyet.owner.business.dbQueryTask;
+//import com.lge.notyet.owner.business.StatisticsTask;
 //import com.lge.notyet.owner.manager.SessionManager;
 //import com.lge.notyet.owner.manager.TaskManager;
 //import com.lge.notyet.owner.util.Log;
@@ -39,7 +39,7 @@
 //    private void onOK() {
 //        resultArea.setText(StateMachine.getInstance().getQuery()+"\r\n");
 //        //dbQueryMysqlNetworking.getInstance().queryServer(resultArea, StateMachine.getInstance().getSqlQuery() );
-//        TaskManager.getInstance().runTask(dbQueryTask.getTask(StateMachine.getInstance().getSqlQuery(), mQueryResponseCallback));
+//        TaskManager.getInstance().runTask(StatisticsTask.getTask(StateMachine.getInstance().getSqlQuery(), mQueryResponseCallback));
 //    }
 //
 //    private ITaskDoneCallback mQueryResponseCallback = new ITaskDoneCallback() {
@@ -64,9 +64,9 @@
 //                int success = resMsg.getMessage().get("success").asInt();
 //
 //                if (success == 1) { // Success
-//                    GenericQueryHandler.handleResult(resultArea, resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT));
+//                    GenericQueryHandler.handleResult(resultArea, resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_RESULT));
 //
-//                    Log.log(LOG_TAG, "Success to query DB, resultSet is " + resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT).toString());
+//                    Log.log(LOG_TAG, "Success to query DB, resultSet is " + resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_RESULT).toString());
 //
 //                } else if (success == 0) {
 //                    Log.log(LOG_TAG, "Failed to query DB, fail cause is " + resMsg.getMessage().get("cause").asString());
