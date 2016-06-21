@@ -301,6 +301,16 @@ public class DatabaseProxy {
         queryWithParams(connection, sql, parameters, resultHandler);
     }
 
+    public void selectExpiredReservation(SQLConnection connection, int currentTs, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        logger.info("selectReservation: currentTs=" + currentTs);
+        String sql = "select *" +
+                " from reservation" +
+                " where expiration_ts>=?";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(currentTs);
+        queryWithParams(connection, sql, parameters, resultHandler);
+    }
+
     public void selectReservationByConfirmationNumber(SQLConnection connection, int confirmationNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservationByConfirmationNumber: confirmationNumber=" + confirmationNumber);
         String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name, reservation.fee, reservation.fee_unit, reservation.expiration_ts" +
