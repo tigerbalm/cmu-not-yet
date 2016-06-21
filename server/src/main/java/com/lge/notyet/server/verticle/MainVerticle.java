@@ -22,7 +22,7 @@ import java.util.Random;
 import static com.lge.notyet.server.manager.ReservationManager.*;
 
 public class MainVerticle extends AbstractVerticle {
-    private static final String BROKER_HOST = "192.168.1.21"; // "localhost";
+    private static final String BROKER_HOST = "localhost";
     private static final boolean REDUNDANCY = false;
     private static final String DB_HOST = "localhost";
     private static final String DB_USERNAME = "dba";
@@ -73,6 +73,7 @@ public class MainVerticle extends AbstractVerticle {
                         final JsonObject reservationObject = ar.result();
                         final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
                         notifyControllerUpdated(controllerPhysicalId);
+                        notifyReservationExpired(reservationId);
                     }
                 });
             }
