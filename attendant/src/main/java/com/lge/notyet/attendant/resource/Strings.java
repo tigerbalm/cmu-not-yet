@@ -16,7 +16,8 @@ public class Strings {
 
     public static final String MANUAL_PAYMENT = "Do you want to release this slot manually?\nThe system will charge parking fee";
 
-    public static final String CONTROLLER_ERROR = "Facility has a problem";
+    public static final String CONTROLLER_UNAVAILABLE = "Please check it.\nFacility has a unavailable section : ";
+    public static final String CONTROLLER_ERROR_REPORT = "Error reported from section : ";
 
     public static final String WRONG_ACCOUNT = "You tried to access with wrong account";
     public static final String SERVER_ERROR = "Server error";
