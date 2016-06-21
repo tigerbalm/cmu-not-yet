@@ -35,7 +35,8 @@
 ```
 {
   'success': 1
-  'result': SQL query result
+  'columnnames': [ 'col1', 'col2', ... ],
+  'values': [ [ 'value11', 'value12', ... ], [ ... ] ] 
 }
 ```
 

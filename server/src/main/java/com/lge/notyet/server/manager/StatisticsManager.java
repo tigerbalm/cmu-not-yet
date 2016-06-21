@@ -1,6 +1,7 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonArray;
+import com.lge.notyet.server.model.Statistics;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -31,7 +32,7 @@ public class StatisticsManager {
         }
     }
 
-    public void getStatisticsByQuery(String query, Handler<AsyncResult<List<JsonArray>>> handler) {
+    public void getStatisticsByQuery(String query, Handler<AsyncResult<Statistics>> handler) {
         logger.info("getStatisticsByQuery: query=" + query);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
@@ -44,8 +45,8 @@ public class StatisticsManager {
                         databaseProxy.closeConnection(sqlConnection, ar3 -> {
                         });
                     } else {
-                        List<JsonArray> objects = ar2.result();
-                        handler.handle(Future.succeededFuture(objects));
+                        Statistics statistics = ar2.result();
+                        handler.handle(Future.succeededFuture(statistics));
                         databaseProxy.closeConnection(sqlConnection, ar4 -> {
                         });
                     }
