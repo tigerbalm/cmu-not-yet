@@ -114,8 +114,8 @@ public class TestServer {
         public void onConnected() {
             Log.logd(LOG_TAG, "onConnected");
             mTestSubscribeChannel.listen();
-            mReservationResponseChannel.listen();
-            mReservationResponseChannel.addObserver(mReservationRequestReceived);
+            mMakeReservationResponseChannel.listen();
+            mMakeReservationResponseChannel.addObserver(mReservationRequestReceived);
             mLoginResponseChannel.listen();
             mLoginResponseChannel.addObserver(mLoginRequestReceived);
             mReservableFacilitiesResponseChannel.listen();
@@ -141,7 +141,7 @@ public class TestServer {
     };
 
     private TestSubscribeChannel mTestSubscribeChannel = null;
-    private ReservationResponseChannel mReservationResponseChannel = null;
+    private MakeReservationResponseChannel mMakeReservationResponseChannel = null;
     private LoginResponseChannel mLoginResponseChannel = null;
     private ReservableFacilitiesResponseChannel mReservableFacilitiesResponseChannel = null;
     private GetReservationResponseChannel mGetReservationResponseChannel = null;
@@ -152,7 +152,7 @@ public class TestServer {
 
         mNc = new MqttNetworkConnection(null);
         mTestSubscribeChannel = new TestSubscribeChannel(mNc);
-        mReservationResponseChannel = new ReservationResponseChannel(mNc);
+        mMakeReservationResponseChannel = new MakeReservationResponseChannel(mNc);
         mLoginResponseChannel = new LoginResponseChannel(mNc);
         mReservableFacilitiesResponseChannel = new ReservableFacilitiesResponseChannel(mNc);
         mGetReservationResponseChannel = new GetReservationResponseChannel(mNc);

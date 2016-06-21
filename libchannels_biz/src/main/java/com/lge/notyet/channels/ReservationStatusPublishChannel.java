@@ -12,7 +12,7 @@ import com.sun.javafx.binding.StringFormatter;
 public class ReservationStatusPublishChannel extends PublishChannel {
     private static final String TOPIC = "/reservation/%d";
     private static final String KEY_EXPIRED = "available";
-    private static final String KEY_PAID = "paid";
+    private static final String KEY_TRANSACTION = "transaction";
 
     private final int reservationId;
 
@@ -37,18 +37,27 @@ public class ReservationStatusPublishChannel extends PublishChannel {
 
     public static boolean isPaid(NetworkMessage networkMessage) {
         JsonObject object = (JsonObject) networkMessage.getMessage();
-        return object.get(KEY_PAID) != null;
+        return object.get(KEY_TRANSACTION) != null;
     }
 
-    public static NetworkMessage createExpiredMessage(boolean updated) {
+    public static NetworkMessage createExpiredMessage() {
         JsonObject object = new JsonObject();
-        object.add(KEY_EXPIRED, updated ? 1: 0);
+        object.add(KEY_EXPIRED, 1);
         return new MqttNetworkMessage(object);
     }
 
-    public static NetworkMessage createPaidMessage(boolean updated) {
-        JsonObject object = new JsonObject();
-        object.add(KEY_PAID, updated ? 1: 0);
-        return new MqttNetworkMessage(object);
+    public static NetworkMessage createPaidMessage(JsonObject reservationObject) {
+        reservationObject.add(KEY_TRANSACTION, 1);
+        return new MqttNetworkMessage(reservationObject);
+    }
+
+    public static NetworkMessage createTransactionStartedMessage(JsonObject reservationObject) {
+        reservationObject.add(KEY_TRANSACTION, 1);
+        return new MqttNetworkMessage(reservationObject);
+    }
+
+    public static NetworkMessage createTransactionEndedMessage(JsonObject reservationObject) {
+        reservationObject.add(KEY_TRANSACTION, 0);
+        return new MqttNetworkMessage(reservationObject);
     }
 }

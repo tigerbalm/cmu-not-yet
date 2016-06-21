@@ -9,7 +9,7 @@
 ## Topic
 
 ```
-/facility/{facility_id}/reservation
+/facility/{facility_id}/make_reservation
 ```
 
 ## Body
@@ -25,7 +25,7 @@
 ## Topic
 
 ```
-/facility/{facility_id}/reservation/#
+/facility/{facility_id}/make_reservation/#
 ```
 
 ## Body

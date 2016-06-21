@@ -30,6 +30,8 @@ public class ReservationManager {
 
     public interface Listener {
         void onReservationExpired(int reservationId);
+        void onTransactionStarted(int reservationId);
+        void onTransactionEnded(int reservationId);
     }
 
     public void registerListener(Listener listener) {
@@ -254,6 +256,7 @@ public class ReservationManager {
                                                    if (ar6.failed()) {
                                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar6.cause())));
                                                    } else {
+                                                       listenerSet.forEach(listener -> listener.onTransactionEnded(reservationId));
                                                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
                                                    }
                                                });
@@ -282,6 +285,7 @@ public class ReservationManager {
                         databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar2.cause())));
                     } else {
                         vertx.cancelTimer(timerMap.get(reservationId));
+                        listenerSet.forEach(listener -> listener.onTransactionStarted(reservationId));
                         databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
                     }
                 });

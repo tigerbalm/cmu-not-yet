@@ -19,6 +19,8 @@ import io.vertx.core.logging.LoggerFactory;
 import java.util.List;
 import java.util.Random;
 
+import static com.lge.notyet.server.manager.ReservationManager.*;
+
 public class MainVerticle extends AbstractVerticle {
     private static final String BROKER_HOST = "192.168.1.21"; // "localhost";
     private static final boolean REDUNDANCY = false;
@@ -57,20 +59,43 @@ public class MainVerticle extends AbstractVerticle {
 
     private void startManagers() {
         authenticationManager = AuthenticationManager.getInstance();
-        reservationManager = ReservationManager.getInstance(vertx);
+        reservationManager = getInstance(vertx);
         facilityManager = FacilityManager.getInstance();
         statisticsManager = StatisticsManager.getInstance();
     }
 
     private void registerListeners() {
-        reservationManager.registerListener(reservationId -> {
-            reservationManager.getReservation(reservationId, ar -> {
-                if (ar.succeeded()) {
-                    final JsonObject reservationObject = ar.result();
-                    final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
-                    notifyControllerUpdated(controllerPhysicalId);
-                }
-            });
+        reservationManager.registerListener(new Listener() {
+            @Override
+            public void onReservationExpired(int reservationId) {
+                reservationManager.getReservation(reservationId, ar -> {
+                    if (ar.succeeded()) {
+                        final JsonObject reservationObject = ar.result();
+                        final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                        notifyControllerUpdated(controllerPhysicalId);
+                    }
+                });
+            }
+
+            @Override
+            public void onTransactionStarted(int reservationId) {
+                reservationManager.getReservation(reservationId, ar -> {
+                    if (ar.succeeded()) {
+                        final JsonObject reservationObject = ar.result();
+                        notifyTransactionStarted(reservationId, reservationObject);
+                    }
+                });
+            }
+
+            @Override
+            public void onTransactionEnded(int reservationId) {
+                reservationManager.getReservation(reservationId, ar -> {
+                    if (ar.succeeded()) {
+                        final JsonObject reservationObject = ar.result();
+                        notifyTransactionEnded(reservationId, reservationObject);
+                    }
+                });
+            }
         });
     }
 
@@ -85,7 +110,7 @@ public class MainVerticle extends AbstractVerticle {
         new GetFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getFacilities(message)).listen();
         new GetSlotsResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getSlots(uri, message)).listen();
         new GetDBQueryResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getStatistics(message)).listen();
-        new ReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
+        new MakeReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> makeReservation(uri, message)).listen();
         new ConfirmReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmEnter(uri, message)).listen();
         new ConfirmExitResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> confirmLeave(uri, message)).listen();
         new GetReservationResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservation(message)).listen();
@@ -123,7 +148,7 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void getReservableFacilities(NetworkMessage message) {
-        final String sessionKey = ReservationRequestChannel.getSessionKey(message);
+        final String sessionKey = MakeReservationRequestChannel.getSessionKey(message);
 
         authenticationManager.checkUserType(sessionKey, User.USER_TYPE_DRIVER, ar1 -> {
             if (ar1.failed()) {
@@ -279,9 +304,9 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void makeReservation(Uri uri, NetworkMessage message) {
-        final String sessionKey = ReservationRequestChannel.getSessionKey(message);
-        final int facilityId = ReservationRequestChannel.getFacilityId(uri);
-        final int reservationTs = ReservationRequestChannel.getReservationTs(message);
+        final String sessionKey = MakeReservationRequestChannel.getSessionKey(message);
+        final int facilityId = MakeReservationRequestChannel.getFacilityId(uri);
+        final int reservationTs = MakeReservationRequestChannel.getReservationTs(message);
 
         authenticationManager.getSessionUser(sessionKey, ar1 -> {
             if (ar1.failed()) {
@@ -422,6 +447,18 @@ public class MainVerticle extends AbstractVerticle {
                 });
             }
         });
+    }
+
+    private void notifyReservationExpired(int reservationId) {
+        new ReservationStatusPublishChannel(communicationProxy.getNetworkConnection(), reservationId).notify(ReservationStatusPublishChannel.createExpiredMessage());
+    }
+
+    private void notifyTransactionStarted(int reservationId, JsonObject reservationObject) {
+        new ReservationStatusPublishChannel(communicationProxy.getNetworkConnection(), reservationId).notify(ReservationStatusPublishChannel.createTransactionStartedMessage(reservationObject));
+    }
+
+    private void notifyTransactionEnded(int reservationId, JsonObject reservationObject) {
+        new ReservationStatusPublishChannel(communicationProxy.getNetworkConnection(), reservationId).notify(ReservationStatusPublishChannel.createTransactionEndedMessage(reservationObject));
     }
 
     private void notifyControllerUpdated(String controllerPhysicalId) {

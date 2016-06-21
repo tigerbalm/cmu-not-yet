@@ -70,8 +70,8 @@ public class NetworkConnectionManager {
         }
     }
 
-    public ReservationRequestChannel createReservationChannel(int facility) {
-        return new ReservationRequestChannel(mNc, facility);
+    public MakeReservationRequestChannel createReservationChannel(int facility) {
+        return new MakeReservationRequestChannel(mNc, facility);
     }
 
     public LoginRequestChannel createLoginChannel() {
