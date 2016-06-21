@@ -27,6 +27,11 @@ public class LoginPanel {
     public static void main(String[] args){
         JDialog loginDialog = new JDialog();
         loginDialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        loginDialog.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
         loginDialog.add(new LoginPanel().getRootPanel());
         loginDialog.pack();
         loginDialog.setModal(true);
