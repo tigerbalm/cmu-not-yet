@@ -12,9 +12,12 @@ import com.lge.notyet.owner.manager.TaskManager;
 import com.lge.notyet.owner.util.Log;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashMap;
 
 public class ConfigurationUI extends JDialog {
@@ -87,6 +90,29 @@ public class ConfigurationUI extends JDialog {
                     FacilityData tempFacilityData;
                     String tempFacilityID;
                     boolean firstValue=true;
+
+                    NumberFormat integerFormat = NumberFormat.getInstance();
+                    NumberFormatter integerFormatter = new NumberFormatter(integerFormat);
+                    integerFormatter.setValueClass(Integer.class);
+                    integerFormatter.setMinimum(0);
+                    integerFormatter.setMaximum(Integer.MAX_VALUE);
+                    integerFormatter.setAllowsInvalid(false);
+                    integerFormatter.setCommitsOnValidEdit(true);// If you want the value to be committed on each keystroke instead of focus lost
+
+                    DecimalFormat floatFormat = new DecimalFormat("####.##");
+//                    NumberFormatter floatFormatter = new NumberFormatter(floatFormat);
+//                    floatFormatter.setValueClass(Double.class);
+//                    floatFormatter.setMinimum(0);
+//                    floatFormatter.setMaximum(Float.MAX_VALUE);
+//                    floatFormatter.setAllowsInvalid(false);
+//                    floatFormatter.setCommitsOnValidEdit(true);// If you want the value to be committed on each keystroke instead of focus lost
+                    floatFormat.setMaximumFractionDigits(2);
+                    floatFormat.setMaximumIntegerDigits(5);
+                    NumberFormatter floatFormatter= new NumberFormatter(floatFormat);
+                    floatFormatter.setAllowsInvalid(false);
+                    floatFormatter.setCommitsOnValidEdit(true);
+                    //JFormattedTextField field = new JFormattedTextField(integerFormatter);
+
                     for (JsonValue facilityItem:facilityArray) {
                         JsonObject facilityDetails= (JsonObject)facilityItem;
                         tempPanel= new JPanel();
@@ -105,9 +131,26 @@ public class ConfigurationUI extends JDialog {
                         tempPanel.add(tempRadioButton);
                         tempPanel.add(tempFacilityData.name= new JTextField(facilityDetails.get("name").asString()));
                         facilityList.add(tempPanel);
-                        facilityList.add(tempFacilityData.fee= new JTextField(facilityDetails.get("fee").toString()));
-                        facilityList.add(tempFacilityData.fee_unit= new JTextField(facilityDetails.get("fee_unit").toString()));
-                        facilityList.add(tempFacilityData.grace_period= new JTextField(facilityDetails.get("grace_period").toString()));
+
+//                        tempFacilityData.fee= new JFormattedTextField(floatFormatter);
+//                        ((JFormattedTextField)tempFacilityData.fee).setText(facilityDetails.get("fee").toString());//setValue(new Double(facilityDetails.get("fee").asDouble()));
+//                        facilityList.add(tempFacilityData.fee);
+
+//                        facilityList.add(tempFacilityData.fee= new JTextField(facilityDetails.get("fee").toString()));
+
+                        tempFacilityData.fee= new JFormattedTextField(floatFormatter);
+                        ((JFormattedTextField)tempFacilityData.fee).setText(facilityDetails.get("fee").toString());//setValue(new Double(facilityDetails.get("fee").asDouble()));
+                        facilityList.add(tempFacilityData.fee);
+
+
+                        tempFacilityData.fee_unit= new JFormattedTextField(integerFormatter);
+                        tempFacilityData.fee_unit.setText(facilityDetails.get("fee_unit").toString());
+                        facilityList.add(tempFacilityData.fee_unit);
+
+                        tempFacilityData.grace_period= new JFormattedTextField(integerFormatter);
+                        tempFacilityData.grace_period.setText(facilityDetails.get("grace_period").toString());
+                        facilityList.add(tempFacilityData.grace_period);
+
                     }
                     facilityList.revalidate();
                     Log.log(LOG_TAG, "Success to GetFacilitiesResponse, resultSet is " + resMsg.getMessage().get(GetFacilitiesResponseChannel.KEY_RESULT).toString());
