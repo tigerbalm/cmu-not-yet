@@ -1,27 +1,40 @@
+# Description
+
+- Request: Facility
+- Respond: Business Server, Attendant, Driver
+- This channel is used to notify controller's available status.
+
 # Publish
 
 ## Topic
 
 ```
-/controller/{physical_id}/slot/{slot_number}
+/controller/{controller_physical_id}
 ```
 
 ## Body
 
-### When car is parked at slot #
+### When status updated
 
 ```
 {
-  'parked': 1,
-  'confirmation_no': 5123
+  'updated': 1
 }
 ```
 
-### When car is leaving from slot #
+### When connected
 
 ```
 {
-  'parked': 0,
+  'available': 1,
+}
+```
+
+### When disconnected (Will Message)
+
+```
+{
+  'available': 0
 }
 ```
 
@@ -31,6 +44,7 @@ If you use MQTT connection, following key/value is added in body automatically w
 But when you received the message from channel, it does not exist.
 Hence, you have to add and remove following pair to communicate with other library or entity. i.e. Arduino MQTT library.
 If there is no this pair, the received element regards it as notification.
+
 
 ## Additional body for MQTT
 

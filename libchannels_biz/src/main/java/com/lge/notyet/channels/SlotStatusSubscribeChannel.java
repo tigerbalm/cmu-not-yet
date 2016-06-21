@@ -6,18 +6,18 @@ import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
-public class UpdateSlotStatusSubscribeChannel extends SubscribeChannelRegistry {
+public class SlotStatusSubscribeChannel extends SubscribeChannelRegistry {
     private static final String TOPIC = "/controller/+/slot/+";
     private static final String TOPIC_WITH_PHYSICAL_ID = "/controller/%d/slot/#";
 
     private final int controllerPhysicalId;
 
-    public UpdateSlotStatusSubscribeChannel(INetworkConnection networkConnection) {
+    public SlotStatusSubscribeChannel(INetworkConnection networkConnection) {
         super(networkConnection);
         controllerPhysicalId = -1;
     }
 
-    public UpdateSlotStatusSubscribeChannel(INetworkConnection networkConnection, int controllerPhysicalId) {
+    public SlotStatusSubscribeChannel(INetworkConnection networkConnection, int controllerPhysicalId) {
         super(networkConnection);
         this.controllerPhysicalId = controllerPhysicalId;
     }

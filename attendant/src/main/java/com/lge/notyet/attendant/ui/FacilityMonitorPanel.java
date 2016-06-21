@@ -9,7 +9,7 @@ import com.lge.notyet.attendant.business.RequestManualExitTask;
 import com.lge.notyet.attendant.manager.*;
 import com.lge.notyet.attendant.resource.Strings;
 import com.lge.notyet.attendant.util.Log;
-import com.lge.notyet.channels.UpdateControllerStatusSubscribeChannel;
+import com.lge.notyet.channels.ControllerStatusSubscribeChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
@@ -37,7 +37,7 @@ public class FacilityMonitorPanel implements Screen {
     private JScrollPane mSpSlotStatus;
     private JLabel mLabelLogout;
 
-    private UpdateControllerStatusSubscribeChannel mUpdateControllerStatusSubscribeChannel = null;
+    private ControllerStatusSubscribeChannel mControllerStatusSubscribeChannel = null;
 
     private final AtomicBoolean mSlotStatusUpdateThreadStarted = new AtomicBoolean(false);
     private ScheduledFuture<?> mSlotStatusUpdateThread = null;
@@ -60,10 +60,10 @@ public class FacilityMonitorPanel implements Screen {
     @Override
     public void initScreen() {
 
-        if (mUpdateControllerStatusSubscribeChannel == null) {
-            mUpdateControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusSubscribeChannel();
-            mUpdateControllerStatusSubscribeChannel.listen();
-            mUpdateControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
+        if (mControllerStatusSubscribeChannel == null) {
+            mControllerStatusSubscribeChannel = NetworkConnectionManager.getInstance().createUpdateControllerStatusSubscribeChannel();
+            mControllerStatusSubscribeChannel.listen();
+            mControllerStatusSubscribeChannel.addObserver(mControllerStatusChanged);
         }
 
         mLabelFacilityName.setText(SessionManager.getInstance().getFacilityName());
@@ -178,9 +178,9 @@ public class FacilityMonitorPanel implements Screen {
     @Override
     public void disposeScreen() {
 
-        if (mUpdateControllerStatusSubscribeChannel != null) {
-            mUpdateControllerStatusSubscribeChannel.unlisten();
-            mUpdateControllerStatusSubscribeChannel = null;
+        if (mControllerStatusSubscribeChannel != null) {
+            mControllerStatusSubscribeChannel.unlisten();
+            mControllerStatusSubscribeChannel = null;
         }
 
         if (mSlotStatusUpdateThreadStarted.get()) {
@@ -309,8 +309,9 @@ public class FacilityMonitorPanel implements Screen {
                     int reservation_id = slot.get("reservation_id").isNull() ? -1 : slot.get("reservation_id").asInt();
                     String user_email = slot.get("email").isNull() ? null : slot.get("email").asString();
                     long reservation_ts = slot.get("reservation_ts").isNull() ? -1 : slot.get("reservation_ts").asLong();
+                    boolean is_controller_activated = slot.get("available").isNull() || (slot.get("available").asInt() != 0);
 
-                    SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id, reservation_id, user_email, reservation_ts);
+                    SessionManager.getInstance().addSlot(id, number, occupied == 1, reserved==1, occupied_ts, controller_id, physical_id, reservation_id, user_email, reservation_ts, is_controller_activated);
                 }
 
                 initScreen();

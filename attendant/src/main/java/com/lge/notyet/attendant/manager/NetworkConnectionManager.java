@@ -82,8 +82,8 @@ public class NetworkConnectionManager {
         return new GetSlotsRequestChannel(mNc, facilityId);
     }
 
-    public UpdateControllerStatusSubscribeChannel createUpdateControllerStatusSubscribeChannel() {
-        return new UpdateControllerStatusSubscribeChannel(mNc);
+    public ControllerStatusSubscribeChannel createUpdateControllerStatusSubscribeChannel() {
+        return new ControllerStatusSubscribeChannel(mNc);
     }
 
     public ConfirmExitRequestChannel createConfirmExitRequestChannel(String physicalId) {

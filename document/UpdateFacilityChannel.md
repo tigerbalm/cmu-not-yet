@@ -1,3 +1,9 @@
+# Description
+
+- Request: Owner
+- Respond: Business Server
+- This channel is used to configure parking fee and grace period time.
+
 # Request
 
 ## Topic

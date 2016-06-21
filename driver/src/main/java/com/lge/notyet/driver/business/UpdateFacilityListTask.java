@@ -44,7 +44,7 @@ public class UpdateFacilityListTask implements Callable<Void> {
         public void onResponse(NetworkChannel networkChannel, Uri uri, NetworkMessage message) {
 
             try {
-                Log.logd(LOG_TAG, "mUpdateFacilityListResult Result=" + message.getMessage());
+                Log.logv(LOG_TAG, "mUpdateFacilityListResult Result=" + message.getMessage());
                 if (mTaskDoneCallback != null) mTaskDoneCallback.onDone(ITaskDoneCallback.SUCCESS, message);
 
             } catch (Exception e) {

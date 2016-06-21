@@ -1,3 +1,9 @@
+# Description
+
+- Request: Driver
+- Respond: Business Server
+- This channel is used to modify account information.
+
 # Request
 
 ## Topic

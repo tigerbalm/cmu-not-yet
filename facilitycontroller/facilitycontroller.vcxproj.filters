@@ -129,6 +129,9 @@
     <ClInclude Include="CmdAliveNoti.h">
       <Filter>Header Files\Command</Filter>
     </ClInclude>
+    <ClInclude Include="SlotLedController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CarDetectedListener.cpp">
@@ -208,6 +211,9 @@
     </ClCompile>
     <ClCompile Include="CmdAliveNoti.cpp">
       <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="SlotLedController.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

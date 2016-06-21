@@ -43,13 +43,13 @@ public class ReservationPanel implements Screen {
 
         Calendar calNewYork = Calendar.getInstance();
         calNewYork.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+        calNewYork.add(Calendar.MINUTE, +1);
 
         Calendar maxTime = Calendar.getInstance();
         maxTime.add(Calendar.HOUR_OF_DAY, 3);
         maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         Calendar minTime = Calendar.getInstance();
-        minTime.add(Calendar.MINUTE, -1);
         minTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         SpinnerDateModel model = (SpinnerDateModel)mJSpinnerHour.getModel();

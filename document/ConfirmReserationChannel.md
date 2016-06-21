@@ -1,3 +1,9 @@
+# Description
+
+- Request: Facility
+- Respond: Business Server
+- This channel is used to request to validate reservation number and open entry gate when a car is arrived at entry gate. 
+
 # Request
 
 ## Topic

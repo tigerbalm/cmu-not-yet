@@ -1,3 +1,9 @@
+# Description
+
+- Request: Owner
+- Respond: Business Server
+- This channel is used to request to statistics about the owner's facilities. 
+
 # Request
 
 ## Topic

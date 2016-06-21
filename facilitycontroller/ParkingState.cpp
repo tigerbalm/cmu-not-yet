@@ -26,7 +26,7 @@ void ParkingState::exit()
 {
 	Serial.println("ParkingState::exit()");
 
-	mode = MODE_WAITING_CONFIRM;
+	mode = MODE_WAITING_NUMBER;
 	bookingNo = -1;
 	assignedSlot = -1;	
 }
@@ -46,7 +46,8 @@ void ParkingState::onMessageReceived(Command *command)
 			Serial.print("confirm_reservation success : ");
 			Serial.println(assignedSlot);
 			
-			SlotLedController::getInstance()->on(assignedSlot);
+			//SlotLedController::getInstance()->on(assignedSlot);
+			SlotLedController::getInstance()->blinkOn(assignedSlot);
 
 			EntryGateHelper::open();
 			EntryGateHelper::ledOn();
@@ -144,7 +145,8 @@ void ParkingState::onSlotOccupied(int slotNum)
 		noti->setData(bookingNo, slotNum);
 		noti->send(mqClient);
 		
-		SlotLedController::getInstance()->off(assignedSlot);
+		//SlotLedController::getInstance()->off(assignedSlot);
+		SlotLedController::getInstance()->blinkOff(assignedSlot);
 
 		EntryGateHelper::ledOff();
 		EntryGateHelper::close();

@@ -251,13 +251,13 @@ public class DatabaseProxy {
 
     public void selectFacilitySlots(SQLConnection connection, int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectFacilitySlots: facilityId=" + facilityId);
-        String sql = "select controller_id, physical_id as controller_physical_id, slot.id, number, parked, begin_ts as parked_ts, reserved, reservation.id as reservation_id, reservation_ts, email" +
-                " from facility inner join controller on facility.id=controller.facility_id" +
-                " inner join slot on controller.id=slot.controller_id" +
-                " left join reservation on reservation.slot_id=slot.id" +
-                " left join user on reservation.user_id=user.id" +
-                " left join transaction on transaction.reservation_id=reservation.id" +
-                " where facility.id=?";
+        String sql = "select activated, controller_id, physical_id as controller_physical_id, controller.available, slot.id, number, parked, begin_ts as parked_ts, reserved, ar.id as reservation_id, reservation_ts, email\n" +
+                "from facility inner join controller on facility.id=controller.facility_id\n" +
+                "inner join slot on controller.id=slot.controller_id\n" +
+                "left join (select * from reservation where activated=1) as ar on ar.slot_id=slot.id\n" +
+                "left join user on ar.user_id=user.id\n" +
+                "left join transaction on transaction.reservation_id=ar.id\n" +
+                "where facility.id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(facilityId);
         queryWithParams(connection, sql, parameters, resultHandler);
@@ -290,11 +290,12 @@ public class DatabaseProxy {
 
     public void selectReservation(SQLConnection connection, String controllerPhysicalId, int slotNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservation: controllerPhysicalId=" + controllerPhysicalId + ", slotNumber=" + slotNumber);
-        String sql = "select reservation.id, slot.id as slot_id, fee, fee_unit, expiration_ts, begin_ts" +
-                " from reservation inner join slot on reservation.slot_id=slot.id" +
-                " inner join controller on slot.controller_id=controller.id" +
-                " left join transaction on transaction.reservation_id=reservation.id" +
-                " where physical_id=? and slot.number=?";
+        String sql = "select ar.id, slot.id as slot_id, fee, fee_unit, expiration_ts, begin_ts\n" +
+                "                from (select * from reservation where activated=1) as ar\n" +
+                "                inner join slot on ar.slot_id=slot.id\n" +
+                "                inner join controller on slot.controller_id=controller.id\n" +
+                "                left join transaction on transaction.reservation_id=ar.id\n" +
+                "                where physical_id=? and slot.number=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(controllerPhysicalId);
         parameters.add(slotNumber);
@@ -313,12 +314,12 @@ public class DatabaseProxy {
 
     public void selectReservationByConfirmationNumber(SQLConnection connection, int confirmationNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservationByConfirmationNumber: confirmationNumber=" + confirmationNumber);
-        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name, reservation.fee, reservation.fee_unit, reservation.expiration_ts" +
-                " from reservation inner join slot on reservation.slot_id=slot.id" +
-                " inner join controller on controller.id=slot.controller_id" +
-                " inner join facility on facility.id=controller.facility_id" +
-                " inner join user on user.id = user_id" +
-                " where confirmation_no=?";
+        String sql = "select ar.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name, ar.fee, ar.fee_unit, ar.expiration_ts\n" +
+                "                from (select * from reservation where activated=1) as ar inner join slot on ar.slot_id=slot.id\n" +
+                "                inner join controller on controller.id=slot.controller_id\n" +
+                "                inner join facility on facility.id=controller.facility_id\n" +
+                "                inner join user on user.id = user_id\n" +
+                "                where confirmation_no=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(confirmationNumber);
         queryWithParams(connection, sql, parameters, resultHandler);
@@ -326,13 +327,13 @@ public class DatabaseProxy {
 
     public void selectReservationByUserId(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservationByUserId: userId=" + userId);
-        String sql = "select reservation.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name, reservation.fee, reservation.fee_unit, reservation.expiration_ts" +
-                " from reservation inner join slot on reservation.slot_id=slot.id" +
-                " inner join controller on controller.id=slot.controller_id" +
-                " inner join facility on facility.id=controller.facility_id" +
-                " inner join user on user.id=user_id" +
-                " where user_id=? and reservation.activated=1" +
-                " order by reservation_ts";
+        String sql = "select ar.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name, ar.fee, ar.fee_unit, ar.expiration_ts\n" +
+                "                from (select * from reservation where activated=1) as ar inner join slot on ar.slot_id=slot.id\n" +
+                "                inner join controller on controller.id=slot.controller_id\n" +
+                "                inner join facility on facility.id=controller.facility_id\n" +
+                "                inner join user on user.id=user_id\n" +
+                "                where user_id=?\n" +
+                "                order by reservation_ts";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(userId);
         queryWithParams(connection, sql, parameters, resultHandler);
@@ -373,12 +374,6 @@ public class DatabaseProxy {
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(available ? 1 : 0);
         parameters.add(controllerPhysicalId);
-        updateWithParams(connection, sql, parameters, resultHandler);
-    }
-
-    public void deleteReservation(SQLConnection connection, int reservationId, Handler<AsyncResult<JsonArray>> resultHandler) {
-        String sql = "delete from reservation where id=?";
-        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray().add(reservationId);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
 

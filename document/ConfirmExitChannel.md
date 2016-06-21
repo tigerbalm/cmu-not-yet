@@ -1,3 +1,9 @@
+# Description
+
+- Request: Facility
+- Respond: Business Server
+- This channel is used to request to open exit gate and charge on driver's credit card. 
+
 # Request
 
 ## Topic

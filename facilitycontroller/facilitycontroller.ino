@@ -48,7 +48,7 @@ Servo entryGateServo;
 Servo exitGateServo;
 
 void psCallback(char* topic, byte* payload, unsigned int length)
-{
+{	
 	Serial.println(topic);
 	Serial.println((char *)payload);
 
@@ -94,7 +94,12 @@ void setupNetwork()
 
 void setupMqClient()
 {
-	mqClient.connect();
+	if (mqClient.connect())
+	{
+		CmdAliveNoti* alive = (CmdAliveNoti *)CommandFactory::getInstance()->createCommand(CMD_HINT_MY_STATUS_NOTIFY);
+		alive->setStatus(STATUS_ALIVE);
+		alive->send(&mqClient);
+	}	
 }
 
 void setupController()
@@ -104,6 +109,8 @@ void setupController()
 
 void setupDevice()
 {
+	Serial.println("setupDevice - start");
+
 	// LED
 	SlotLedController::getInstance()->add(1, PARKING_STALL1_LED);
 	SlotLedController::getInstance()->add(2, PARKING_STALL2_LED);
@@ -119,13 +126,17 @@ void setupDevice()
 	ExitGateHelper::attach(exitGateServo);
 	ExitGateHelper::close();
 	ExitGateHelper::ledOff();
+
+	Serial.println("setupDevice - end");
 }
 
 void loop()
 {
+	//Serial.println("loop()");
+
 	SlotLedController::getInstance()->loop();
 	controller.loop();
 	mqClient.loop();
 
-	delay(100);
+	delay(500);
 }

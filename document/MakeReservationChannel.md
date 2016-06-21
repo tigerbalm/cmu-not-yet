@@ -1,9 +1,15 @@
+# Description
+
+- Request: Driver
+- Respond: Business Server
+- This channel is used to make a reservation.
+
 # Request
 
 ## Topic
 
 ```
-/facility/{facility_id}/reservation
+/facility/{facility_id}/make_reservation
 ```
 
 ## Body
@@ -19,7 +25,7 @@
 ## Topic
 
 ```
-/facility/{facility_id}/reservation/#
+/facility/{facility_id}/make_reservation/#
 ```
 
 ## Body

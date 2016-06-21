@@ -1,3 +1,9 @@
+# Description
+
+- Request: Driver
+- Respond: Business Server
+- This channel is used to get all facility list which is available to make a reservation.
+
 # Request
 
 ## Topic

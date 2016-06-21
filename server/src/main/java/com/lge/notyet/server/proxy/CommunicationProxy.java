@@ -3,6 +3,7 @@ package com.lge.notyet.server.proxy;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.*;
+import com.lge.notyet.server.exception.InternalServerErrorException;
 import com.lge.notyet.server.exception.SureParkException;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -98,8 +99,8 @@ public class CommunicationProxy {
     public void responseFail(NetworkMessage message, Throwable cause) {
         if (cause instanceof SureParkException) {
         } else {
-            cause = SureParkException.createInternalServerErrorException();
             cause.printStackTrace();
+            cause = new InternalServerErrorException();
         }
         responseFail(message, cause.getMessage());
     }

@@ -6,10 +6,10 @@ import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 import com.sun.javafx.binding.StringFormatter;
 
-public class UpdateControllerStatusSubscribeChannel extends SubscribeChannelRegistry {
+public class ControllerStatusSubscribeChannel extends SubscribeChannelRegistry {
     private static final String TOPIC = "/controller/+";
 
-    public UpdateControllerStatusSubscribeChannel(INetworkConnection networkConnection) {
+    public ControllerStatusSubscribeChannel(INetworkConnection networkConnection) {
         super(networkConnection);
     }
 
