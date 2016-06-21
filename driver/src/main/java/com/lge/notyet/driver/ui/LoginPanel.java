@@ -161,6 +161,13 @@ public class LoginPanel implements Screen {
                 String controllerPhysicalId = resMsg.getMessage().get("controller_physical_id").asString();
                 // String facilityName = resMsg.getMessage().get("facility_name").asString(); // We will retrieve it from SessionManager
 
+                boolean transaction = resMsg.getMessage().get("begin_ts") != null &&
+                        !resMsg.getMessage().get("begin_ts").isNull();
+
+                if (transaction) {
+                    SessionManager.getInstance().setUnderTransaction(true);
+                }
+
                 SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId, controllerPhysicalId);
                 ScreenManager.getInstance().showReservationHistoryScreen();
 

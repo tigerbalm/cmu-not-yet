@@ -225,6 +225,9 @@ public class MainVerticle extends AbstractVerticle {
                                 if (parkedSlotId != reservedSlotId) {
                                     logger.info("updateSlotStatus: parked incorrectly, perform slot reallocation now");
                                     reservationManager.reallocateSlot(reservationId, parkedSlotId, reservedSlotId, ar -> {
+                                        if (ar.failed()) {
+                                            ar.cause().printStackTrace();
+                                        }
                                         notifyControllerUpdated(controllerPhysicalId);
                                     });
                                 } else {

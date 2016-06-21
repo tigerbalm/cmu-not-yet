@@ -114,7 +114,7 @@ public class ReservationManager {
                 handler.handle(Future.failedFuture(ar1.cause()));
             } else {
                 final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.selectReservationByUserId(sqlConnection, userId, ar2 -> {
+                databaseProxy.selectActivatedReservationByUserId(sqlConnection, userId, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
                         databaseProxy.closeConnection(sqlConnection, ar -> {});
@@ -179,6 +179,33 @@ public class ReservationManager {
         });
     }
 
+    public void getActivatedReservation(int slotId, Handler<AsyncResult<JsonObject>> handler) {
+        logger.info("getActivatedReservation: slotId=" + slotId);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectActivatedReservation(sqlConnection, slotId, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar -> {});
+                    } else {
+                        List<JsonObject> objects = ar2.result();
+                        if (objects.isEmpty()) {
+                            logger.info("getActivatedReservation: slotId=" + slotId + " returns NoReservationExistException()");
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(new NoReservationExistException())));
+                        } else {
+                            final JsonObject reservationObject = objects.get(0);
+                            logger.info("getActivatedReservation: slotId=" + slotId + " returns " + reservationObject);
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(reservationObject)));
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     public void makeReservation(int userId, int slotId, int reservationTs, int confirmationNumber, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonObject>> handler) {
         logger.info("makeReservation: userId=" + userId + ", slotId=" + slotId);
         databaseProxy.openConnection(ar1 -> {
@@ -224,6 +251,7 @@ public class ReservationManager {
     }
 
     public void reallocateSlot(int reservationId, int parkedSlotId, int reservedSlotId, Handler<AsyncResult<Void>> handler) {
+        logger.info("reallocateSlot: reservationId=" + reservationId + ", parkedSlotId=" + parkedSlotId + ", reservedSlotId=" + reservedSlotId);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -233,17 +261,38 @@ public class ReservationManager {
                    if (ar2.failed()) {
                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar2.cause())));
                    } else {
-                       databaseProxy.updateSlotReserved(sqlConnection, parkedSlotId, true, ar3 -> {
+                       getActivatedReservation(parkedSlotId, ar3 -> {
                            if (ar3.failed()) {
-                               databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
-                           } else {
-                               databaseProxy.updateSlotReserved(sqlConnection, reservedSlotId, true, ar4 -> {
-                                   if (ar4.failed()) {
-                                       databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
-                                   } else {
-                                       databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
-                                   }
-                               });
+                                if (ar3.cause() instanceof NoReservationExistException) { // parked slot is not reserved one
+                                    logger.info("reallocateSlot: parked slot is not reserved one");
+                                    databaseProxy.updateSlotReserved(sqlConnection, parkedSlotId, true, ar4 -> {
+                                        if (ar4.failed()) {
+                                            databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
+                                        } else {
+                                            databaseProxy.updateSlotReserved(sqlConnection, reservedSlotId, false, ar5 -> {
+                                                if (ar5.failed()) {
+                                                    databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar5.cause())));
+                                                } else {
+                                                    databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                                                }
+                                            });
+                                        }
+                                    });
+                                } else {
+                                    logger.info("reallocateSlot: failed to get reservation from parkedSlotId=" + parkedSlotId);
+                                    databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
+                                }
+                           } else { // parked slot is reserved one
+                                logger.info("reallocateSlot: parked slot is reserved one, swap slot between two reservations");
+                                final JsonObject reservationObject2 = ar3.result();
+                                final int reservationId2 = reservationObject2.get("id").asInt();
+                                databaseProxy.updateReservationSlot(sqlConnection, reservationId2, reservedSlotId, ar6 -> {
+                                    if (ar6.failed()) {
+                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar6.cause())));
+                                    } else {
+                                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                                    }
+                                });
                            }
                        });
                    }
