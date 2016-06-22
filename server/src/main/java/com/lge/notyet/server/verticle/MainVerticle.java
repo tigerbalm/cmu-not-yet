@@ -6,8 +6,7 @@ import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.Uri;
-import com.lge.notyet.server.exception.NoAuthorizationException;
-import com.lge.notyet.server.exception.NoAvailableSlotException;
+import com.lge.notyet.server.exception.*;
 import com.lge.notyet.server.manager.AuthenticationManager;
 import com.lge.notyet.server.manager.ReservationManager;
 import com.lge.notyet.server.manager.FacilityManager;
@@ -27,8 +26,8 @@ import java.util.List;
 import static com.lge.notyet.server.manager.ReservationManager.*;
 
 public class MainVerticle extends AbstractVerticle {
-    private static final String BROKER_HOST = "128.237.220.77";
-    private static final boolean REDUNDANCY = false;
+    private static final String BROKER_HOST = "192.168.1.21";
+    private static final boolean REDUNDANCY = true;
     private static final String DB_HOST = "localhost";
     private static final String DB_USERNAME = "dba";
     private static final String DB_PASSWORD = "dba";
@@ -434,9 +433,12 @@ public class MainVerticle extends AbstractVerticle {
                 final int reservationId = reservationObject.get("id").asInt();
                 final String reservationControllerPhysicalId = reservationObject.get("controller_physical_id").asString();
                 final int reservationSlotNumber = reservationObject.get("slot_no").asInt();
+                final boolean hasTransaction = !reservationObject.get("begin_ts").isNull();
 
-                if (!controllerPhysicalId.equals(reservationControllerPhysicalId)) {
-                    communicationProxy.responseFail(message, "WRONG_CONTROLLER");
+                if (hasTransaction) {
+                    communicationProxy.responseFail(message, new InvalidConfirmationNumberException());
+                } else if (!controllerPhysicalId.equals(reservationControllerPhysicalId)) {
+                    communicationProxy.responseFail(message, new WrongControllerException());
                 } else {
                     reservationManager.startTransaction(reservationId, ar2 -> {
                         if (ar2.failed()) {
