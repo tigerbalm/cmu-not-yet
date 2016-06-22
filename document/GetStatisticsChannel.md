@@ -9,14 +9,14 @@
 ## Topic
 
 ```
-/facility/dbquery/get
+/facility/statistics/get
 ```
 
 ## Body
 ```
 {
   'session_key' : 'session_value' // owner's session key
-  'dbquery_key' : 'sql_query // SQU Query statement to be executed
+  'dbquery_key' : 'sql_query // SQL Query statement to be executed
 }
 ```
 
@@ -25,7 +25,7 @@
 ## Topic
 
 ```
-/facility/dbquery/get/#
+/facility/statistics/get/#
 ```
 
 ## Body
