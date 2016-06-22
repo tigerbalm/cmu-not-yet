@@ -319,23 +319,9 @@ public class LoginPanel implements Screen {
                 if (success == 1) { // Success
 
                     // int userId = resMsg.getMessage().get("id").asInt(); // I will use SessionKey
-                    int userType = resMsg.getMessage().get("type").asInt();
                     String session = resMsg.getMessage().get("session_key").asString();
                     String creditCard = resMsg.getMessage().get("card_number").asString();
                     String cardExpiration = resMsg.getMessage().get("card_expiration").asString();
-
-                    if (userType != 2) { // Driver
-
-                        Log.logd(LOG_TAG, "This is not driver account");
-
-                        new Thread(() -> {
-                            JOptionPane.showMessageDialog(getRootPanel(),
-                                    Strings.LOGIN_FAILED + ":" + Strings.WRONG_ACCOUNT,
-                                    Strings.APPLICATION_NAME,
-                                    JOptionPane.ERROR_MESSAGE);
-                        }).start();
-                        return;
-                    }
 
                     if (session == null || creditCard == null || cardExpiration == null) {
 

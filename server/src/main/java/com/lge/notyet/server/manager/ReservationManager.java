@@ -14,10 +14,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ReservationManager {
     private static ReservationManager instance = null;
@@ -206,8 +203,9 @@ public class ReservationManager {
         });
     }
 
-    public void makeReservation(int userId, int slotId, int reservationTs, int confirmationNumber, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonObject>> handler) {
+    public void makeReservation(int userId, int slotId, int reservationTs, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonObject>> handler) {
         logger.info("makeReservation: userId=" + userId + ", slotId=" + slotId);
+        final int confirmationNumber = new Random().nextInt((9999 - 1000) + 1) + 1000;
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));

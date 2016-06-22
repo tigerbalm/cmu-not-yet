@@ -76,7 +76,7 @@ public class TestServer {
 
     private final IOnRequest mLoginRequestReceived = (networkChannel, uri, message) -> {
 
-        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, 2, "1111-2222-3333-4444", "12/16", "12345678"));
+        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, "1111-2222-3333-4444", "12/16", "12345678"));
         response.getMessage().add("success", 1);
         Log.logd(LOG_TAG, "Login Requested Received=" + message.getMessage());
         message.responseFor(response);
