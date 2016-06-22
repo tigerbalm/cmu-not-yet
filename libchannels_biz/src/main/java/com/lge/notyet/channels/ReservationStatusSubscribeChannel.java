@@ -1,8 +1,6 @@
 package com.lge.notyet.channels;
 
-import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.INetworkConnection;
-import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.SubscribeChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
@@ -14,7 +12,7 @@ public class ReservationStatusSubscribeChannel extends SubscribeChannelRegistry 
     private static final String KEY_EXPIRED = "expired";
     private static final String KEY_TRANSACTION = "transaction";
 
-    private int mReservationId;
+    private final int mReservationId;
 
     public ReservationStatusSubscribeChannel(INetworkConnection networkConnection) {
         super(networkConnection);

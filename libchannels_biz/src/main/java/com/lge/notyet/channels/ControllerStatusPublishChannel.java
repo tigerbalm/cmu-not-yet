@@ -32,7 +32,7 @@ public class ControllerStatusPublishChannel extends PublishChannel {
 
     public static boolean isUpdated(NetworkMessage networkMessage) {
         JsonObject object = (JsonObject) networkMessage.getMessage();
-        return object.get(KEY_UPDATED) == null ? false : (object.get(KEY_UPDATED).asInt() == 1);
+        return object.get(KEY_UPDATED) != null && (object.get(KEY_UPDATED).asInt() == 1);
     }
 
     public static boolean isAvailable(NetworkMessage networkMessage) {
