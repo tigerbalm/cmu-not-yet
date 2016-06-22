@@ -125,7 +125,7 @@ public class FacilityMonitorPanel implements Screen {
                 Calendar reservedTime = Calendar.getInstance();
                 reservedTime.setTimeInMillis(slot.getReservedTimeStamp() * 1000);
                 reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-                SimpleDateFormat dataFormat = new SimpleDateFormat("hh:mm, MM/dd/yy");
+                SimpleDateFormat dataFormat = new SimpleDateFormat("hh:mm a, MM/dd/yy");
                 dataFormat.setTimeZone(TimeZone.getTimeZone("America/New_York"));
                 labelTime = new JLabel(dataFormat.format(reservedTime.getTime()));
                 labelTime.setForeground(new Color(24, 27, 143));

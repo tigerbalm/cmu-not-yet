@@ -19,6 +19,7 @@ public class SessionManager {
     private int mReservedFacilityId = 0;
     private int mReservedId = -1;
     private boolean mIsUnderTransaction = false;
+    private long mTransactionStartTimeStamp = 0L;
 
     private String mControllerPhysicalId = null;
     private boolean mControllerAvailable = true;
@@ -96,12 +97,20 @@ public class SessionManager {
         mControllerAvailable = controllerAvailable;
     }
 
-    public void setUnderTransaction(boolean iUnderTransaction) {
-        mIsUnderTransaction = iUnderTransaction;
+    public void setUnderTransaction(boolean underTransaction) {
+        mIsUnderTransaction = underTransaction;
     }
 
     public boolean getUnderTransaction() {
         return mIsUnderTransaction;
+    }
+
+    public void setTransactionStartTimeStamp(long transactionStartTimeStamp) {
+        mTransactionStartTimeStamp = transactionStartTimeStamp;
+    }
+
+    public long getTransactionStartTimeStamp() {
+        return mTransactionStartTimeStamp;
     }
 
     public void clearReservationInformation() {
@@ -110,6 +119,7 @@ public class SessionManager {
         mReservedFacilityId = 0;
         mReservedId = -1;
         mIsUnderTransaction = false;
+        mTransactionStartTimeStamp = 0L;
         mControllerPhysicalId = null;
         mControllerAvailable = true;
     }

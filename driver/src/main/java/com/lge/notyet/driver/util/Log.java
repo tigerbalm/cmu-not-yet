@@ -15,7 +15,7 @@ public class Log {
     public static void logd(String tag, String log) {
 
         Calendar reservedTime = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.sss, MM/dd/yyyy z");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.sss, MM/dd/yyyy z");
         sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
         String reservedTimeString = sdf.format(reservedTime.getTime());
 
@@ -27,7 +27,7 @@ public class Log {
         if (!LOGV) {
 
             Calendar reservedTime = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.sss, MM/dd/yyyy z");
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.sss, MM/dd/yyyy z");
             sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
             String reservedTimeString = sdf.format(reservedTime.getTime());
 

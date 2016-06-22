@@ -26,7 +26,6 @@ public class ReservationPanel implements Screen {
     private JComboBox mCbLocation;
     private JTextField mTfCreditCardNumber;
     private JSpinner mJSpinnerHour;
-    private JLabel mLabelModifyAccountInfo;
     private JLabel mLabelLogout;
 
     private class FacilityComboBoxModel extends AbstractListModel implements ComboBoxModel {
@@ -141,24 +140,6 @@ public class ReservationPanel implements Screen {
             setUserInputEnabled(false);
         });
 
-        // Modify Account
-        mLabelModifyAccountInfo.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
-
-        // Modify Account
-        mLabelModifyAccountInfo.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
-
         // Log out
         mLabelLogout.addMouseListener(new MouseAdapter() {
             @Override
@@ -216,14 +197,6 @@ public class ReservationPanel implements Screen {
                 String controllerPhysicalId = resMsg.getMessage().get("controller_physical_id").asString();
 
                 SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId, controllerPhysicalId);
-
-                new Thread(() -> {
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.MAKE_RESERVATION_DONE + confirmationNumber,
-                            Strings.APPLICATION_NAME,
-                            JOptionPane.PLAIN_MESSAGE);
-                }).start();
-
                 ScreenManager.getInstance().showReservationHistoryScreen();
 
             } else if (success == 0) {
