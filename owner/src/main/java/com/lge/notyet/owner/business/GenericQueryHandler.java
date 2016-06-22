@@ -44,9 +44,9 @@ public class GenericQueryHandler extends Query{
         }
         else if(resultSetTableJson.size()>1){
             for(String colName: columnNames){
-                result.append(colName).append("\t");
+                result.append(colName).append("\t\t");
             }
-            result.append("------------\r\n");
+            result.append("\r\n----------------------------\r\n");
             for (JsonValue resultRow : resultSetTableJson) {
                 JsonArray resultRow2 = (JsonArray) resultRow;
                 for (JsonValue entry : resultRow2) {

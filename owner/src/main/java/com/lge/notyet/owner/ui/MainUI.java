@@ -116,9 +116,6 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
-        //FixMe: Add sampling based on time for Query (1) add limiting output size.
-        //FixMe: facilities allowed for this owner.
-        //FixMe: Update database to work without having sql_mode set to null. Query2
         //FixMe: Make dummy input values.->
             //  INSERT INTO `sure-park`.`reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`, `fee`, `fee_unit`, `grace_period`) VALUES ('1', '1', '1', '1', '1', '1', '1', '1', '1');
             // INSERT INTO `sure-park`.`transaction` (`id`, `reservation_id`, `begin_ts`, `end_ts`, `revenue`) VALUES ('1', '1', '1466368729', '1466372329', '400');
