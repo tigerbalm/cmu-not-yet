@@ -314,6 +314,7 @@ public class ReservationManager {
                         handler.handle(Future.failedFuture(ar2.cause()));
                     } else {
                         final JsonObject reservationObject = ar2.result();
+                        final int userId = reservationObject.get("user_id").asInt();
                         final int slotId = reservationObject.get("slot_id").asInt();
                         final int reservationId = reservationObject.get("id").asInt();
                         final double fee = reservationObject.get("fee").asDouble();
@@ -321,29 +322,45 @@ public class ReservationManager {
                         final int beginTs = reservationObject.get("begin_ts").asInt();
                         final double revenue = (endTs - beginTs) / feeUnit * fee; // TODO: need to be more accurate
 
-                        databaseProxy.updateTransaction(sqlConnection, reservationId, endTs, revenue, ar3 -> {
+                        databaseProxy.selectUser(sqlConnection, userId, ar3 -> {
                             if (ar3.failed()) {
                                 databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
                             } else {
-                                databaseProxy.updateReservationActivated(sqlConnection, reservationId, false, ar4 -> {
-                                   if (ar4.failed()) {
-                                       databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
-                                   } else {
-                                       databaseProxy.updateSlotParked(sqlConnection, slotId, false, ar5 -> {
-                                           if (ar5.failed()) {
-                                               databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar5.cause())));
-                                           } else {
-                                               databaseProxy.updateSlotReserved(sqlConnection, slotId, false, ar6 -> {
-                                                   if (ar6.failed()) {
-                                                       databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar6.cause())));
-                                                   } else {
-                                                       listenerSet.forEach(listener -> listener.onTransactionEnded(reservationId));
-                                                       databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
-                                                   }
-                                               });
-                                           }
-                                       });
-                                   }
+                                final JsonObject userObject = ar3.result().get(0);
+                                final String cardNumber = userObject.get("card_number").asString();
+                                final String cardExpiration = userObject.get("card_expiration").asString();
+                                creditCardProxy.makePayment(cardNumber, cardExpiration, revenue, ar4 -> {
+                                    if (ar4.failed()) {
+                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
+                                    } else {
+                                        final long paymentId = ar4.result();
+                                        databaseProxy.updateTransaction(sqlConnection, reservationId, endTs, revenue, paymentId, ar5 -> {
+                                            if (ar5.failed()) {
+                                                databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar5.cause())));
+                                            } else {
+                                                databaseProxy.updateReservationActivated(sqlConnection, reservationId, false, ar6 -> {
+                                                    if (ar6.failed()) {
+                                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar6.cause())));
+                                                    } else {
+                                                        databaseProxy.updateSlotParked(sqlConnection, slotId, false, ar7 -> {
+                                                            if (ar7.failed()) {
+                                                                databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar7.cause())));
+                                                            } else {
+                                                                databaseProxy.updateSlotReserved(sqlConnection, slotId, false, ar8 -> {
+                                                                    if (ar8.failed()) {
+                                                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar8.cause())));
+                                                                    } else {
+                                                                        listenerSet.forEach(listener -> listener.onTransactionEnded(reservationId));
+                                                                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
                                 });
                             }
                         });

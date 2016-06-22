@@ -37,7 +37,7 @@ public class CreditCardProxy {
     }
 
     // TODO: implement a real thing
-    public void makePayment(String cardNumber, String cardExpiration, int amount, Handler<AsyncResult<Long>> handler) {
+    public void makePayment(String cardNumber, String cardExpiration, double amount, Handler<AsyncResult<Long>> handler) {
         if (amount <= 0) {
             handler.handle(Future.failedFuture(new IllegalArgumentException()));
         } else if (cardNumber == null || cardExpiration == null || cardNumber.isEmpty() || cardExpiration.isEmpty()) {

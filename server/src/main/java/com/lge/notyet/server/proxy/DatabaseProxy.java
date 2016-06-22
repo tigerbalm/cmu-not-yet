@@ -221,6 +221,12 @@ public class DatabaseProxy {
                 " where session_key=?", parameters, resultHandler);
     }
 
+    public void selectUser(SQLConnection connection, int userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(userId);
+        queryWithParams(connection, "select * from user where user.id=?", parameters, resultHandler);
+    }
+
     public void selectFacility(SQLConnection connection, int facilityId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectFacility: facilityId=" + facilityId);
         String sql = "select *" +
@@ -319,7 +325,7 @@ public class DatabaseProxy {
 
     public void selectReservation(SQLConnection connection, String controllerPhysicalId, int slotNumber, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservation: controllerPhysicalId=" + controllerPhysicalId + ", slotNumber=" + slotNumber);
-        String sql = "select ar.id, slot.id as slot_id, fee, fee_unit, expiration_ts, begin_ts" +
+        String sql = "select ar.id, ar.user_id, slot.id as slot_id, fee, fee_unit, expiration_ts, begin_ts" +
                 " from (select * from reservation where activated=1) as ar" +
                 " inner join slot on ar.slot_id=slot.id" +
                 " inner join controller on slot.controller_id=controller.id" +
@@ -447,12 +453,13 @@ public class DatabaseProxy {
         updateWithParams(connection, sql, parameters, resultHandler);
     }
 
-    public void updateTransaction(SQLConnection connection, int reservationIdId, int endTs, double revenue, Handler<AsyncResult<JsonArray>> resultHandler) {
+    public void updateTransaction(SQLConnection connection, int reservationIdId, int endTs, double revenue, long paymentId, Handler<AsyncResult<JsonArray>> resultHandler) {
         logger.info("updateTransaction: reservationId=" + reservationIdId + ", endTs=" + endTs + ", revenue=" + revenue);
-        String sql = "update transaction set end_ts=?, revenue=? where reservation_id=?";
+        String sql = "update transaction set end_ts=?, revenue=?, payment_id=? where reservation_id=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(endTs);
         parameters.add(revenue);
+        parameters.add(paymentId);
         parameters.add(reservationIdId);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
