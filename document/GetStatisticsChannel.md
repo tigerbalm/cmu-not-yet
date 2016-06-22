@@ -9,14 +9,14 @@
 ## Topic
 
 ```
-/facility/dbquery/get
+/facility/statistics/get
 ```
 
 ## Body
 ```
 {
   'session_key' : 'session_value' // owner's session key
-  'dbquery_key' : 'sql_query // SQU Query statement to be executed
+  'dbquery_key' : 'sql_query // SQL Query statement to be executed
 }
 ```
 
@@ -25,7 +25,7 @@
 ## Topic
 
 ```
-/facility/dbquery/get/#
+/facility/statistics/get/#
 ```
 
 ## Body
@@ -35,7 +35,8 @@
 ```
 {
   'success': 1
-  'result': SQL query result
+  'columnnames': [ 'col1', 'col2', ... ],
+  'values': [ [ 'value11', 'value12', ... ], [ ... ] ] 
 }
 ```
 
@@ -45,6 +46,13 @@
 {
   'success': 0,
   'cause': 'INVALID_SESSION' // or other cause
+}
+```
+
+```
+{
+  'success': 0,
+  'cause': 'INTERNAL_SERVER_ERROR' // internal server error
 }
 ```
 

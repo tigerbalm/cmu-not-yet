@@ -13,6 +13,7 @@
 ```
 
 ## Body
+
 ```
 {
   'email' : 'email@adress.com'
@@ -47,7 +48,21 @@
 ```
 {
   'success': 0,
-  'cause': 'INVALID_EMAIL_PASSWORD' // or other cause
+  'cause': 'INVALID_EMAIL_PASSWORD'
+}
+```
+
+```
+{
+  'success': 0,
+  'cause': 'ALREADY_LOGIN'
+}
+```
+
+```
+{
+  'success': 0,
+  'cause': 'INTERNAL_SERVER_ERROR' // internal server error
 }
 ```
 

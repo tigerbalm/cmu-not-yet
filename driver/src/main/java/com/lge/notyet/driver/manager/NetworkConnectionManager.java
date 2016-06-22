@@ -51,10 +51,10 @@ public class NetworkConnectionManager {
         if (!mNc.isConnected()) {
             try {
                 mNc.connect(
-                        InetAddress.getLoopbackAddress(),
+                        // InetAddress.getLoopbackAddress(),
                         //InetAddress.getByName("192.168.1.20"),
                         // InetAddress.getByName("192.168.1.21"),
-                        //InetAddress.getByName("128.237.175.140"),
+                        InetAddress.getByName("128.237.220.77"),
                         //InetAddress.getByName("128.237.206.5"),
                         //InetAddress.getByName("10.245.148.224"),
                         mNetworkCallback);
@@ -78,6 +78,10 @@ public class NetworkConnectionManager {
         return new LoginRequestChannel(mNc);
     }
 
+    public LogoutRequestChannel createLogoutChannel() {
+        return new LogoutRequestChannel(mNc);
+    }
+
     public GetReservationRequestChannel createGetReservationRequestChannel() {
         return new GetReservationRequestChannel(mNc);
     }
@@ -88,10 +92,6 @@ public class NetworkConnectionManager {
 
     public SignUpRequestChannel createSignUpChannel() {
         return new SignUpRequestChannel(mNc);
-    }
-
-    public ModifyAccountRequestChannel createModifyAccountRequestChannel() {
-        return new ModifyAccountRequestChannel(mNc);
     }
 
     public CancelReservationRequestChannel createCancelReservationRequestChannel(int reservationId) {

@@ -32,7 +32,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
     protected boolean preHandleConnected() {
         mSelfConfigurationChannel.listen();
         doSelfConfiguration();
-        return false;
+        return !mIsMaster;
     }
 
     protected boolean preHandleLost() {
@@ -83,6 +83,7 @@ public abstract class PassiveRedundancyNetworkConnection extends ActiveRedundanc
                 mIsMaster = true;
                 mSelfConfigurationChannel.notify(getMasterAdvertisementMessage());
                 log("S3 S. I am new Master Node, mServerId=" + mServerId);
+                if (mOriginalNetworkCallback != null) mOriginalNetworkCallback.onConnected();
             } else {
                 // TODO: It should be not reached.
                 log("DuplicateDetectionWindowDelayTask - It should not be reached, mState=" + mState);

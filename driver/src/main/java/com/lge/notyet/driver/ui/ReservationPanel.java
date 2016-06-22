@@ -1,6 +1,7 @@
 package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ITaskDoneCallback;
+import com.lge.notyet.driver.business.LogoutTask;
 import com.lge.notyet.driver.business.MakeReservationTask;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
@@ -26,7 +27,6 @@ public class ReservationPanel implements Screen {
     private JComboBox mCbLocation;
     private JTextField mTfCreditCardNumber;
     private JSpinner mJSpinnerHour;
-    private JLabel mLabelModifyAccountInfo;
     private JLabel mLabelLogout;
 
     private class FacilityComboBoxModel extends AbstractListModel implements ComboBoxModel {
@@ -47,6 +47,7 @@ public class ReservationPanel implements Screen {
 
         Calendar maxTime = Calendar.getInstance();
         maxTime.add(Calendar.HOUR_OF_DAY, 3);
+        calNewYork.add(Calendar.MINUTE, 1);
         maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         Calendar minTime = Calendar.getInstance();
@@ -97,7 +98,7 @@ public class ReservationPanel implements Screen {
 
         Calendar maxTime = Calendar.getInstance();
         maxTime.add(Calendar.HOUR_OF_DAY, 3);
-        calNewYork.add(Calendar.MINUTE, 5);
+        calNewYork.add(Calendar.MINUTE, 1);
         maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         Calendar minTime = Calendar.getInstance();
@@ -141,32 +142,12 @@ public class ReservationPanel implements Screen {
             setUserInputEnabled(false);
         });
 
-        // Modify Account
-        mLabelModifyAccountInfo.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
-
-        // Modify Account
-        mLabelModifyAccountInfo.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
-
         // Log out
         mLabelLogout.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                SessionManager.getInstance().clear();
-                // NetworkConnectionManager.getInstance().close();
-                ScreenManager.getInstance().showLoginScreen();
+                doLogout();
             }
         });
 
@@ -175,11 +156,17 @@ public class ReservationPanel implements Screen {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
-                SessionManager.getInstance().clear();
-                // NetworkConnectionManager.getInstance().close();
-                ScreenManager.getInstance().showLoginScreen();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    doLogout();
+                }
             }
         });
+    }
+
+    private void doLogout() {
+        TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
+        SessionManager.getInstance().clear(); // Log-out
+        ScreenManager.getInstance().showLoginScreen();
     }
 
     private final ITaskDoneCallback mReservationDoneCallback = (result, response) -> {
@@ -216,26 +203,24 @@ public class ReservationPanel implements Screen {
                 String controllerPhysicalId = resMsg.getMessage().get("controller_physical_id").asString();
 
                 SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId, controllerPhysicalId);
-
-                new Thread(() -> {
-                    JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.MAKE_RESERVATION_DONE + confirmationNumber,
-                            Strings.APPLICATION_NAME,
-                            JOptionPane.PLAIN_MESSAGE);
-                }).start();
-
                 ScreenManager.getInstance().showReservationHistoryScreen();
 
             } else if (success == 0) {
 
-                Log.logd(LOG_TAG, "Failed to make reservation, with cause=" + resMsg.getMessage().get("cause").asString());
+                final String failCause = resMsg.getMessage().get("cause").asString();
+                Log.logd(LOG_TAG, "Failed to make reservation, with cause=" + failCause);
 
                 new Thread(() -> {
                     JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.MAKE_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.MAKE_RESERVATION_FAILED + ":" + failCause,
                             Strings.APPLICATION_NAME,
                             JOptionPane.WARNING_MESSAGE);
                 }).start();
+
+                if (failCause.equals(Strings.FAIL_CAUSE_INVALID_SESSION)) {
+                    doLogout();
+                }
+
             } else {
 
                 Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);

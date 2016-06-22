@@ -1,6 +1,6 @@
 package com.lge.notyet.owner.business;
 
-import com.lge.notyet.channels.GetDBQueryRequestChannel;
+import com.lge.notyet.channels.GetStatisticsRequestChannel;
 import com.lge.notyet.lib.comm.*;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import com.lge.notyet.owner.manager.NetworkConnectionManager;
@@ -12,14 +12,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 
-public class dbQueryTask implements Callable<Void> {
+public class StatisticsTask implements Callable<Void> {
 
-    private static final String LOG_TAG = "dbQueryTask";
+    private static final String LOG_TAG = "StatisticsTask";
 
     private String mQueryString;
     private ITaskDoneCallback mTaskDoneCallback;
 
-    public dbQueryTask(String queryString, ITaskDoneCallback taskDoneCallback) {
+    public StatisticsTask(String queryString, ITaskDoneCallback taskDoneCallback) {
         mQueryString = queryString;
         mTaskDoneCallback = taskDoneCallback;
     }
@@ -29,7 +29,7 @@ public class dbQueryTask implements Callable<Void> {
 
         NetworkConnectionManager ncm = NetworkConnectionManager.getInstance();
         ncm.open();
-        GetDBQueryRequestChannel lc = ncm.createGetDBQueryRequestChannel();
+        GetStatisticsRequestChannel lc = ncm.createGetDBQueryRequestChannel();
         lc.addObserver(mQueryResult);
         lc.addTimeoutObserver(mQueryTimeout);
 
@@ -60,6 +60,6 @@ public class dbQueryTask implements Callable<Void> {
     };
 
     public static FutureTask<Void> getTask(String queryString, ITaskDoneCallback taskDoneCallback) {
-        return new FutureTask<>(new dbQueryTask(queryString, taskDoneCallback));
+        return new FutureTask<>(new StatisticsTask(queryString, taskDoneCallback));
     }
 }

@@ -1,11 +1,15 @@
 package com.lge.notyet.owner.ui;
 
-import com.lge.notyet.channels.GetDBQueryResponseChannel;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+import com.lge.notyet.channels.GetFacilitiesResponseChannel;
+import com.lge.notyet.channels.GetStatisticsResponseChannel;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
-import com.lge.notyet.owner.business.GenericQueryHandler;
+import com.lge.notyet.owner.business.GetFacilitiesTask;
 import com.lge.notyet.owner.business.Query;
 import com.lge.notyet.owner.business.StateMachine;
-import com.lge.notyet.owner.business.dbQueryTask;
+import com.lge.notyet.owner.business.StatisticsTask;
 import com.lge.notyet.owner.manager.TaskManager;
 import com.lge.notyet.owner.util.Log;
 
@@ -13,6 +17,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainUI extends JDialog {
     private JPanel contentPane;
@@ -27,7 +33,12 @@ public class MainUI extends JDialog {
     private JTextArea logArea;
     private JPanel logPanel;
     private ButtonGroup choiceGroup;
-    //private Specification_Result specialSettingAndResult;
+
+    public static StringBuffer getFacilityList() {
+        return facilityList;
+    }
+
+    private static StringBuffer facilityList= new StringBuffer();
 
     public static final String LOG_TAG= "Owner App";
 
@@ -36,6 +47,7 @@ public class MainUI extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(fetchReportButton);
 
+        TaskManager.getInstance().runTask(GetFacilitiesTask.getTask(mGetFacilitiesResponseCallback));
         fetchReportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onFetchReport();
@@ -51,7 +63,7 @@ public class MainUI extends JDialog {
 
     private void onFetchReport() {
 //      JOptionPane.showMessageDialog(this, "Custom option not implemented yet!!");
-        TaskManager.getInstance().runTask(dbQueryTask.getTask(StateMachine.getInstance().getQueryInstance().getSqlQuery(), mQueryResponseCallback));
+        TaskManager.getInstance().runTask(StatisticsTask.getTask(StateMachine.getInstance().getQueryInstance().getSqlQuery(), mQueryResponseCallback));
     }
 
     private void exitAll(){
@@ -104,15 +116,16 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
-        //FixMe: Add sampling based on time for Query 1
+        //FixMe: Add sampling based on time for Query (1) add limiting output size.
+        //FixMe: facilities allowed for this owner.
         //FixMe: Update database to work without having sql_mode set to null. Query2
-        //FixMe: Field names take from SQL response, instead of maintaining a redundant copy.
-        //FixMe: Do a formatted output of the report
-        //FixMe: Handle error conditions of server, by showing a popup
         //FixMe: Make dummy input values.->
             //  INSERT INTO `sure-park`.`reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`, `fee`, `fee_unit`, `grace_period`) VALUES ('1', '1', '1', '1', '1', '1', '1', '1', '1');
             // INSERT INTO `sure-park`.`transaction` (`id`, `reservation_id`, `begin_ts`, `end_ts`, `revenue`) VALUES ('1', '1', '1466368729', '1466372329', '400');
 
+        //FixMe: Do a formatted output of the report
+        //FixMe: Only highlighted entry should be editable in config page. Float or numeric error check.
+        //FixMe: Handle error conditions of server, by showing a popup
         //FixMe: Add GUI output to the results
         //FixMe: Make event handler for Ctrl+L key on main window for Log window to be visible.
     }
@@ -138,9 +151,9 @@ public class MainUI extends JDialog {
                 int success = resMsg.getMessage().get("success").asInt();
 
                 if (success == 1) { // Success
-                    StateMachine.getInstance().getQueryInstance().handleResult(textReportPane1, resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT));
+                    StateMachine.getInstance().getQueryInstance().handleResult(textReportPane1, resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_COLUMNNAMES).asArray(), resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_VALUES).asArray());
 
-                    Log.log(LOG_TAG, "Success to query DB, resultSet is " + resMsg.getMessage().get(GetDBQueryResponseChannel.KEY_RESULT).toString());
+                    Log.log(LOG_TAG, "Success to query DB, tablename is "+resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_COLUMNNAMES).toString()+"resultSet is " + resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_VALUES).toString());
 
                 } else if (success == 0) {
                     Log.log(LOG_TAG, "Failed to query DB, fail cause is " + resMsg.getMessage().get("cause").asString());
@@ -155,4 +168,53 @@ public class MainUI extends JDialog {
             }
         }
     };
+
+    private ITaskDoneCallback mGetFacilitiesResponseCallback = new ITaskDoneCallback() {
+
+        @Override
+        public void onDone(int result, Object response) {
+
+            if (result == ITaskDoneCallback.FAIL) {
+                Log.log(LOG_TAG, "Failed to GetFacilitiesResponse due to timeout");
+                JOptionPane.showMessageDialog(MainUI.this,
+                        "Network Connection Error: Failed to GetFacilitiesResponse.",
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+            Log.log(LOG_TAG, "Received GetFacilitiesResponse response, message=" + resMsg.getMessage());
+
+            try {
+
+                int success = resMsg.getMessage().get("success").asInt();
+
+                if (success == 1) { // Success
+                    JsonArray facilityArray= (JsonArray) resMsg.getMessage().get(GetFacilitiesResponseChannel.KEY_RESULT);
+
+                    for (JsonValue facilityItem:facilityArray) {
+                        JsonObject facilityDetails= (JsonObject)facilityItem;
+                        if(facilityList.length()!=0)
+                            facilityList.append(",");
+                        facilityList.append(facilityDetails.get("id").toString());
+
+                    }
+                    fetchReportButton.setEnabled(true);
+                    Log.log(LOG_TAG, "Success to GetFacilitiesResponse, resultSet is " + resMsg.getMessage().get(GetFacilitiesResponseChannel.KEY_RESULT).toString());
+
+                } else if (success == 0) {
+                    Log.log(LOG_TAG, "Failed to GetFacilitiesResponse, fail cause is " + resMsg.getMessage().get("cause").asString());
+                    JOptionPane.showMessageDialog(MainUI.this,
+                            "Failed to GetFacilitiesResponse, fail cause=" + resMsg.getMessage().get("cause").asString(),
+                            "SurePark",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
 }

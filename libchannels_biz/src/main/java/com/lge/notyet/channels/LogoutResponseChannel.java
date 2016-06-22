@@ -5,11 +5,10 @@ import com.lge.notyet.lib.comm.ServerChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;
 import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
-public class ModifyAccountResponseChannel extends ServerChannelRegistry {
+public class LogoutResponseChannel extends ServerChannelRegistry {
+    private final static String TOPIC = "/logout/#";
 
-    private final static String TOPIC = "/user/modify_account/#";
-
-    public ModifyAccountResponseChannel(INetworkConnection networkConnection) {
+    public LogoutResponseChannel(INetworkConnection networkConnection) {
         super(networkConnection);
     }
 

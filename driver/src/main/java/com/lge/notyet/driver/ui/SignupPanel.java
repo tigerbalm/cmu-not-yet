@@ -9,6 +9,7 @@ import com.lge.notyet.driver.resource.Strings;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.driver.util.NumberUtils;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import com.lge.notyet.lib.crypto.SureParkCrypto;
 
 import javax.swing.*;
 
@@ -22,7 +23,6 @@ public class SignupPanel implements Screen {
     private JTextField mTfCreditCardMonth;
     private JTextField mTfCreditCardYear;
     private JButton mBtnCreateAccount;
-    private JTextField mTfCreditCardCVC;
     private JPanel mForm;
     private JButton mBtnCancel;
 
@@ -34,7 +34,6 @@ public class SignupPanel implements Screen {
         mTfCreditCardNumber.setText("1122334455667788");
         mTfCreditCardMonth.setText("MM");
         mTfCreditCardYear.setText("YY");
-        mTfCreditCardCVC.setText("");
     }
 
     @Override
@@ -129,11 +128,14 @@ public class SignupPanel implements Screen {
             }
 
             setUserInputEnabled(false);
-            TaskManager.getInstance().runTask(SignUpTask.getTask(userEmailAddress, userPassword,
-                    creditCardNumber,
-                    creditCardMonth + "/" + TfCreditCardYear,
-                    mTfCreditCardCVC.getText(),
-                    mSingUpDoneCallback));
+            try {
+                TaskManager.getInstance().runTask(SignUpTask.getTask(userEmailAddress, userPassword,
+                        SureParkCrypto.encrypt(creditCardNumber),
+                        SureParkCrypto.encrypt(creditCardMonth + "/" + TfCreditCardYear),
+                        mSingUpDoneCallback));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
 
         // Cancel

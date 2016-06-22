@@ -19,12 +19,18 @@ public class GenericQueryHandler extends Query{
         super(displayString, columnNames, sqlQueryString);
     }
 
-    public void handleResult(JTextPane resultArea, JsonValue resultSetTable) {
-        JsonArray resultTable = (JsonArray) resultSetTable;
+    public void handleResult(JTextPane resultArea, JsonArray columnNamesJson, JsonArray resultSetTableJson) {
+        String[] columnNames= new String[columnNamesJson.size()];
         StringBuilder result= new StringBuilder("");
-        if(resultTable.size()==1) {
-            for (JsonValue resultRow : resultTable) {
-                int i=0;
+
+        int i=0;
+        for(JsonValue columnNameJson: columnNamesJson){
+            columnNames[i]= columnNameJson.asString();
+            i++;
+        }
+        if(resultSetTableJson.size()==1) {
+            for (JsonValue resultRow : resultSetTableJson) {
+                i=0;
                 JsonArray resultRow2 = (JsonArray) resultRow;
                 for (JsonValue entry : resultRow2) {
                     if(i<columnNames.length)
@@ -36,12 +42,12 @@ public class GenericQueryHandler extends Query{
                 result.append("------------\r\n");
             }
         }
-        else if(resultTable.size()>1){
+        else if(resultSetTableJson.size()>1){
             for(String colName: columnNames){
                 result.append(colName).append("\t");
             }
             result.append("------------\r\n");
-            for (JsonValue resultRow : resultTable) {
+            for (JsonValue resultRow : resultSetTableJson) {
                 JsonArray resultRow2 = (JsonArray) resultRow;
                 for (JsonValue entry : resultRow2) {
                     result.append(entry.toString()).append("\t");
@@ -95,6 +101,7 @@ public class GenericQueryHandler extends Query{
         chooseMoreSettingsPanel.add(new JLabel("End date/time:"));
         endTime.setValue(Calendar.getInstance().getTime());
         chooseMoreSettingsPanel.add(endTime);
+        chooseMoreSettingsPanel.setEnabled(true);
         chooseMoreSettingsPanel.revalidate();
     }
 }

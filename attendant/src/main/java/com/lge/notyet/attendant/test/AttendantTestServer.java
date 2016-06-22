@@ -91,7 +91,7 @@ public class AttendantTestServer {
 
         // Need to parse
         Log.logd(LOG_TAG, "Login Requested Received=" + message.getMessage());
-        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, 1, "1111-2222-3333-4444", "12/16", "12345678"));
+        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, "1111-2222-3333-4444", "12/16", "12345678"));
         response.getMessage().add("success", 1);
         Log.logd(LOG_TAG, "mLoginRequestReceived send Response=" + response.getMessage());
         message.responseFor(response);
@@ -141,23 +141,23 @@ public class AttendantTestServer {
         mControllerStatusPublishChannel = new ControllerStatusPublishChannel(mNc, "3");
         mConfirmExitResponseChannel = new ConfirmExitResponseChannel(mNc);
 
-        mSlotList.add(new JsonObject().add("id", 1).add("number", 1).add("parked", 1).add("parked_ts", 1466021160L).
+        mSlotList.add(new JsonObject().add("id", 1).add("number", 1).add("parked", 1).add("parked_ts", 1466021160L).add("available", 1).
                 add("reserved", 1).add("controller_id",1).add("controller_physical_id","3").add("reservation_id", 23).add("email", "tony").add("reservation_ts", 1466001160L));
-        mSlotList.add(new JsonObject().add("id", 2).add("number", 2).add("parked", 1).add("parked_ts", 1466041160L).
+        mSlotList.add(new JsonObject().add("id", 2).add("number", 2).add("parked", 1).add("parked_ts", 1466041160L).add("available", 1).
                 add("reserved", 1).add("controller_id",1).add("controller_physical_id","3").add("reservation_id", 123).add("email", "luffy").add("reservation_ts", 1466021160L));
-        mSlotList.add(new JsonObject().add("id", 3).add("number", 3).add("parked", 0).add("parked_ts", 1466053160L).
+        mSlotList.add(new JsonObject().add("id", 3).add("number", 3).add("parked", 0).add("parked_ts", 1466053160L).add("available", 1).
                 add("reserved", 1).add("controller_id",1).add("controller_physical_id","3").add("reservation_id", 231).add("email", "allie").add("reservation_ts", 1466061160L));
-        mSlotList.add(new JsonObject().add("id", 4).add("number", 4).add("parked", 0).add("parked_ts", JsonValue.NULL).
+        mSlotList.add(new JsonObject().add("id", 4).add("number", 4).add("parked", 0).add("parked_ts", JsonValue.NULL).add("available", 1).
                 add("reserved", 0).add("controller_id",1).add("controller_physical_id","3").add("reservation_id", 0).add("email", "").add("reservation_ts", 0L));
-        mSlotList.add(new JsonObject().add("id", 5).add("number", 1).add("parked", 0).add("parked_ts", JsonValue.NULL).
+        mSlotList.add(new JsonObject().add("id", 5).add("number", 1).add("parked", 0).add("parked_ts", JsonValue.NULL).add("available", 1).
                 add("reserved", 0).add("controller_id",2).add("controller_physical_id","8").add("reservation_id", 0).add("email", "").add("reservation_ts", 0L));
-        mSlotList.add(new JsonObject().add("id", 6).add("number", 2).add("parked", 0).add("parked_ts", JsonValue.NULL).
+        mSlotList.add(new JsonObject().add("id", 6).add("number", 2).add("parked", 0).add("parked_ts", JsonValue.NULL).add("available", 1).
                 add("reserved", 1).add("controller_id",2).add("controller_physical_id","8").add("reservation_id", 121).add("email", "david").add("reservation_ts", 1466021160L));
-        mSlotList.add(new JsonObject().add("id", 7).add("number", 3).add("parked", 0).add("parked_ts", JsonValue.NULL).
+        mSlotList.add(new JsonObject().add("id", 7).add("number", 3).add("parked", 0).add("parked_ts", JsonValue.NULL).add("available", 1).
                 add("reserved", 1).add("controller_id",2).add("controller_physical_id","8").add("reservation_id", 344).add("email", "reshout").add("reservation_ts", 1466021160L));
-        mSlotList.add(new JsonObject().add("id", 8).add("number", 4).add("parked", 1).add("parked_ts", 1466051160L).
+        mSlotList.add(new JsonObject().add("id", 8).add("number", 4).add("parked", 1).add("parked_ts", 1466051160L).add("available", 1).
                 add("reserved", 1).add("controller_id",2).add("controller_physical_id","8").add("reservation_id", 5655).add("email", "beney").add("reservation_ts", 1466045160L));
-        mSlotList.add(new JsonObject().add("id", 9).add("number", 5).add("parked", 1).add("parked_ts", 1466054160L).
+        mSlotList.add(new JsonObject().add("id", 9).add("number", 5).add("parked", 1).add("parked_ts", 1466054160L).add("available", 1).
                 add("reserved", 1).add("controller_id",2).add("controller_physical_id","8").add("reservation_id", 1233).add("email", "beney2").add("reservation_ts", 1466034160L));
 
         mNc.connect(InetAddress.getLoopbackAddress(), mNetworkCallback);

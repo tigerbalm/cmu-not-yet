@@ -1,6 +1,5 @@
 package com.lge.notyet.channels;
 
-import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.ServerChannelRegistry;
 import com.lge.notyet.lib.comm.Uri;

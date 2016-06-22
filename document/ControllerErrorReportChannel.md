@@ -1,50 +1,22 @@
 # Description
 
-- Request: Driver
-- Respond: Business Server
-- This channel is used to modify account information.
+- Publish: Facility
+- Subscribe: Attendant
+- This channel is used to notify controller's error status to attendant
 
-# Request
-
-## Topic
-
-```
-/user/modify_account
-```
-
-## Body
-```
-{
-  'session_key' : 'xxxxx' // driver's session_key
-  'password': 'xxxxxxxx',
-  'card_number': '0000-0000-0000-0000',
-  'card_expiration': '00/00' 
-}
-```
-
-# Response
+# Publish
 
 ## Topic
 
 ```
-/user/modify_account/#
+/controller/{controller_physical_id}/error
 ```
 
 ## Body
 
-### Success
-
 ```
 {
-  'success': 1
-}
-```
-### Failed
-
-```
-{
-  'success': 0,
-  'cause': 'INVALID_CARD_INFORMATION' // or other cause
+  'message': error message
 }
 ```
 
