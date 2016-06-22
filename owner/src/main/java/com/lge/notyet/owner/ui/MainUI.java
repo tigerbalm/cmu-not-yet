@@ -1,7 +1,12 @@
 package com.lge.notyet.owner.ui;
 
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+import com.lge.notyet.channels.GetFacilitiesResponseChannel;
 import com.lge.notyet.channels.GetStatisticsResponseChannel;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import com.lge.notyet.owner.business.GetFacilitiesTask;
 import com.lge.notyet.owner.business.Query;
 import com.lge.notyet.owner.business.StateMachine;
 import com.lge.notyet.owner.business.StatisticsTask;
@@ -12,6 +17,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainUI extends JDialog {
     private JPanel contentPane;
@@ -26,7 +33,12 @@ public class MainUI extends JDialog {
     private JTextArea logArea;
     private JPanel logPanel;
     private ButtonGroup choiceGroup;
-    //private Specification_Result specialSettingAndResult;
+
+    public static StringBuffer getFacilityList() {
+        return facilityList;
+    }
+
+    private static StringBuffer facilityList= new StringBuffer();
 
     public static final String LOG_TAG= "Owner App";
 
@@ -35,6 +47,7 @@ public class MainUI extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(fetchReportButton);
 
+        TaskManager.getInstance().runTask(GetFacilitiesTask.getTask(mGetFacilitiesResponseCallback));
         fetchReportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onFetchReport();
@@ -155,4 +168,53 @@ public class MainUI extends JDialog {
             }
         }
     };
+
+    private ITaskDoneCallback mGetFacilitiesResponseCallback = new ITaskDoneCallback() {
+
+        @Override
+        public void onDone(int result, Object response) {
+
+            if (result == ITaskDoneCallback.FAIL) {
+                Log.log(LOG_TAG, "Failed to GetFacilitiesResponse due to timeout");
+                JOptionPane.showMessageDialog(MainUI.this,
+                        "Network Connection Error: Failed to GetFacilitiesResponse.",
+                        "SurePark",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            MqttNetworkMessage resMsg = (MqttNetworkMessage)response;
+            Log.log(LOG_TAG, "Received GetFacilitiesResponse response, message=" + resMsg.getMessage());
+
+            try {
+
+                int success = resMsg.getMessage().get("success").asInt();
+
+                if (success == 1) { // Success
+                    JsonArray facilityArray= (JsonArray) resMsg.getMessage().get(GetFacilitiesResponseChannel.KEY_RESULT);
+
+                    for (JsonValue facilityItem:facilityArray) {
+                        JsonObject facilityDetails= (JsonObject)facilityItem;
+                        if(facilityList.length()!=0)
+                            facilityList.append(",");
+                        facilityList.append(facilityDetails.get("id").toString());
+
+                    }
+                    fetchReportButton.setEnabled(true);
+                    Log.log(LOG_TAG, "Success to GetFacilitiesResponse, resultSet is " + resMsg.getMessage().get(GetFacilitiesResponseChannel.KEY_RESULT).toString());
+
+                } else if (success == 0) {
+                    Log.log(LOG_TAG, "Failed to GetFacilitiesResponse, fail cause is " + resMsg.getMessage().get("cause").asString());
+                    JOptionPane.showMessageDialog(MainUI.this,
+                            "Failed to GetFacilitiesResponse, fail cause=" + resMsg.getMessage().get("cause").asString(),
+                            "SurePark",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
 }

@@ -28,6 +28,7 @@ public class ConfigurationUI extends JDialog {
     private JButton updateButton;
     private JButton buttonOK;
     private ButtonGroup facilitySelected= new ButtonGroup();
+
     class FacilityData{
         public JTextField name;
         public JTextField fee;
@@ -91,27 +92,27 @@ public class ConfigurationUI extends JDialog {
                     String tempFacilityID;
                     boolean firstValue=true;
 
-                    NumberFormat integerFormat = NumberFormat.getInstance();
-                    NumberFormatter integerFormatter = new NumberFormatter(integerFormat);
-                    integerFormatter.setValueClass(Integer.class);
-                    integerFormatter.setMinimum(0);
-                    integerFormatter.setMaximum(Integer.MAX_VALUE);
-                    integerFormatter.setAllowsInvalid(false);
-                    integerFormatter.setCommitsOnValidEdit(true);// If you want the value to be committed on each keystroke instead of focus lost
-
-                    DecimalFormat floatFormat = new DecimalFormat("####.##");
-//                    NumberFormatter floatFormatter = new NumberFormatter(floatFormat);
-//                    floatFormatter.setValueClass(Double.class);
-//                    floatFormatter.setMinimum(0);
-//                    floatFormatter.setMaximum(Float.MAX_VALUE);
+//                    NumberFormat integerFormat = NumberFormat.getInstance();
+//                    NumberFormatter integerFormatter = new NumberFormatter(integerFormat);
+//                    integerFormatter.setValueClass(Integer.class);
+//                    integerFormatter.setMinimum(0);
+//                    integerFormatter.setMaximum(Integer.MAX_VALUE);
+//                    integerFormatter.setAllowsInvalid(false);
+//                    integerFormatter.setCommitsOnValidEdit(true);// If you want the value to be committed on each keystroke instead of focus lost
+//
+//                    DecimalFormat floatFormat = new DecimalFormat();//"####.##");
+////                    NumberFormatter floatFormatter = new NumberFormatter(floatFormat);
+////                    floatFormatter.setValueClass(Double.class);
+////                    floatFormatter.setMinimum(0);
+////                    floatFormatter.setMaximum(Float.MAX_VALUE);
+////                    floatFormatter.setAllowsInvalid(false);
+////                    floatFormatter.setCommitsOnValidEdit(true);// If you want the value to be committed on each keystroke instead of focus lost
+//                    floatFormat.setMaximumFractionDigits(2);
+//                    floatFormat.setMaximumIntegerDigits(5);
+//                    NumberFormatter floatFormatter= new NumberFormatter(floatFormat);
 //                    floatFormatter.setAllowsInvalid(false);
-//                    floatFormatter.setCommitsOnValidEdit(true);// If you want the value to be committed on each keystroke instead of focus lost
-                    floatFormat.setMaximumFractionDigits(2);
-                    floatFormat.setMaximumIntegerDigits(5);
-                    NumberFormatter floatFormatter= new NumberFormatter(floatFormat);
-                    floatFormatter.setAllowsInvalid(false);
-                    floatFormatter.setCommitsOnValidEdit(true);
-                    //JFormattedTextField field = new JFormattedTextField(integerFormatter);
+//                    floatFormatter.setCommitsOnValidEdit(true);
+//                    //JFormattedTextField field = new JFormattedTextField(integerFormatter);
 
                     for (JsonValue facilityItem:facilityArray) {
                         JsonObject facilityDetails= (JsonObject)facilityItem;
@@ -138,18 +139,23 @@ public class ConfigurationUI extends JDialog {
 
 //                        facilityList.add(tempFacilityData.fee= new JTextField(facilityDetails.get("fee").toString()));
 
-                        tempFacilityData.fee= new JFormattedTextField(floatFormatter);
-                        ((JFormattedTextField)tempFacilityData.fee).setText(facilityDetails.get("fee").toString());//setValue(new Double(facilityDetails.get("fee").asDouble()));
-                        facilityList.add(tempFacilityData.fee);
+//                        tempFacilityData.fee= new JFormattedTextField(floatFormatter);
+//                        ((JFormattedTextField)tempFacilityData.fee).setText(facilityDetails.get("fee").toString());//setValue(new Double(facilityDetails.get("fee").asDouble()));
+//                        facilityList.add(tempFacilityData.fee);
+//
+//
+//                        tempFacilityData.fee_unit= new JFormattedTextField(integerFormatter);
+//                        tempFacilityData.fee_unit.setText(facilityDetails.get("fee_unit").toString());
+//                        facilityList.add(tempFacilityData.fee_unit);
+//
+//                        tempFacilityData.grace_period= new JFormattedTextField(integerFormatter);
+//                        tempFacilityData.grace_period.setText(facilityDetails.get("grace_period").toString());
+//                        facilityList.add(tempFacilityData.grace_period);
+                        facilityList.add(tempFacilityData.fee= new JTextField(facilityDetails.get("fee").toString()));
 
+                        facilityList.add(tempFacilityData.fee_unit= new JTextField(facilityDetails.get("fee_unit").toString()));
 
-                        tempFacilityData.fee_unit= new JFormattedTextField(integerFormatter);
-                        tempFacilityData.fee_unit.setText(facilityDetails.get("fee_unit").toString());
-                        facilityList.add(tempFacilityData.fee_unit);
-
-                        tempFacilityData.grace_period= new JFormattedTextField(integerFormatter);
-                        tempFacilityData.grace_period.setText(facilityDetails.get("grace_period").toString());
-                        facilityList.add(tempFacilityData.grace_period);
+                        facilityList.add(tempFacilityData.grace_period= new JTextField(facilityDetails.get("grace_period").toString()));
 
                     }
                     facilityList.revalidate();

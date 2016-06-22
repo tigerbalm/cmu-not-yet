@@ -1,5 +1,7 @@
 package com.lge.notyet.owner.business;
 
+import com.lge.notyet.owner.ui.MainUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -24,12 +26,12 @@ public class Query {
     static
     {
         queryList.add(new GenericQueryHandler(
-                "Average Occupancy (in hours)",
+                "Average Occupancy",
                 new String[]{"First Day", "Last Day", "Hours Occupied", "Occupancy in hours per day"},
-                "select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day' from transaction"));
-                //select datediff(from_unixtime(1465963300), from_unixtime(1465963199)), from_unixtime(1465963300),from_unixtime(1465963199)
+                "select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day' from transaction, reservation, slot, controller where reservation.id = transaction.reservation_id and reservation.slot_id = slot.id and slot.controller_id = controller.id and controller.facility_id in (%facility)"));
+                //select DATE(from_unixtime(min(begin_ts))) as 'First Day:', DATE(from_unixtime(max(end_ts))) as 'Last Day:', sum(end_ts-begin_ts)/3600 as 'Hours Occupied:', (sum(end_ts-begin_ts)/3600)/(1+datediff(from_unixtime(max(end_ts)), from_unixtime(min(begin_ts)))) as 'Occupancy in hours per day' from transaction, reservation, slot, controller where reservation.id = transaction.reservation_id and reservation.slot_id = slot.id and slot.controller_id = controller.id and controller.facility_id in (1,2,3,4,5)
         queryList.add(new GenericQueryHandler(
-                "Peak Usage Hours",
+                "Peak Usage Times",
                 new String[]{"From time of the day", "To time of the day", "Usages"},
                 "select @NUM2+1 as 'From time of the day', @NUM2:=t2 as 'To time of the day', truncate(c3, 0) as Usages from (\n" +
                     "select t1 as t2, truncate(@FULLDAYS + (@NUM:= (c2+@NUM)), 0) as c3 from (\n" +
@@ -63,11 +65,13 @@ public class Query {
         queryList.add(new GenericQueryHandler(
                 "How much time cars were parked in each slot",
                 new String[]{"slot_id", "Hours parked in the particular slot"},
-                "SELECT slot_id, round(sum(TIMESTAMPDIFF(MINUTE, from_unixtime(begin_ts), from_unixtime(end_ts)))/60, 1)  FROM transaction, reservation where reservation.id=transaction.reservation_id group by slot_id"));
+                "SELECT facility.name as 'Facility Name', concat(slot.controller_id,'-', slot.number) as 'Controller Identification' , round(sum(TIMESTAMPDIFF(SECOND, from_unixtime(begin_ts), from_unixtime(end_ts)))/3600, 1) as 'Hours parked in the particular slot' FROM transaction, reservation, slot, controller, facility where reservation.id=transaction.reservation_id  and reservation.slot_id = slot.id and slot.controller_id = controller.id and controller.facility_id = facility.id and controller.facility_id in (%facility) group by slot.id"));
+                //SELECT facility.name as 'Facility Name', concat(slot.controller_id,'-', slot.number) as 'Controller Identification' , round(sum(TIMESTAMPDIFF(SECOND, from_unixtime(begin_ts), from_unixtime(end_ts)))/3600, 1) as 'Hours parked in the particular slot' FROM transaction, reservation, slot, controller, facility where reservation.id=transaction.reservation_id  and reservation.slot_id = slot.id and slot.controller_id = controller.id and controller.facility_id = facility.id and controller.facility_id in (1,2,3,4,5) group by slot.id
         queryList.add(new GenericQueryHandler(
                 "Revenue based on facility",
                 new String[]{"Revenue in dollars"},
-                "SELECT sum(revenue) 'Revenue in Dollars' FROM transaction;"));
+                "SELECT facility.name as 'Facility Name', sum(revenue) 'Revenue in Dollars' FROM transaction, reservation, slot, controller, facility where reservation.id=transaction.reservation_id  and reservation.slot_id = slot.id and slot.controller_id = controller.id and controller.facility_id = facility.id and controller.facility_id in (%facility) group by facility.id"));
+                //SELECT facility.name as 'Facility Name', sum(revenue) 'Revenue in Dollars' FROM transaction, reservation, slot, controller, facility where reservation.id=transaction.reservation_id  and reservation.slot_id = slot.id and slot.controller_id = controller.id and controller.facility_id = facility.id and controller.facility_id in (1,2,3,4,5) group by facility.id
         customQuery = new GenericQueryHandler(
                 CUSTOM_QUERY,
                 new String[]{"It is invalid, need to fetch from db query"},
@@ -120,7 +124,8 @@ public class Query {
         return columnNames;
     }
     public String getSqlQuery() {
-        return sqlQueryString;
+        //return sqlQueryString;
+        return sqlQueryString.replace("%facility", MainUI.getFacilityList().toString());
     }
 
     public void setSQLQuery(String sqlQueryString) {

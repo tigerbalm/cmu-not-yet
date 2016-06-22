@@ -28,7 +28,8 @@ public class TaskManager implements Runnable {
 
     public void runTask (FutureTask task) {
         try {
-            mTaskQueue.put(task);
+//            if(task!=null)
+                mTaskQueue.put(task);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
