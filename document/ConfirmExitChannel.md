@@ -28,9 +28,10 @@
 ```
 /controller/{physical_id}/confirm_exit/response/{req_id}
 ```
-- Subscribe : 
-   (Server side) /controller/+/confirm_exit/#
-   (Client side) /controller/{physical_id}/confirm_exit/response/#
+
+#### Subscribe
+- (Server side) `/controller/+/confirm_exit/#`
+- (Client side) `/controller/{physical_id}/confirm_exit/response/#`
    
 ### Body
 
@@ -43,7 +44,7 @@
 ```
 
 #### Failed
-~~~~~~~~
+
 ```
 {
   'success': 0,
