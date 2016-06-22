@@ -119,7 +119,7 @@ public class FacilityMonitorPanel implements Screen {
             if (isOccupied) {
                 long now = Calendar.getInstance().getTimeInMillis()/1000;
                 long occupiedTimeSec = now - slot.getOccupiedTimeStamp();
-                labelTime = new JLabel(occupiedTimeSec / 60 + " min(s)");
+                labelTime = new JLabel(occupiedTimeSec / 60 + " min(s) " + occupiedTimeSec % 60 + "sec(s)");
                 labelTime.setForeground(Color.white);
             } else if (isReserved) {
                 Calendar reservedTime = Calendar.getInstance();
@@ -567,7 +567,7 @@ public class FacilityMonitorPanel implements Screen {
         }
     };
 
-    private static final int SLOT_STATUS_UPDATE_PERIOD = 10;
+    private static final int SLOT_STATUS_UPDATE_PERIOD = 1;
     private static final int SLOT_STATUS_UPDATE_MESSAGE_MAX = 3;
     private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(SLOT_STATUS_UPDATE_MESSAGE_MAX);
 
