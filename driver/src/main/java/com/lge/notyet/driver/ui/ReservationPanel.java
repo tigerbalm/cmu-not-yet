@@ -1,6 +1,7 @@
 package com.lge.notyet.driver.ui;
 
 import com.lge.notyet.driver.business.ITaskDoneCallback;
+import com.lge.notyet.driver.business.LogoutTask;
 import com.lge.notyet.driver.business.MakeReservationTask;
 import com.lge.notyet.driver.manager.ScreenManager;
 import com.lge.notyet.driver.manager.SessionManager;
@@ -145,8 +146,8 @@ public class ReservationPanel implements Screen {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear();
-                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });
@@ -156,8 +157,8 @@ public class ReservationPanel implements Screen {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear();
-                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });

@@ -3,6 +3,7 @@ package com.lge.notyet.driver.ui;
 import com.lge.notyet.channels.ControllerStatusSubscribeChannel;
 import com.lge.notyet.channels.ReservationStatusSubscribeChannel;
 import com.lge.notyet.driver.business.ITaskDoneCallback;
+import com.lge.notyet.driver.business.LogoutTask;
 import com.lge.notyet.driver.business.ReservationCancelTask;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
@@ -119,8 +120,8 @@ public class ReservationHistoryPanel implements Screen {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 unsubscribeEvents();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear(); // Log-out
-                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });
@@ -131,8 +132,8 @@ public class ReservationHistoryPanel implements Screen {
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
                 unsubscribeEvents();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear(); // Log-out
-                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });

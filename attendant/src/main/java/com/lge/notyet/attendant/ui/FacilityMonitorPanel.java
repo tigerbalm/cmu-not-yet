@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.attendant.business.GetSlotListTask;
 import com.lge.notyet.attendant.business.ITaskDoneCallback;
+import com.lge.notyet.attendant.business.LogoutTask;
 import com.lge.notyet.attendant.business.RequestManualExitTask;
 import com.lge.notyet.attendant.manager.*;
 import com.lge.notyet.attendant.resource.Strings;
@@ -52,8 +53,20 @@ public class FacilityMonitorPanel implements Screen {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 disposeScreen();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear(); // Log-out
-                // NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+        });
+
+        // Logout
+        mLabelLogout.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                disposeScreen();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
+                SessionManager.getInstance().clear(); // Log-out
                 ScreenManager.getInstance().showLoginScreen();
             }
         });

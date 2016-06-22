@@ -78,6 +78,10 @@ public class NetworkConnectionManager {
         return new LoginRequestChannel(mNc);
     }
 
+    public LogoutRequestChannel createLogoutChannel() {
+        return new LogoutRequestChannel(mNc);
+    }
+
     public GetReservationRequestChannel createGetReservationRequestChannel() {
         return new GetReservationRequestChannel(mNc);
     }
