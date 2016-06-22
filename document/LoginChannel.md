@@ -1,18 +1,20 @@
-# Description
+# Login Channel
+
+## Description
 
 - Request: Driver, Attendant and Owner
 - Respond: Business Server
 - This channel is used to login into the system.
 
-# Request
+## Request
 
-## Topic
+### Topic
 
 ```
 /login
 ```
 
-## Body
+### Body
 
 ```
 {
@@ -21,29 +23,29 @@
 }
 ```
 
-# Response
+## Response
 
-## Topic
+### Topic
 
 ```
 /login/#
 ```
 
-## Body
+### Body
 
-### Success
+#### Success
 
 ```
 {
   'success': 1
-  'id' : 1,
-  'card_number' : '1234567890123456', // driver only
-  'card_expiration' : '01/20' // driver only
-  'session_key' : 'session Key'
+  'id' : 39,
+  'card_number' : 'D33E764D6937B8A2DB6FFB46BB8A35C8C65BFAFCD68D35CF43955297A8831EAD', // driver only
+  'card_expiration' : '6C9F8F63B25F1596E8570910B7847ECA // driver only
+  'session_key' : 'c3767482-e3a3-448e-9659-6049fb'
 }
 ```
 
-### Failed
+#### Failed
 
 ```
 {
@@ -55,37 +57,6 @@
 ```
 {
   'success': 0,
-  'cause': 'ALREADY_LOGIN'
-}
-```
-
-```
-{
-  'success': 0,
-  'cause': 'INTERNAL_SERVER_ERROR' // internal server error
-}
-```
-
-# Note
-
-If you use MQTT connection, following key/value is added in body automatically while exchanging data.
-But when you received the message from channel, it does not exist.
-Hence, you have to add and remove following pair to communicate with other library or entity. i.e. Arduino MQTT library.
-If there is no this pair, the received element regards it as notification.
-
-
-## Additional body for MQTT
-
-### Notification (Publish/Subscribe) type message
-```
-{
-  '_msg_type_' : 0 // Notification for publish message
-}
-```
-
-### Request/Response type message
-```
-{
-  '_msg_type_' : 1, or 2 // 1 : Request, 2 : Response.
+  'cause': 'INTERNAL_SERVER_ERROR'
 }
 ```

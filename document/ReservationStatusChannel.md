@@ -1,24 +1,36 @@
-# Description
+# Reservation Status Channel
+
+## Description
 
 - Publish: Business Server
 - Subscriber: Driver
 - This channel is used to notify reservation status when driver is arrived at parking facility, leaving or grace period is timed out. 
 
-# Publish
+## Publish
 
-## Topic
+### Topic
 
 ```
 /reservation/%d
 ```
 
-## Body
+### Body
 
 ### When car is arrived and passed the entry gate #
 
 ```
 {
-  'transaction': 1
+  "id":68,
+  "slot_id":2,
+  "slot_number":2,
+  "fee":10.75,
+  "fee_unit":60,
+  "expiration_ts":1466628600,
+  "begin_ts":1466628560,
+  "end_ts":null,
+  "revenue":null,
+  "controller_physical_id":"1",
+  "transaction":1
 }
 ```
 
@@ -26,7 +38,17 @@
 
 ```
 {
-  'transaction': 0
+  "id":68,
+  "slot_id":2,
+  "slot_number":2,
+  "fee":10.75,
+  "fee_unit":60,
+  "expiration_ts":1466628600,
+  "begin_ts":1466628560,
+  "end_ts":1466628792,
+  "revenue":43.00,
+  "controller_physical_id":"1",
+  "transaction":0
 }
 ```
 
@@ -35,28 +57,5 @@
 ```
 {
  'expired': 1
-}
-```
-
-# Note
-
-If you use MQTT connection, following key/value is added in body automatically while exchanging data.
-But when you received the message from channel, it does not exist.
-Hence, you have to add and remove following pair to communicate with other library or entity. i.e. Arduino MQTT library.
-If there is no this pair, the received element regards it as notification.
-
-## Additional body for MQTT
-
-### Notification (Publish/Subscribe) type message
-```
-{
-  '_msg_type_' : 0 // Notification for publish message
-}
-```
-
-### Request/Response type message
-```
-{
-  '_msg_type_' : 1, or 2 // 1 : Request, 2 : Response.
 }
 ```
