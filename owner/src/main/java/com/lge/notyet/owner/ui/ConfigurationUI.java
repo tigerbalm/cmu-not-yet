@@ -55,7 +55,19 @@ public class ConfigurationUI extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 String tempFacilityID= facilitySelected.getSelection().getActionCommand();
                 FacilityData tempFacilityData= facilityControls.get(tempFacilityID);
-                TaskManager.getInstance().runTask(UpdateFacilityTask.getTask(mUpdateFacilityResponseCallback, tempFacilityID, tempFacilityData.name.getText(), tempFacilityData.fee.getText(), tempFacilityData.fee_unit.getText(), tempFacilityData.grace_period.getText()));
+                String facilityName = tempFacilityData.name.getText();
+                String facilityFee = tempFacilityData.fee.getText();
+                String facilityFeeUnit = tempFacilityData.fee_unit.getText();
+                String facilityGracePeriod = tempFacilityData.grace_period.getText();
+                //Double dFacilityFee= Double.is //string.matches("[+-]?\\d*(\\.\\d+)?")
+
+                if(facilityName.length()<30 && facilityName.length()>0 && facilityFee.length()>0 && facilityFeeUnit.length()>0 && facilityGracePeriod.length()>0
+                        && facilityFee.matches("\\d*(\\.\\d+)?") && facilityFeeUnit.matches("\\d*") && facilityGracePeriod.matches("\\d*")) {
+                    TaskManager.getInstance().runTask(UpdateFacilityTask.getTask(mUpdateFacilityResponseCallback, tempFacilityID, facilityName, facilityFee, facilityFeeUnit, facilityGracePeriod));
+                }
+                else{
+                    JOptionPane.showMessageDialog(ConfigurationUI.this, "Check the input typed", "SurePark", JOptionPane.WARNING_MESSAGE);
+                }
             }
         });
     }

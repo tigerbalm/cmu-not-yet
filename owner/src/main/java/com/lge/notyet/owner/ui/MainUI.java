@@ -116,15 +116,15 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
-        //FixMe: All Queries(1~5) should be based on facilities allowed for this owner.
-        //FixMe: Add sampling based on time for Query 1~4
+        //FixMe: Add sampling based on time for Query 1~4 add limiting output size
+        //FixMe: Query(2) should be based on facilities allowed for this owner.
         //FixMe: Update database to work without having sql_mode set to null. Query2
-        //FixMe: Field names take from SQL response, instead of maintaining a redundant copy.
-        //FixMe: Do a formatted output of the report
         //FixMe: Make dummy input values.->
             //  INSERT INTO `sure-park`.`reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`, `fee`, `fee_unit`, `grace_period`) VALUES ('1', '1', '1', '1', '1', '1', '1', '1', '1');
             // INSERT INTO `sure-park`.`transaction` (`id`, `reservation_id`, `begin_ts`, `end_ts`, `revenue`) VALUES ('1', '1', '1466368729', '1466372329', '400');
 
+        //FixMe: Do a formatted output of the report
+        //FixMe: Only highlighted entry should be editable in config page. Float or numeric error check.
         //FixMe: Handle error conditions of server, by showing a popup
         //FixMe: Add GUI output to the results
         //FixMe: Make event handler for Ctrl+L key on main window for Log window to be visible.
