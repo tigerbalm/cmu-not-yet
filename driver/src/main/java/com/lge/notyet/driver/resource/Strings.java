@@ -22,7 +22,8 @@ public class Strings {
     public static final String BYE_CUSTOMER = "Thanks! Bye";
     public static final String TIME_ALREADY_PASSED = "You made a reservation with wrong time";
 
-    public static final String WRONG_ACCOUNT = "You tried to access with wrong account";
     public static final String SERVER_ERROR = "Server error";
     public static final String ALREADY_LOGIN = "You are already login";
+
+    public static final String FAIL_CAUSE_INVALID_SESSION = "INVALID_SESSION";
 }

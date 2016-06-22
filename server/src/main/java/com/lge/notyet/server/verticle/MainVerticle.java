@@ -30,7 +30,7 @@ import static com.lge.notyet.server.manager.ReservationManager.*;
 public class MainVerticle extends AbstractVerticle {
     private static final String BROKER_HOST = "localhost";
     private static final boolean REDUNDANCY = false;
-    private static final String DB_HOST = "localhost";
+    private static final String DB_HOST = "128.237.207.116";
     private static final String DB_USERNAME = "dba";
     private static final String DB_PASSWORD = "dba";
 
