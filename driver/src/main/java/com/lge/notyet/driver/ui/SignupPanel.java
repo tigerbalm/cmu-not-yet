@@ -22,7 +22,6 @@ public class SignupPanel implements Screen {
     private JTextField mTfCreditCardMonth;
     private JTextField mTfCreditCardYear;
     private JButton mBtnCreateAccount;
-    private JTextField mTfCreditCardCVC;
     private JPanel mForm;
     private JButton mBtnCancel;
 
@@ -34,7 +33,6 @@ public class SignupPanel implements Screen {
         mTfCreditCardNumber.setText("1122334455667788");
         mTfCreditCardMonth.setText("MM");
         mTfCreditCardYear.setText("YY");
-        mTfCreditCardCVC.setText("");
     }
 
     @Override
@@ -132,7 +130,6 @@ public class SignupPanel implements Screen {
             TaskManager.getInstance().runTask(SignUpTask.getTask(userEmailAddress, userPassword,
                     creditCardNumber,
                     creditCardMonth + "/" + TfCreditCardYear,
-                    mTfCreditCardCVC.getText(),
                     mSingUpDoneCallback));
         });
 

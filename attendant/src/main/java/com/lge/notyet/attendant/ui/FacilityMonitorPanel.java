@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.attendant.business.GetSlotListTask;
 import com.lge.notyet.attendant.business.ITaskDoneCallback;
+import com.lge.notyet.attendant.business.LogoutTask;
 import com.lge.notyet.attendant.business.RequestManualExitTask;
 import com.lge.notyet.attendant.manager.*;
 import com.lge.notyet.attendant.resource.Strings;
@@ -52,8 +53,20 @@ public class FacilityMonitorPanel implements Screen {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 disposeScreen();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear(); // Log-out
-                // NetworkConnectionManager.getInstance().close();
+                ScreenManager.getInstance().showLoginScreen();
+            }
+        });
+
+        // Logout
+        mLabelLogout.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+                disposeScreen();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
+                SessionManager.getInstance().clear(); // Log-out
                 ScreenManager.getInstance().showLoginScreen();
             }
         });
@@ -119,13 +132,13 @@ public class FacilityMonitorPanel implements Screen {
             if (isOccupied) {
                 long now = Calendar.getInstance().getTimeInMillis()/1000;
                 long occupiedTimeSec = now - slot.getOccupiedTimeStamp();
-                labelTime = new JLabel(occupiedTimeSec / 60 + " min(s)");
+                labelTime = new JLabel(occupiedTimeSec / 60 + " min(s) " + occupiedTimeSec % 60 + "sec(s)");
                 labelTime.setForeground(Color.white);
             } else if (isReserved) {
                 Calendar reservedTime = Calendar.getInstance();
                 reservedTime.setTimeInMillis(slot.getReservedTimeStamp() * 1000);
                 reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-                SimpleDateFormat dataFormat = new SimpleDateFormat("hh:mm, MM/dd/yy");
+                SimpleDateFormat dataFormat = new SimpleDateFormat("hh:mm a, MM/dd/yy");
                 dataFormat.setTimeZone(TimeZone.getTimeZone("America/New_York"));
                 labelTime = new JLabel(dataFormat.format(reservedTime.getTime()));
                 labelTime.setForeground(new Color(24, 27, 143));
@@ -567,7 +580,7 @@ public class FacilityMonitorPanel implements Screen {
         }
     };
 
-    private static final int SLOT_STATUS_UPDATE_PERIOD = 10;
+    private static final int SLOT_STATUS_UPDATE_PERIOD = 1;
     private static final int SLOT_STATUS_UPDATE_MESSAGE_MAX = 3;
     private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(SLOT_STATUS_UPDATE_MESSAGE_MAX);
 

@@ -40,19 +40,23 @@ public class TestServer {
 
         // TODO: We can change this value for test
         boolean isReservedTest = true;
+        boolean isParkedTest = false;
 
         //noinspection ConstantConditions
         if (!isReservedTest) {
             response.getMessage().add("success", 0);
             response.getMessage().add("cause", "NO_RESERVATION_EXIST");
         } else {
-
             response.getMessage().add("success", 1);
-            response.getMessage().add("reservation_ts", 1466021160L);
+            response.getMessage().add("reservation_ts", 1466561562L);
             response.getMessage().add("confirmation_no", 3333);
             response.getMessage().add("id", 1);
             response.getMessage().add("facility_id", 1);
             response.getMessage().add("controller_physical_id" ,"1");
+
+            if (isParkedTest) {
+                response.getMessage().add("begin_ts", 1466561762L);
+            }
         }
 
         Log.logd(LOG_TAG, "UpdateFacilityList Requested Received=" + message.getMessage());

@@ -14,6 +14,8 @@ import org.eclipse.paho.client.mqttv3.*;
 
 public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNetworkConnection {
 
+    private static final int SERVER_REDUNDANCY_PING_ECHO_TIME = 10;
+
     protected boolean preHandleConnected() {
         mWillSubscribeChannel.listen();
         return super.preHandleConnected();
@@ -37,6 +39,7 @@ public class MqttPassiveRedundancyNetworkConnection extends PassiveRedundancyNet
                     mqttNetworkMessage.getBytes(),
                     MqttConstants.WILL_MESSAGE_QOS,
                     true);
+            mqttOption.setKeepAliveInterval(SERVER_REDUNDANCY_PING_ECHO_TIME);
 
             mOriginalNetworkCallback = networkCb;
             // Because the constructor accepts MqttNetworkChannel only.
