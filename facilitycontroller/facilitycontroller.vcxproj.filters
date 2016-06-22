@@ -36,13 +36,7 @@
     <ClInclude Include="CarDetectedListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClientApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Controller.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EntryGateHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GateCarDetector.h">
@@ -64,9 +58,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FacilityConfiguration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExitGateHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MsgQueClient.h">
@@ -132,18 +123,21 @@
     <ClInclude Include="SlotLedController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GateHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdExceptionNoti.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdReceiveBookingNumber.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CarDetectedListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ClientApi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EntryGateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GateCarDetector.cpp">
@@ -156,9 +150,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SlotStatusChangeListener.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ExitGateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MsgQueClient.cpp">
@@ -213,6 +204,15 @@
       <Filter>Source Files\Command</Filter>
     </ClCompile>
     <ClCompile Include="SlotLedController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdExceptionNoti.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdReceiveBookingNumber.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="GateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

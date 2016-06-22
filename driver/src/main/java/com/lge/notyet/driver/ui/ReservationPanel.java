@@ -47,6 +47,7 @@ public class ReservationPanel implements Screen {
 
         Calendar maxTime = Calendar.getInstance();
         maxTime.add(Calendar.HOUR_OF_DAY, 3);
+        calNewYork.add(Calendar.MINUTE, 1);
         maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         Calendar minTime = Calendar.getInstance();
@@ -97,7 +98,7 @@ public class ReservationPanel implements Screen {
 
         Calendar maxTime = Calendar.getInstance();
         maxTime.add(Calendar.HOUR_OF_DAY, 3);
-        calNewYork.add(Calendar.MINUTE, 5);
+        calNewYork.add(Calendar.MINUTE, 1);
         maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         Calendar minTime = Calendar.getInstance();
@@ -146,9 +147,7 @@ public class ReservationPanel implements Screen {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
-                SessionManager.getInstance().clear();
-                ScreenManager.getInstance().showLoginScreen();
+                doLogout();
             }
         });
 
@@ -157,11 +156,17 @@ public class ReservationPanel implements Screen {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
-                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
-                SessionManager.getInstance().clear();
-                ScreenManager.getInstance().showLoginScreen();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    doLogout();
+                }
             }
         });
+    }
+
+    private void doLogout() {
+        TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
+        SessionManager.getInstance().clear(); // Log-out
+        ScreenManager.getInstance().showLoginScreen();
     }
 
     private final ITaskDoneCallback mReservationDoneCallback = (result, response) -> {
@@ -202,14 +207,20 @@ public class ReservationPanel implements Screen {
 
             } else if (success == 0) {
 
-                Log.logd(LOG_TAG, "Failed to make reservation, with cause=" + resMsg.getMessage().get("cause").asString());
+                final String failCause = resMsg.getMessage().get("cause").asString();
+                Log.logd(LOG_TAG, "Failed to make reservation, with cause=" + failCause);
 
                 new Thread(() -> {
                     JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.MAKE_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.MAKE_RESERVATION_FAILED + ":" + failCause,
                             Strings.APPLICATION_NAME,
                             JOptionPane.WARNING_MESSAGE);
                 }).start();
+
+                if (failCause.equals(Strings.FAIL_CAUSE_INVALID_SESSION)) {
+                    doLogout();
+                }
+
             } else {
 
                 Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);

@@ -33,6 +33,10 @@ public class UpdateFacilityRequestChannel extends ClientChannelRegistry {
         return Integer.parseInt((String) uri.getPathSegments().get(2));
     }
 
+    public static String getSessionKey(NetworkMessage networkMessage) {
+        return ((JsonObject) networkMessage.getMessage()).get(KEY_SESSION_KEY).asString();
+    }
+
     public static String getFacilityName(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_NAME).asString();
     }

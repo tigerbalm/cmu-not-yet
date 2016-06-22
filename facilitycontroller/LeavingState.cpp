@@ -3,13 +3,14 @@
 // 
 
 #include "LeavingState.h"
-#include "ExitGateHelper.h"
+#include "GateHelper.h"
 #include "CarDetectedListener.h"
 #include "Controller.h"
 #include "CmdPaymentResp.h"
 #include "CmdPaymentReq.h"
 #include "SlotLedController.h"
 #include "CommandFactory.h"
+#include "CmdExceptionNoti.h"
 
 // LEAVING 에 처음 진입하면 차가 EXIT GATE 에 도착하길 기다리는 상태
 // 도착하면, 결제 요청
@@ -60,26 +61,29 @@ void LeavingState::onMessageReceived(Command *command)
 
 	if (mode == MODE_WAITING_PAYMENT_RESP)
 	{		
-		// todo: arduino 에서 dynamic cast 사용이 가능???
-		//if (CmdVerifyReservationRes *resp = dynamic_cast<CmdVerifyReservationRes *>(command))
-		//{
-		//	resp->isSuccess();
-		//}
+		if (command->getHint() != CMD_HINT_PAYMENT_RESP) {
+			Serial.print("ParkingState::casting error - ");
+			Serial.println("CMD_HINT_PAYMENT_RESP");
+			return;
+		}
 		
 		CmdPaymentResp *resp = (CmdPaymentResp *)command;
 		
 		if (resp->isSuccess())
 		{
-			ExitGateHelper::ledOn();
-			ExitGateHelper::open();
+			GateHelper::exitGate()->openDoor();
+			//ExitGateHelper::ledOn();
+			//ExitGateHelper::open();
 
 			mode = MODE_OPEN_GATE;
 		}
 		else
 		{
-			// notify to dave
-			
+			// notify to dave			
 			// slot led blink...
+			CmdExceptionNoti * exceptionCmd = (CmdExceptionNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_EXCEPTION_NOTIFY);
+			exceptionCmd->setMessage((resp->getFailCause()));
+			exceptionCmd->send(mqClient);
 		}
 	}
 }
@@ -99,6 +103,8 @@ void LeavingState::carDetectedOnExit(int status)
 	
 	if (status == CAR_DETECTED)
 	{
+		GateHelper::exitGate()->ledGreen(true);
+
 		if (mode == MODE_WAITING_CAR_AT_EXIT)
 		{
 			// send req to server
@@ -112,10 +118,16 @@ void LeavingState::carDetectedOnExit(int status)
 	else
 	{
 		if (mode == MODE_OPEN_GATE) {
-			ExitGateHelper::ledOff();
-			ExitGateHelper::close();
+			GateHelper::exitGate()->closeDoor();
+
+			//ExitGateHelper::ledOff();
+			//ExitGateHelper::close();
 
 			controller->setState(controller->getWaitingState());
+		}
+		else
+		{
+			GateHelper::exitGate()->ledGreen(false);
 		}
 	}
 }

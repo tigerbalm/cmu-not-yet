@@ -16,6 +16,9 @@
 #define CMD_HINT_CAR_PARKED_NOTIFY						"slot"
 #define CMD_HINT_MY_STATUS_NOTIFY						"alive"
 
+#define CMD_HINT_EXCEPTION_NOTIFY						"exception"
+#define CMD_HINT_RECEIVE_BOOK_NO						"receive_book_no"
+
 class Command
 {	
 protected:
@@ -31,6 +34,8 @@ public:
 
 	void setTopic(String topic);
 	virtual String getTopic();
+
+	virtual String getHint() = 0;
 
 	virtual void setBody(String body);
 	virtual void setBody(char * body);

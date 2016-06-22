@@ -3,7 +3,8 @@
 // 
 
 #include "ParkingState.h"
-#include "EntryGateHelper.h"
+//#include "EntryGateHelper.h"
+#include "GateHelper.h"
 #include "CarDetectedListener.h"
 #include "CommandFactory.h"
 #include "CmdVerifyBookingReq.h"
@@ -11,6 +12,8 @@
 #include "CmdCarParkedNoti.h"
 #include "Controller.h"
 #include "SlotLedController.h"
+#include "CmdReceiveBookingNumber.h"
+#include "CmdExceptionNoti.h"
 
 #define MODE_WAITING_NUMBER		1
 #define MODE_WAITING_CONFIRM	2
@@ -26,9 +29,18 @@ void ParkingState::exit()
 {
 	Serial.println("ParkingState::exit()");
 
-	mode = MODE_WAITING_NUMBER;
+	// deactive kiosk
+	Serial.println("#$control##deactivate_kiosk$#");
+}
+
+void ParkingState::enter()
+{
+	setMode(MODE_WAITING_NUMBER);
+	//EntryGateHelper::ledGreen(true);
+	GateHelper::entryGate()->ledGreen(true);
+
 	bookingNo = -1;
-	assignedSlot = -1;	
+	assignedSlot = -1;
 }
 
 void ParkingState::onMessageReceived(Command *command)
@@ -37,6 +49,12 @@ void ParkingState::onMessageReceived(Command *command)
 
 	if (mode == MODE_WAITING_CONFIRM)
 	{
+		if (command->getHint() != CMD_HINT_CONFIRM_RESERVATION_RESP) {
+			Serial.print("ParkingState::casting error - ");
+			Serial.println("CMD_HINT_CONFIRM_RESERVATION_RESP");
+			return;
+		}
+
 		CmdVerifyBookingResp *response = (CmdVerifyBookingResp *)command;
 
 		if (response->isSuccess())
@@ -49,19 +67,59 @@ void ParkingState::onMessageReceived(Command *command)
 			//SlotLedController::getInstance()->on(assignedSlot);
 			SlotLedController::getInstance()->blinkOn(assignedSlot);
 
-			EntryGateHelper::open();
-			EntryGateHelper::ledOn();
+			GateHelper::entryGate()->openDoor();
+			//EntryGateHelper::open();
+			//EntryGateHelper::ledOn();
 
-			mode = MODE_WAITING_PLACING;
+			setMode(MODE_WAITING_PLACING);			
 		}
 		else
 		{
 			Serial.print("confirm_reservation fail : ");
 			Serial.println(response->getFailCause());
 
-			mode = MODE_WAITING_NUMBER;
-		}
+			CmdExceptionNoti * exceptionCmd = (CmdExceptionNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_EXCEPTION_NOTIFY);
+			exceptionCmd->setMessage(response->getFailCause());
+			exceptionCmd->send(mqClient);
+
+			String message = "#$error##";
+			message += "Your confirmation no. is incorrect.<br>Pleae try again or<br><b>CALL DAVE!!!</b>";
+			message += "<br><br>";
+			message += response->getFailCause();
+			message += "$#";
+			Serial.println(message);
+			
+			setMode(MODE_WAITING_NUMBER);
+		}		
 	}
+	else if (mode == MODE_WAITING_NUMBER)
+	{
+		if (command->getHint() != CMD_HINT_RECEIVE_BOOK_NO) {
+			Serial.print("ParkingState::casting error - ");
+			Serial.println("CMD_HINT_RECEIVE_BOOK_NO");			
+			return;
+		}
+
+		CmdReceiveBookingNumber *cmd = (CmdReceiveBookingNumber *)command;
+		bookingNo = cmd->getBookingNo();;
+		verifyReservation(bookingNo);
+	}
+}
+
+void ParkingState::setMode(int _mode)
+{
+	switch (_mode) {
+	case MODE_WAITING_NUMBER:
+		Serial.println("#$control##activate_kiosk$#");
+		break;
+	case MODE_WAITING_CONFIRM:
+		Serial.println("#$control##deactivate_kiosk$#");
+		break;
+	case MODE_WAITING_PLACING:
+		break;
+	}
+
+	mode = _mode;
 }
 
 void ParkingState::loop()
@@ -71,22 +129,14 @@ void ParkingState::loop()
 	
 	switch (mode) {
 		case MODE_WAITING_NUMBER :
-			waitingNumberInput();
+			//Serial.println("#$control##activate_kiosk$#");
 			break;
 		case MODE_WAITING_CONFIRM :	
-			/*
-		{
-			String msg = "{ 'success':1, 'slot_no':3 }";
-			onMessageReceived(msg);
-		}
-		*/
+			//Serial.println("#$control##deactivate_kiosk$#");
 			break;
 		case MODE_WAITING_PLACING :			
 			break;
 	}
-	// number input
-	// send to server
-	// 
 }
 
 void ParkingState::waitingNumberInput()
@@ -108,7 +158,7 @@ void ParkingState::verifyReservation(int number)
 	verifyRequest->setReservationNumber(number);
 	verifyRequest->send(mqClient);
 
-	mode = MODE_WAITING_CONFIRM;
+	setMode(MODE_WAITING_CONFIRM);	
 }
 
 void ParkingState::carDetectedOnEntry(int status)
@@ -120,6 +170,11 @@ void ParkingState::carDetectedOnEntry(int status)
 		return;
 	}
 
+	if (mode != MODE_WAITING_PLACING)
+	{
+		GateHelper::entryGate()->ledGreen(false);
+	}
+	
 	if (mode == MODE_WAITING_NUMBER || mode == MODE_WAITING_CONFIRM) {
 		Serial.println("Car is disappeared. Change to Waiting state.");
 
@@ -148,8 +203,9 @@ void ParkingState::onSlotOccupied(int slotNum)
 		//SlotLedController::getInstance()->off(assignedSlot);
 		SlotLedController::getInstance()->blinkOff(assignedSlot);
 
-		EntryGateHelper::ledOff();
-		EntryGateHelper::close();
+		GateHelper::entryGate()->closeDoor();
+		//EntryGateHelper::ledOff();
+		//EntryGateHelper::close();
 		
 		controller->setState(controller->getWaitingState());
 	}

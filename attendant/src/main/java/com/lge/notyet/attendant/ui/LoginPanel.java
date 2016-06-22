@@ -16,6 +16,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.time.Instant;
 
 public class LoginPanel implements Screen {
 
@@ -139,7 +140,7 @@ public class LoginPanel implements Screen {
                     int id = slot.get("id").asInt();  // Slot's Unique ID
                     int number = slot.get("number").asInt();
                     int occupied = slot.get("parked").isNull() ? 0 : slot.get("parked").asInt();
-                    long occupied_ts = slot.get("parked_ts").isNull() ? 0L : slot.get("parked_ts").asLong();
+                    long occupied_ts = slot.get("parked_ts").isNull() ? Instant.now().getEpochSecond() : slot.get("parked_ts").asLong();
                     int reserved = slot.get("reserved").isNull() ? 0 : slot.get("reserved").asInt();
                     int controller_id = slot.get("controller_id").asInt();
                     String physical_id = slot.get("controller_physical_id").asString();
@@ -317,21 +318,8 @@ public class LoginPanel implements Screen {
             if (success == 1) { // Success
 
                 // int userId = resMsg.getMessage().get("id").asInt(); // I will use SessionKey
-                int userType = resMsg.getMessage().get("type").asInt();
+
                 String session = resMsg.getMessage().get("session_key").asString();
-
-                if (userType != 1) { // Attendant
-
-                    Log.logd(LOG_TAG, "This is not driver account");
-
-                    new Thread(() -> {
-                        JOptionPane.showMessageDialog(getRootPanel(),
-                                Strings.LOGIN_FAILED + ":" + Strings.WRONG_ACCOUNT,
-                                Strings.APPLICATION_NAME,
-                                JOptionPane.ERROR_MESSAGE);
-                    }).start();
-                    return;
-                }
 
                 if (session == null) {
 

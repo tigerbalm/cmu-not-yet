@@ -28,7 +28,11 @@ public:
 		
 	void exit();
 
+	void enter();
+
 	void onMessageReceived(Command *command);
+
+	void setMode(int mode);
 
 	void carDetectedOnEntry(int status);
 	void carDetectedOnExit(int status);

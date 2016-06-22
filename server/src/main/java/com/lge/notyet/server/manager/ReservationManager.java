@@ -1,8 +1,10 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.lib.crypto.SureParkCrypto;
 import com.lge.notyet.server.exception.InvalidConfirmationNumberException;
 import com.lge.notyet.server.exception.NoReservationExistException;
+import com.lge.notyet.server.proxy.CreditCardProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -14,10 +16,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ReservationManager {
     private static ReservationManager instance = null;
@@ -25,6 +24,7 @@ public class ReservationManager {
     private final Vertx vertx;
     private final Logger logger;
     private final DatabaseProxy databaseProxy;
+    private final CreditCardProxy creditCardProxy;
 
     private final Map<Integer, Long> timerMap = new HashMap<>(); // reservationId to timerId
     private final Set<Listener> listenerSet = new ConcurrentHashSet<>();
@@ -43,6 +43,9 @@ public class ReservationManager {
         this.vertx = vertx;
         this.logger = LoggerFactory.getLogger(ReservationManager.class);
         this.databaseProxy = DatabaseProxy.getInstance(null);
+        this.creditCardProxy = CreditCardProxy.getInstance();
+
+        setCheckingExpiredReservationTimers();
     }
 
     public static ReservationManager getInstance(Vertx vertx) {
@@ -52,6 +55,49 @@ public class ReservationManager {
             }
             return instance;
         }
+    }
+
+    private void setCheckingExpiredReservationTimer(int reservationId, int expirationTs) {
+        logger.info("setCheckingExpiredReservationTimer: reservationId=" + reservationId + ", expirationTs=" + expirationTs);
+        int currentTs = (int) Instant.now().getEpochSecond();
+        int timerTs = expirationTs - currentTs;
+        if (timerTs > 1) {
+            logger.info("setCheckingExpiredReservationTimer: expirationTs=" + expirationTs + ", currentTs=" + currentTs + ", timerTs=" + timerTs);
+            long timerId = vertx.setTimer((timerTs + 1) * 1000, id -> {
+                checkExpiredReservations();
+            });
+            timerMap.put(reservationId, timerId);
+        } else {
+            checkExpiredReservations();
+        }
+    }
+
+    private void setCheckingExpiredReservationTimers() {
+        logger.info("setCheckingExpiredReservationTimers:");
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                ar1.cause().printStackTrace();
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectActivatedReservations(sqlConnection, ar2 -> {
+                    databaseProxy.closeConnection(sqlConnection, ar -> {});
+                    if (ar2.succeeded()) {
+                        final List<JsonObject> reservationObjects = ar2.result();
+                        logger.info("setCheckingExpiredReservationTimers: " + reservationObjects.size() + " activated reservations found");
+                        for (JsonObject reservationObject : reservationObjects) {
+                            int reservationId = reservationObject.get("id").asInt();
+                            int expiredTs = reservationObject.get("expiration_ts").asInt();
+                            final boolean hasTransaction = !reservationObject.get("begin_ts").isNull();
+                            if (!hasTransaction) {
+                                setCheckingExpiredReservationTimer(reservationId, expiredTs);
+                            }
+                        }
+                    } else {
+                        ar2.cause().printStackTrace();
+                    }
+                });
+            }
+        });
     }
 
     private void checkExpiredReservations() {
@@ -206,8 +252,9 @@ public class ReservationManager {
         });
     }
 
-    public void makeReservation(int userId, int slotId, int reservationTs, int confirmationNumber, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonObject>> handler) {
+    public void makeReservation(int userId, int slotId, int reservationTs, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonObject>> handler) {
         logger.info("makeReservation: userId=" + userId + ", slotId=" + slotId);
+        final int confirmationNumber = new Random().nextInt((9999 - 1000) + 1) + 1000;
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -229,17 +276,8 @@ public class ReservationManager {
                                     } else {
                                         JsonObject reservationObject = ar4.result();
                                         handler.handle(Future.succeededFuture(reservationObject));
-
                                         int reservationId = reservationObject.get("id").asInt();
-                                        int currentTs = (int) Instant.now().getEpochSecond();
-                                        long timerTs = expiredTs - currentTs;
-                                        logger.info("makeReservation: expiredTs=" + expiredTs + ", currentTs=" + currentTs + ", timerTs=" + timerTs);
-                                        if (timerTs > 1) {
-                                            long timerId = vertx.setTimer(timerTs * 1000, id -> {
-                                                checkExpiredReservations();
-                                            });
-                                            timerMap.put(reservationId, timerId);
-                                        }
+                                        setCheckingExpiredReservationTimer(reservationId, expiredTs);
                                     }
                                 }));
                             }
@@ -313,36 +351,53 @@ public class ReservationManager {
                         handler.handle(Future.failedFuture(ar2.cause()));
                     } else {
                         final JsonObject reservationObject = ar2.result();
+                        final int userId = reservationObject.get("user_id").asInt();
                         final int slotId = reservationObject.get("slot_id").asInt();
                         final int reservationId = reservationObject.get("id").asInt();
                         final double fee = reservationObject.get("fee").asDouble();
                         final int feeUnit = reservationObject.get("fee_unit").asInt();
                         final int beginTs = reservationObject.get("begin_ts").asInt();
-                        final double revenue = (endTs - beginTs) / feeUnit * fee; // TODO: need to be more accurate
+                        final double revenue = Math.ceil(((double)endTs - (double)beginTs) / (double)feeUnit) * fee;
 
-                        databaseProxy.updateTransaction(sqlConnection, reservationId, endTs, revenue, ar3 -> {
+                        databaseProxy.selectUser(sqlConnection, userId, ar3 -> {
                             if (ar3.failed()) {
                                 databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
                             } else {
-                                databaseProxy.updateReservationActivated(sqlConnection, reservationId, false, ar4 -> {
-                                   if (ar4.failed()) {
-                                       databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
-                                   } else {
-                                       databaseProxy.updateSlotParked(sqlConnection, slotId, false, ar5 -> {
-                                           if (ar5.failed()) {
-                                               databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar5.cause())));
-                                           } else {
-                                               databaseProxy.updateSlotReserved(sqlConnection, slotId, false, ar6 -> {
-                                                   if (ar6.failed()) {
-                                                       databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar6.cause())));
-                                                   } else {
-                                                       listenerSet.forEach(listener -> listener.onTransactionEnded(reservationId));
-                                                       databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
-                                                   }
-                                               });
-                                           }
-                                       });
-                                   }
+                                final JsonObject userObject = ar3.result().get(0);
+                                final String cardNumber = userObject.get("card_number").asString();
+                                final String cardExpiration = userObject.get("card_expiration").asString();
+                                creditCardProxy.makePayment(SureParkCrypto.decrypt(cardNumber), SureParkCrypto.decrypt(cardExpiration), revenue, ar4 -> {
+                                    if (ar4.failed()) {
+                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
+                                    } else {
+                                        final long paymentId = ar4.result();
+                                        databaseProxy.updateTransaction(sqlConnection, reservationId, endTs, revenue, paymentId, ar5 -> {
+                                            if (ar5.failed()) {
+                                                databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar5.cause())));
+                                            } else {
+                                                databaseProxy.updateReservationActivated(sqlConnection, reservationId, false, ar6 -> {
+                                                    if (ar6.failed()) {
+                                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar6.cause())));
+                                                    } else {
+                                                        databaseProxy.updateSlotParked(sqlConnection, slotId, false, ar7 -> {
+                                                            if (ar7.failed()) {
+                                                                databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar7.cause())));
+                                                            } else {
+                                                                databaseProxy.updateSlotReserved(sqlConnection, slotId, false, ar8 -> {
+                                                                    if (ar8.failed()) {
+                                                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar8.cause())));
+                                                                    } else {
+                                                                        listenerSet.forEach(listener -> listener.onTransactionEnded(reservationId));
+                                                                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
                                 });
                             }
                         });

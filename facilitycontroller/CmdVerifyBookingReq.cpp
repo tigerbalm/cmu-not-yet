@@ -34,3 +34,8 @@ String CmdVerifyBookingReq::getBody()
 
 	return body;
 }
+
+String CmdVerifyBookingReq::getHint()
+{
+	return CMD_HINT_CONFIRM_RESERVATION_REQ;
+}

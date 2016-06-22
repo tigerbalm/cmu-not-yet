@@ -1,7 +1,11 @@
 package com.lge.notyet.kiosk.ui;
 
 import com.lge.notyet.kiosk.ReservationNumber;
-import com.lge.notyet.kiosk.SerialComm;
+import com.lge.notyet.kiosk.comm.CommApi;
+import com.lge.notyet.kiosk.comm.SerialComm2;
+import com.lge.notyet.kiosk.comm.StatusListener;
+import com.lge.notyet.kiosk.message.MyMessage;
+import com.lge.notyet.kiosk.message.MyMessageBuilder;
 
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
@@ -12,19 +16,17 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.logging.SimpleFormatter;
 
 /**
  * Created by sjun.lee on 2016-06-09.
  */
-public class KioskGUI implements SerialComm.MessageUpdatable {
+public class KioskGUI implements StatusListener {
     private JTextField reservationNum1;
     private JTextField reservationNum2;
     private JTextField reservationNum3;
     private JTextField reservationNum4;
-    private JTextField[] numberFieldsGroup = new JTextField[] {reservationNum1, reservationNum2, reservationNum3, reservationNum4};
+    private JTextField[] numberFieldsGroup = new JTextField[]{reservationNum1, reservationNum2, reservationNum3, reservationNum4};
 
     private JButton btnNumber1;
     private JButton btnNumber2;
@@ -37,6 +39,10 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
     private JButton btnNumber9;
     private JButton btnNumber0;
     private JButton btnNumberC;
+    private JButton[] numberButtonGroup = new JButton[] {
+            btnNumber0, btnNumber1, btnNumber2, btnNumber3, btnNumber4, btnNumber5,
+            btnNumber6, btnNumber7, btnNumber8, btnNumber9, btnNumberC
+    };
 
     private JButton btnCheckReservation2;
     private JPanel kioskPanel;
@@ -44,9 +50,12 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
     private JTextArea textSerialMonitor;
     private JButton btnConnect;
     private JLabel labelSerialInfo;
+    private JTextField editMessage;
+    private JButton btnSend;
+    private JTextArea textMessage;
 
     ReservationNumber reservationNumber;
-    SerialComm comm;
+    CommApi comm;
 
     private KioskGUI() {
         initSerialComm();
@@ -62,6 +71,21 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
         initSerialCommStatusText();
 
         initConnectButton();
+
+        initMessageSend();
+    }
+
+    private void initMessageSend() {
+        btnSend.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = textMessage.getText();
+
+                comm.send(message);
+
+                textMessage.setText("");
+            }
+        });
     }
 
     private void initSerialMonTextArea() {
@@ -83,7 +107,7 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
     }
 
     private void initSerialCommStatusText() {
-        if (comm.isConnected()) {
+        if (comm.connected()) {
             btnConnect.setText("Disconnect");
         } else {
             btnConnect.setText("Connect");
@@ -97,7 +121,7 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("btnConnect is clicked...");
-                if (comm.isConnected()) {
+                if (comm.connected()) {
                     comm.disconnect();
                 } else {
                     resetMonitorArea(toReadableDate());
@@ -114,22 +138,25 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("you input : " + reservationNumber.get());
-                comm.send(reservationNumber.getAsString().getBytes());
+
+                MyMessageBuilder message = MyMessageBuilder.builder()
+                                                .topic("receive_book_no")
+                                                .append("confirmation_no", reservationNumber.getAsString())
+                                                .build();
+                comm.send(message.toSerialProtocol());
             }
         });
     }
 
     private void initNumberButton() {
-        btnNumber0.addActionListener(new NumberListener());
-        btnNumber1.addActionListener(new NumberListener());
-        btnNumber2.addActionListener(new NumberListener());
-        btnNumber3.addActionListener(new NumberListener());
-        btnNumber4.addActionListener(new NumberListener());
-        btnNumber5.addActionListener(new NumberListener());
-        btnNumber6.addActionListener(new NumberListener());
-        btnNumber7.addActionListener(new NumberListener());
-        btnNumber8.addActionListener(new NumberListener());
-        btnNumber9.addActionListener(new NumberListener());
+        for (JButton btn : numberButtonGroup) {
+            if (btn == btnNumberC) {
+                continue;
+            }
+
+            btn.addActionListener(new NumberListener());
+        }
+
         btnNumberC.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -138,6 +165,18 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
                 System.out.println("after remove : " + reservationNumber.get());
             }
         });
+
+        numberButtonEnable(true);
+    }
+
+    private void numberButtonEnable(boolean enable) {
+        System.out.println("numberButtonEnable : " + enable);
+
+        for (JButton btn : numberButtonGroup) {
+            btn.setEnabled(enable);
+        }
+
+        btnCheckReservation2.setEnabled(enable && numberFieldsFull());
     }
 
     private void initReservationNumberField() {
@@ -152,16 +191,6 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
                 }
             }
 
-            private boolean numberFieldsFull() {
-                for (JTextField field : numberFieldsGroup) {
-                    if ("-".equals(field.getText())) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
             @Override
             public void onNumberTextRemoved(int index) {
                 numberFieldsGroup[index].setText("-");
@@ -171,18 +200,67 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
         });
     }
 
+    private boolean numberFieldsFull() {
+        for (JTextField field : numberFieldsGroup) {
+            if ("-".equals(field.getText())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private void initSerialComm() {
-        comm = new SerialComm(this);
+        comm = new SerialComm2(this);
         comm.connect();
     }
 
     @Override
-    public void onMessageUpdate(String message) {
+    public void onConnected() {
+        System.out.println("serial comm. connected");
+
+        btnSend.setEnabled(true);
+    }
+
+    @Override
+    public void onDisconnected() {
+        System.out.println("serial comm. disconnected");
+
+        btnSend.setEnabled(false);
+    }
+
+    @Override
+    public void onMessageReceived(String message) {
+        //System.out.println("message received: " + message.text());
+
         if (textSerialMonitor.getLineCount() > 50000) {
             textSerialMonitor.setText("");
         }
 
         textSerialMonitor.append(message);
+    }
+
+    // topic##body
+    @Override
+    public void onSystemMessageReceived(String message) {
+        System.out.println("system message received: " + message);
+
+        String[] splits = message.split("##");
+
+        if ("error".equalsIgnoreCase(splits[0])) {
+            JOptionPane.showMessageDialog(kioskPanel,
+                    "<html><h1>" + splits[1] +"</html>",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+        } else if ("control".equalsIgnoreCase(splits[0])) {
+            if ("activate_kiosk".equalsIgnoreCase(splits[1])) {
+                //btnCheckReservation2.setEnabled(true);
+                //numberButtonEnable(true);
+            } else if ("deactivate_kiosk".equalsIgnoreCase(splits[1])) {
+                //btnCheckReservation2.setEnabled(false);
+                //numberButtonEnable(false);
+            }
+        }
     }
 
     class NumberListener implements ActionListener {
@@ -202,7 +280,7 @@ public class KioskGUI implements SerialComm.MessageUpdatable {
 
     public static void showGui() {
         KioskGUI kiosk = new KioskGUI();
-        JFrame frame = new JFrame("Calculator");
+        JFrame frame = new JFrame("SurePark Kiosk");
         frame.setContentPane(kiosk.getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

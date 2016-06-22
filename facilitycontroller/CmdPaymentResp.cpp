@@ -35,3 +35,8 @@ void CmdPaymentResp::setBody(String body)
 		failCause += cause;
 	}
 }
+
+String CmdPaymentResp::getHint()
+{
+	return CMD_HINT_PAYMENT_RESP;
+}

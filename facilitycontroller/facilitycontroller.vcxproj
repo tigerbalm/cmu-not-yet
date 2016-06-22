@@ -121,12 +121,11 @@
     <ClInclude Include="CarDetectedListener.h">
       <FileType>CppCode</FileType>
     </ClInclude>
-    <ClInclude Include="ClientApi.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
     <ClInclude Include="CmdCarParkedNoti.h" />
+    <ClInclude Include="CmdExceptionNoti.h" />
     <ClInclude Include="CmdPaymentReq.h" />
     <ClInclude Include="CmdPaymentResp.h" />
+    <ClInclude Include="CmdReceiveBookingNumber.h" />
     <ClInclude Include="CmdVerifyBookingResp.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandFactory.h" />
@@ -137,14 +136,11 @@
     <ClInclude Include="Controller.h">
       <FileType>CppCode</FileType>
     </ClInclude>
-    <ClInclude Include="EntryGateHelper.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="ExitGateHelper.h" />
     <ClInclude Include="FacilityConfiguration.h" />
     <ClInclude Include="GateCarDetector.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="GateHelper.h" />
     <ClInclude Include="LeavingState.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -185,10 +181,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CarDetectedListener.cpp" />
-    <ClCompile Include="ClientApi.cpp" />
     <ClCompile Include="CmdCarParkedNoti.cpp" />
+    <ClCompile Include="CmdExceptionNoti.cpp" />
     <ClCompile Include="CmdPaymentReq.cpp" />
     <ClCompile Include="CmdPaymentResp.cpp" />
+    <ClCompile Include="CmdReceiveBookingNumber.cpp" />
     <ClCompile Include="CmdVerifyBookingResp.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="CommandFactory.cpp" />
@@ -197,9 +194,8 @@
     <ClCompile Include="CmdVerifyBookingReq.cpp" />
     <ClCompile Include="CmdAliveNoti.cpp" />
     <ClCompile Include="Controller.cpp" />
-    <ClCompile Include="EntryGateHelper.cpp" />
-    <ClCompile Include="ExitGateHelper.cpp" />
     <ClCompile Include="GateCarDetector.cpp" />
+    <ClCompile Include="GateHelper.cpp" />
     <ClCompile Include="LeavingState.cpp" />
     <ClCompile Include="SlotLedController.cpp" />
     <ClCompile Include="MsgQueClient.cpp" />
@@ -215,4 +211,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties arduino.upload.port="COM80" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

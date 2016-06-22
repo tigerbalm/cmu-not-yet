@@ -36,3 +36,8 @@ String CmdCarParkedNoti::getBody()
 
 	return body;
 }
+
+String CmdCarParkedNoti::getHint()
+{
+	return CMD_HINT_CAR_PARKED_NOTIFY;
+}

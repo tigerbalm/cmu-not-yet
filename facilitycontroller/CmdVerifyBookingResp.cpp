@@ -17,6 +17,11 @@ String CmdVerifyBookingResp::getTopic()
 	return topic;
 }
 
+String CmdVerifyBookingResp::getHint()
+{
+	return CMD_HINT_CONFIRM_RESERVATION_RESP;
+}
+
 void CmdVerifyBookingResp::setBody(String body)
 {
 	StaticJsonBuffer<100> jsonBuffer;
