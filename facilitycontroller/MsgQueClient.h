@@ -32,7 +32,7 @@ class MsgQueClient
 
 	bool reconnect();
 	void subscribeCacheTopics();
-	bool connected();
+	
 public:	
 	MsgQueClient(char *clinetName, PubSubClient &pubsubClient);
 	
@@ -44,6 +44,8 @@ public:
 	void unsubscribeCacheTopics(String topic);
 	bool publish(String topic, String body);
 	void loop();
+	bool connected();
+	void setListener(MsgQueClientStatusListener *_listener);
 };
 #endif
 

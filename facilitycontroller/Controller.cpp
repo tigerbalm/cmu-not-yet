@@ -11,14 +11,22 @@ Controller::Controller(MsgQueClient & client)
 }
 
 void Controller::setup()
-{	
+{
 	Serial.println("Controller::setup() - start");
 
 	waitingState = new WatingState(msgQueClient, this);
 	parkingState = new ParkingState(msgQueClient, this);
 	leavingState = new LeavingState(msgQueClient, this);
+	noServerConnectState = new NoServerConnectState(msgQueClient, this);
 
-	setState((State*)waitingState);
+	if (msgQueClient->connected())
+	{
+		setState((State*)waitingState);
+	}
+	else
+	{
+		setState((State*)noServerConnectState);
+	}	
 
 	entryGateCarDetector = new GateCarDetector(this, ENTRY_BEAM_RECEIVER);
 	exitGateCarDetector = new GateCarDetector(this, EXIT_BEAM_RECEIVER);
@@ -60,6 +68,11 @@ State* Controller::getLeavingState()
 	return leavingState;
 }
 
+State * Controller::getNoServerConnectState()
+{
+	return noServerConnectState;
+}
+
 void Controller::loop()
 {
 	//Serial.println("Controller::loop()");
@@ -84,27 +97,6 @@ void Controller::receiveMessage(Command *command)
 	currentState->onMessageReceived(command);
 }
 
-void Controller::onStateChanged(int nextState)
-{
-	Serial.println("State changed");
-
-	switch (nextState)
-	{
-		case STATE_PARKING :
-			setState(parkingState);
-			break;
-		case STATE_WAITING :
-			setState(waitingState);
-			break;
-		case STATE_LEAVING :
-			setState(leavingState);
-			break;
-		default:
-			// todo throw run-time exception... how????
-			break;
-	}
-}
-
 void Controller::onCarChangeDetected(int gatePin, int status)
 {
 	if (gatePin == ENTRY_BEAM_RECEIVER)
@@ -126,5 +118,19 @@ void Controller::onSlotChange(int slotNumber, int status)
 	else
 	{
 		currentState->onSlotEmptified(slotNumber);
+	}
+}
+
+void Controller::onMsgQueStatusChange(int status)
+{
+	if (status == MSG_QUE_CLIENT_STATUS_CONNECTED)
+	{
+		Serial.println("MsgQueClinet connected!!");
+		currentState->onMsgQueClientConnected();
+	}
+	else
+	{
+		Serial.println("MsgQueClinet disconnected!!");
+		currentState->onMsgQueClientDisconnected();
 	}
 }

@@ -57,3 +57,11 @@ void WatingState::onSlotEmptified(int slotNum)
 
 	controller->setState(leavingState);
 }
+
+void WatingState::onMsgQueClientConnected()
+{
+}
+
+void WatingState::onMsgQueClientDisconnected()
+{
+}

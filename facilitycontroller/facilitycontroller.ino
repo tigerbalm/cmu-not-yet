@@ -1,3 +1,4 @@
+#include "NoServerConnectState.h"
 #include "GateHelper.h"
 #include "CmdExceptionNoti.h"
 #include "CmdReceiveBookingNumber.h"
@@ -24,11 +25,8 @@
 #include "SlotStatusChangeDetector.h"
 #include "CarDetectedListener.h"
 #include <Servo.h>
-#include "ExitGateHelper.h"
-#include "EntryGateHelper.h"
 #include <ArduinoJson.h>
 #include <WiFi.h>
-#include "ClientApi.h"
 #include <PubSubClient.h>
 #include "StateChangeListener.h"
 #include "LeavingState.h"
@@ -109,6 +107,8 @@ void setupNetwork()
 
 void setupMqClient()
 {
+	mqClient.setListener(&controller);
+
 	if (mqClient.connect())
 	{
 		CmdAliveNoti* alive = (CmdAliveNoti *)CommandFactory::getInstance()->createCommand(CMD_HINT_MY_STATUS_NOTIFY);
@@ -134,16 +134,6 @@ void setupDevice()
 
 	GateHelper::entryGate()->closeDoor();
 	GateHelper::exitGate()->closeDoor();
-
-	//entryGateServo.attach(EntryGateServoPin);
-	//EntryGateHelper::attach(entryGateServo);
-	//EntryGateHelper::close();
-	//EntryGateHelper::ledOff();
-
-	//exitGateServo.attach(ExitGateServoPin);
-	//ExitGateHelper::attach(exitGateServo);
-	//ExitGateHelper::close();
-	//ExitGateHelper::ledOff();
 
 	Serial.println("setupDevice - end");
 }

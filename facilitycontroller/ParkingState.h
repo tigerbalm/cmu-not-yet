@@ -39,6 +39,9 @@ public:
 
 	void onSlotOccupied(int slotNum);
 	void onSlotEmptified(int slotNum);
+
+	void onMsgQueClientConnected();
+	void onMsgQueClientDisconnected();
 };
 
 #endif

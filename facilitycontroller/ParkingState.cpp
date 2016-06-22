@@ -3,7 +3,6 @@
 // 
 
 #include "ParkingState.h"
-//#include "EntryGateHelper.h"
 #include "GateHelper.h"
 #include "CarDetectedListener.h"
 #include "CommandFactory.h"
@@ -36,7 +35,7 @@ void ParkingState::exit()
 void ParkingState::enter()
 {
 	setMode(MODE_WAITING_NUMBER);
-	//EntryGateHelper::ledGreen(true);
+	
 	GateHelper::entryGate()->ledGreen(true);
 
 	bookingNo = -1;
@@ -63,13 +62,10 @@ void ParkingState::onMessageReceived(Command *command)
 
 			Serial.print("confirm_reservation success : ");
 			Serial.println(assignedSlot);
-			
-			//SlotLedController::getInstance()->on(assignedSlot);
+
 			SlotLedController::getInstance()->blinkOn(assignedSlot);
 
 			GateHelper::entryGate()->openDoor();
-			//EntryGateHelper::open();
-			//EntryGateHelper::ledOn();
 
 			setMode(MODE_WAITING_PLACING);			
 		}
@@ -200,12 +196,9 @@ void ParkingState::onSlotOccupied(int slotNum)
 		noti->setData(bookingNo, slotNum);
 		noti->send(mqClient);
 		
-		//SlotLedController::getInstance()->off(assignedSlot);
 		SlotLedController::getInstance()->blinkOff(assignedSlot);
 
 		GateHelper::entryGate()->closeDoor();
-		//EntryGateHelper::ledOff();
-		//EntryGateHelper::close();
 		
 		controller->setState(controller->getWaitingState());
 	}
@@ -220,4 +213,12 @@ void ParkingState::onSlotEmptified(int slotNum)
 	// while parking one car, another car can not move or enter or leave...
 
 	// notify to dave
+}
+
+void ParkingState::onMsgQueClientConnected()
+{
+}
+
+void ParkingState::onMsgQueClientDisconnected()
+{
 }

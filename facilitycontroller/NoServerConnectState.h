@@ -1,34 +1,25 @@
-// LeavingState.h
+// NoServerConnectState.h
 
-#ifndef _LEAVINGSTATE_h
-#define _LEAVINGSTATE_h
+#ifndef _NOSERVERCONNECTSTATE_h
+#define _NOSERVERCONNECTSTATE_h
 
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "arduino.h"
 #else
 	#include "WProgram.h"
 #endif
-
 #include "State.h"
-#include "StateChangeListener.h"
 #include "MsgQueClient.h"
 #include "Command.h"
 
-class LeavingState : public State {
-private:
-	int mode;
-	int slot;
+class NoServerConnectState : public State
+{
+	void sendErrorToKiosk();
 
 public:
-	LeavingState(MsgQueClient *_client, Controller *_controller) : State(_client, _controller) {};
-	
-	void enter();
-	void exit();
+	NoServerConnectState(MsgQueClient *_client, Controller *_controller) : State(_client, _controller) {};
 
-	void loop();
-	
-	void setSlotNum(int _slot);
-
+	void loop();	
 	void onMessageReceived(Command *command);
 
 	void carDetectedOnEntry(int status);
@@ -40,6 +31,5 @@ public:
 	void onMsgQueClientConnected();
 	void onMsgQueClientDisconnected();
 };
-
 #endif
 

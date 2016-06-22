@@ -12,11 +12,6 @@
 #include "CommandFactory.h"
 #include "CmdExceptionNoti.h"
 
-// LEAVING 에 처음 진입하면 차가 EXIT GATE 에 도착하길 기다리는 상태
-// 도착하면, 결제 요청
-// 결제 완료 되면 open gate
-// exit gate 에서 차가 없어지면 close gate
-// wating 으로 전환
 #define MODE_WAITING_CAR_AT_EXIT		3000
 #define	MODE_WAITING_PAYMENT_RESP		3001
 #define	MODE_OPEN_GATE					3002
@@ -72,9 +67,6 @@ void LeavingState::onMessageReceived(Command *command)
 		if (resp->isSuccess())
 		{
 			GateHelper::exitGate()->openDoor();
-			//ExitGateHelper::ledOn();
-			//ExitGateHelper::open();
-
 			mode = MODE_OPEN_GATE;
 		}
 		else
@@ -117,11 +109,9 @@ void LeavingState::carDetectedOnExit(int status)
 	}
 	else
 	{
-		if (mode == MODE_OPEN_GATE) {
+		if (mode == MODE_OPEN_GATE)
+		{
 			GateHelper::exitGate()->closeDoor();
-
-			//ExitGateHelper::ledOff();
-			//ExitGateHelper::close();
 
 			controller->setState(controller->getWaitingState());
 		}
@@ -156,4 +146,12 @@ void LeavingState::onSlotEmptified(int _slotNum)
 	Serial.println(_slotNum);
 
 	// notify to dave
+}
+
+void LeavingState::onMsgQueClientConnected()
+{
+}
+
+void LeavingState::onMsgQueClientDisconnected()
+{
 }

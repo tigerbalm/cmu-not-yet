@@ -10,7 +10,6 @@
 #endif
 
 #include "State.h"
-#include "StateChangeListener.h"
 #include "MsgQueClient.h"
 #include "Command.h"
 
@@ -28,6 +27,9 @@ public:
 
 	void onSlotOccupied(int slotNum);
 	void onSlotEmptified(int slotNum);
+
+	void onMsgQueClientConnected();
+	void onMsgQueClientDisconnected();
 };
 #endif
 

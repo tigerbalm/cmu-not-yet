@@ -31,6 +31,11 @@ bool MsgQueClient::connect()
 		subscribeAll();
 
 		Serial.println("connection success!!");
+
+		if (listener != NULL)
+		{
+			listener->onMsgQueStatusChange(MSG_QUE_CLIENT_STATUS_CONNECTED);
+		}
 	}
 	else
 	{
@@ -45,7 +50,17 @@ bool MsgQueClient::disconnect()
 {
 	pubsubClient->disconnect();
 
-	return connected();
+	bool _connected = connected();
+
+	if (!_connected)
+	{
+		if (listener != NULL)
+		{
+			listener->onMsgQueStatusChange(MSG_QUE_CLIENT_STATUS_DISCONNECTED);
+		}
+	}
+
+	return _connected;
 }
 
 bool MsgQueClient::subscribeAll()
@@ -134,6 +149,11 @@ void MsgQueClient::subscribeCacheTopics()
 bool MsgQueClient::connected()
 {
 	return pubsubClient->connected();
+}
+
+void MsgQueClient::setListener(MsgQueClientStatusListener * _listener)
+{
+	listener = _listener;
 }
 
 void MsgQueClient::loop()

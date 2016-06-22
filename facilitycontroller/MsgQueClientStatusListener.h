@@ -15,7 +15,7 @@
 class MsgQueClientStatusListener
 {
 public:
-	virtual void msgQueStatusChange(int status) = 0;
+	virtual void onMsgQueStatusChange(int status) = 0;
 };
 
 #endif
