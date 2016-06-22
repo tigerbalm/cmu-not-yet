@@ -47,6 +47,7 @@ public class ReservationPanel implements Screen {
 
         Calendar maxTime = Calendar.getInstance();
         maxTime.add(Calendar.HOUR_OF_DAY, 3);
+        calNewYork.add(Calendar.MINUTE, 1);
         maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         Calendar minTime = Calendar.getInstance();
@@ -97,7 +98,7 @@ public class ReservationPanel implements Screen {
 
         Calendar maxTime = Calendar.getInstance();
         maxTime.add(Calendar.HOUR_OF_DAY, 3);
-        calNewYork.add(Calendar.MINUTE, 5);
+        calNewYork.add(Calendar.MINUTE, 1);
         maxTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 
         Calendar minTime = Calendar.getInstance();
