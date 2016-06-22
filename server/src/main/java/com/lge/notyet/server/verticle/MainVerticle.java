@@ -6,14 +6,18 @@ import com.lge.notyet.channels.*;
 import com.lge.notyet.lib.comm.INetworkConnection;
 import com.lge.notyet.lib.comm.NetworkMessage;
 import com.lge.notyet.lib.comm.Uri;
+import com.lge.notyet.server.exception.NoAuthorizationException;
+import com.lge.notyet.server.exception.NoAvailableSlotException;
 import com.lge.notyet.server.manager.AuthenticationManager;
 import com.lge.notyet.server.manager.ReservationManager;
 import com.lge.notyet.server.manager.FacilityManager;
 import com.lge.notyet.server.manager.StatisticsManager;
 import com.lge.notyet.server.model.Statistics;
-import com.lge.notyet.server.model.User;
 import com.lge.notyet.server.proxy.CommunicationProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
+import com.lge.notyet.server.security.CheckPoint;
+import com.lge.notyet.server.security.Privilege;
+import com.lge.notyet.server.security.Session;
 import io.vertx.core.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -107,6 +111,7 @@ public class MainVerticle extends AbstractVerticle {
 
         new SignUpResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> signUp(message)).listen();
         new LoginResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> login(message)).listen();
+        new LogoutResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> logout(message)).listen();
         new ReservableFacilitiesResponseChannel(networkConnection).addObserver((networkChannel, uri, message) -> getReservableFacilities(message)).listen();
         new ControllerStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateControllerStatus(uri, message)).listen();
         new SlotStatusSubscribeChannel(networkConnection).addObserver((networkChannel, uri, message) -> updateSlotStatus(uri, message)).listen();
@@ -125,12 +130,28 @@ public class MainVerticle extends AbstractVerticle {
         final String email = LoginRequestChannel.getEmail(message);
         final String password = LoginRequestChannel.getPassword(message);
 
-        authenticationManager.getEmailPasswordUser(email, password, ar -> {
+        authenticationManager.getSession(email, password, ar -> {
             if (ar.failed()) {
                 communicationProxy.responseFail(message, ar.cause());
             } else {
-                JsonObject userObject = ar.result();
-                communicationProxy.responseSuccess(message, userObject);
+                Session session = ar.result();
+                String sessionKey = session.getSessionKey();
+                int userId = session.getUserId();
+                String cardNumber = session.getCardNumber();
+                String cardExpiration = session.getCardExpiration();
+                communicationProxy.responseSuccess(message, LoginResponseChannel.createResponseObject(userId, cardNumber, cardExpiration, sessionKey));
+            }
+        });
+    }
+
+    private void logout(NetworkMessage message) {
+        final String sessionKey = LogoutRequestChannel.getSessionKey(message);
+
+        authenticationManager.invalidateSession(sessionKey, ar -> {
+            if (ar.failed()) {
+                communicationProxy.responseFail(message, ar.cause());
+            } else {
+                communicationProxy.responseSuccess(message);
             }
         });
     }
@@ -141,7 +162,7 @@ public class MainVerticle extends AbstractVerticle {
         final String cardNumber = SignUpRequestChannel.getCardNumber(message);
         final String cardExpiration = SignUpRequestChannel.getCardExpiration(message);
 
-        authenticationManager.signUp(email, password, cardNumber, cardExpiration, User.USER_TYPE_DRIVER, ar1 -> {
+        authenticationManager.signUp(email, password, cardNumber, cardExpiration, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
@@ -153,35 +174,47 @@ public class MainVerticle extends AbstractVerticle {
     private void getReservableFacilities(NetworkMessage message) {
         final String sessionKey = MakeReservationRequestChannel.getSessionKey(message);
 
-        authenticationManager.checkUserType(sessionKey, User.USER_TYPE_DRIVER, ar1 -> {
+        authenticationManager.getSession(sessionKey, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                facilityManager.getReservableFacilities(ar2 -> {
-                    if (ar2.failed()) {
-                        communicationProxy.responseFail(message, ar2.cause());
-                    } else {
-                        List<JsonObject> facilityObjects = ar2.result();
-                        communicationProxy.responseSuccess(message, ReservableFacilitiesResponseChannel.createResponseObject(facilityObjects));
-                    }
-                });
+                final Session session = ar1.result();
+                if (!CheckPoint.authorize(session, Privilege.READ_RESERVATION)) {
+                    communicationProxy.responseFail(message, new NoAuthorizationException());
+                } else {
+                    facilityManager.getReservableFacilities(ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            List<JsonObject> facilityObjects = ar2.result();
+                            communicationProxy.responseSuccess(message, ReservableFacilitiesResponseChannel.createResponseObject(facilityObjects));
+                        }
+                    });
+                }
             }
         });
     }
 
     private void updateFacility(Uri uri, NetworkMessage message) {
         final int facilityId = UpdateFacilityRequestChannel.getFacilityId(uri);
+        final String sessionKey = UpdateFacilityRequestChannel.getSessionKey(message);
         final String name = UpdateFacilityRequestChannel.getFacilityName(message);
         final double fee = UpdateFacilityRequestChannel.getFee(message);
         final int feeUnit = UpdateFacilityRequestChannel.getFeeUnit(message);
         final int gracePeriod = UpdateFacilityRequestChannel.getGracePeriod(message);
 
-        // TODO: check session_key
-        facilityManager.updateFacility(facilityId, name, fee, feeUnit, gracePeriod, ar -> {
-            if (ar.failed()) {
-                communicationProxy.responseFail(message, ar.cause());
+        authenticationManager.getSession(sessionKey, ar1 -> {
+            final Session session = ar1.result();
+            if (!CheckPoint.authorize(session, Privilege.WRITE_FACILITY)) {
+                communicationProxy.responseFail(message, new NoAuthorizationException());
             } else {
-                communicationProxy.responseSuccess(message);
+                facilityManager.updateFacility(facilityId, name, fee, feeUnit, gracePeriod, ar -> {
+                    if (ar.failed()) {
+                        communicationProxy.responseFail(message, ar.cause());
+                    } else {
+                        communicationProxy.responseSuccess(message);
+                    }
+                });
             }
         });
     }
@@ -247,18 +280,23 @@ public class MainVerticle extends AbstractVerticle {
     private void getFacilities(NetworkMessage message) {
         final String sessionKey = GetFacilitiesRequestChannel.getSessionKey(message);
 
-        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+        authenticationManager.getSession(sessionKey, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                final int userId = ar1.result().get("id").asInt();
-                facilityManager.getFacilities(userId, ar2 -> {
-                    if (ar2.failed()) {
-                        communicationProxy.responseFail(message, ar2.cause());
-                    } else {
-                        communicationProxy.responseSuccess(message, GetFacilitiesResponseChannel.createResponseObject(ar2.result()));
-                    }
-                });
+                final Session session = ar1.result();
+                final int userId = session.getUserId();
+                if (!CheckPoint.authorize(session, Privilege.READ_FACILITY)) {
+                    communicationProxy.responseFail(message, new NoAuthorizationException());
+                } else {
+                    facilityManager.getFacilities(userId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            communicationProxy.responseSuccess(message, GetFacilitiesResponseChannel.createResponseObject(ar2.result()));
+                        }
+                    });
+                }
             }
         });
     }
@@ -267,16 +305,14 @@ public class MainVerticle extends AbstractVerticle {
         final String sessionKey = GetSlotsRequestChannel.getSessionKey(message);
         final int facilityId = GetSlotsRequestChannel.getFacilityId(uri);
 
-        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+        authenticationManager.getSession(sessionKey, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                final JsonObject userObject = ar1.result();
-                final int userId = userObject.get("id").asInt();
-                final int userType = userObject.get("type").asInt();
-
-                if (userType != User.USER_TYPE_ATTENDANT) {
-                    communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                final Session session = ar1.result();
+                final int userId = session.getUserId();
+                if (!CheckPoint.authorize(session, Privilege.READ_FACILITY)) {
+                    communicationProxy.responseFail(message, new NoAuthorizationException());
                 } else {
                     facilityManager.getFacilities(userId, ar2 -> {
                         if (ar2.failed()) {
@@ -291,7 +327,7 @@ public class MainVerticle extends AbstractVerticle {
                                 }
                             }
                             if (!isAttendantFacility) {
-                                communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                                communicationProxy.responseFail(message, new NoAuthorizationException());
                             } else {
                                 facilityManager.getFacilitySlots(facilityId, ar3 -> {
                                     if (ar3.failed()) {
@@ -312,20 +348,25 @@ public class MainVerticle extends AbstractVerticle {
         final String sessionKey = GetStatisticsRequestChannel.getSessionKey(message);
         final String query = GetStatisticsRequestChannel.getKeyDbqueryKey(message);
 
-        authenticationManager.checkUserType(sessionKey, User.USER_TYPE_OWNER, ar1 -> {
+        authenticationManager.getSession(sessionKey, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                statisticsManager.getStatisticsByQuery(query, ar2 -> {
-                    if (ar2.failed()) {
-                        communicationProxy.responseFail(message, ar2.cause());
-                    } else {
-                        final Statistics statistics = ar2.result();
-                        final List<String> colunmnameList = statistics.getColunmnameList();
-                        final List<JsonArray> valuesList = statistics.getValuesList();
-                        communicationProxy.responseSuccess(message, GetStatisticsResponseChannel.createResponseObject(colunmnameList, valuesList));
-                    }
-                });
+                final Session session = ar1.result();
+                if (!CheckPoint.authorize(session, Privilege.READ_STATISTICS)) {
+                    communicationProxy.responseFail(message, new NoAuthorizationException());
+                } else {
+                    statisticsManager.getStatisticsByQuery(query, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            final Statistics statistics = ar2.result();
+                            final List<String> colunmnameList = statistics.getColunmnameList();
+                            final List<JsonArray> valuesList = statistics.getValuesList();
+                            communicationProxy.responseSuccess(message, GetStatisticsResponseChannel.createResponseObject(colunmnameList, valuesList));
+                        }
+                    });
+                }
             }
         });
     }
@@ -335,45 +376,48 @@ public class MainVerticle extends AbstractVerticle {
         final int facilityId = MakeReservationRequestChannel.getFacilityId(uri);
         final int reservationTs = MakeReservationRequestChannel.getReservationTs(message);
 
-        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+        authenticationManager.getSession(sessionKey, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                final JsonObject userObject = ar1.result();
-                final int userId = userObject.get("id").asInt();
-                facilityManager.getReservableSlots(facilityId, ar2 -> {
-                    if (ar2.failed()) {
-                        communicationProxy.responseFail(message, ar2.cause());
-                    } else {
-                        final List<JsonObject> slotObjects = ar2.result();
-                        if (slotObjects.isEmpty()) {
-                            communicationProxy.responseFail(message, "NO_AVAILABLE_SLOT");
+                final Session session = ar1.result();
+                final int userId = session.getUserId();
+                if (!CheckPoint.authorize(session, Privilege.READ_RESERVATION, Privilege.WRITE_RESERVATION, Privilege.READ_FACILITY)) {
+                    communicationProxy.responseFail(message, new NoAuthorizationException());
+                } else {
+                    facilityManager.getReservableSlots(facilityId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
                         } else {
-                            final int slotId = slotObjects.get(0).get("id").asInt();
-                            final int confirmationNumber = new Random().nextInt((9999 - 1000) + 1) + 1000;
-                            facilityManager.getFacility(facilityId, ar3 -> {
-                                if (ar3.failed()) {
-                                    communicationProxy.responseFail(message, ar3.cause());
-                                } else {
-                                    final JsonObject facilityObject = ar3.result();
-                                    final double fee = facilityObject.get("fee").asDouble();
-                                    final int feeUnit = facilityObject.get("fee_unit").asInt();
-                                    final int gracePeriod = facilityObject.get("grace_period").asInt();
-                                    reservationManager.makeReservation(userId, slotId, reservationTs, confirmationNumber, fee, feeUnit, gracePeriod, ar4 -> {
-                                        if (ar4.failed()) {
-                                            communicationProxy.responseFail(message, ar4.cause());
-                                        } else {
-                                            final JsonObject reservationObject = ar4.result();
-                                            final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
-                                            notifyControllerUpdated(controllerPhysicalId);
-                                            communicationProxy.responseSuccess(message, ar4.result());
-                                        }
-                                    });
-                                }
-                            });
+                            final List<JsonObject> slotObjects = ar2.result();
+                            if (slotObjects.isEmpty()) {
+                                communicationProxy.responseFail(message, new NoAvailableSlotException());
+                            } else {
+                                final int slotId = slotObjects.get(0).get("id").asInt();
+                                facilityManager.getFacility(facilityId, ar3 -> {
+                                    if (ar3.failed()) {
+                                        communicationProxy.responseFail(message, ar3.cause());
+                                    } else {
+                                        final JsonObject facilityObject = ar3.result();
+                                        final double fee = facilityObject.get("fee").asDouble();
+                                        final int feeUnit = facilityObject.get("fee_unit").asInt();
+                                        final int gracePeriod = facilityObject.get("grace_period").asInt();
+                                        reservationManager.makeReservation(userId, slotId, reservationTs, fee, feeUnit, gracePeriod, ar4 -> {
+                                            if (ar4.failed()) {
+                                                communicationProxy.responseFail(message, ar4.cause());
+                                            } else {
+                                                final JsonObject reservationObject = ar4.result();
+                                                final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                                                notifyControllerUpdated(controllerPhysicalId);
+                                                communicationProxy.responseSuccess(message, ar4.result());
+                                            }
+                                        });
+                                    }
+                                });
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
@@ -426,15 +470,14 @@ public class MainVerticle extends AbstractVerticle {
         final String sessionKey = GetReservationRequestChannel.getSessionKey(message);
         logger.debug("getReservation: sessionKey=" + sessionKey);
 
-        authenticationManager.getSessionUser(sessionKey, ar1 -> {
+        authenticationManager.getSession(sessionKey, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                final JsonObject userObject = ar1.result();
-                final int userType = userObject.get("type").asInt();
-                final int userId = userObject.get("id").asInt();
-                if (userType != User.USER_TYPE_DRIVER) {
-                    communicationProxy.responseFail(message, "NO_AUTHORIZATION");
+                final Session session = ar1.result();
+                final int userId = session.getUserId();
+                if (!CheckPoint.authorize(session, Privilege.READ_RESERVATION)) {
+                    communicationProxy.responseFail(message, new NoAuthorizationException());
                 } else {
                     reservationManager.getReservationByUserId(userId, ar2 -> {
                         if (ar2.failed()) {
@@ -452,26 +495,31 @@ public class MainVerticle extends AbstractVerticle {
         final int reservationId = CancelReservationRequestChannel.getReservationId(uri);
         final String sessionKey = CancelReservationRequestChannel.getSessionKey(message);
 
-        authenticationManager.checkUserType(sessionKey, User.USER_TYPE_DRIVER, ar1 -> {
+        authenticationManager.getSession(sessionKey, ar1 -> {
             if (ar1.failed()) {
                 communicationProxy.responseFail(message, ar1.cause());
             } else {
-                reservationManager.getReservation(reservationId, ar2 -> {
-                    if (ar2.failed()) {
-                        communicationProxy.responseFail(message, ar2.cause());
-                    } else {
-                        final JsonObject reservationObject = ar2.result();
-                        reservationManager.cancelReservation(reservationId, ar3 -> {
-                            if (ar2.failed()) {
-                                communicationProxy.responseFail(message, ar3.cause());
-                            } else {
-                                final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
-                                notifyControllerUpdated(controllerPhysicalId);
-                                communicationProxy.responseSuccess(message);
-                            }
-                        });
-                    }
-                });
+                final Session session = ar1.result();
+                if (!CheckPoint.authorize(session, Privilege.READ_RESERVATION, Privilege.WRITE_RESERVATION)) {
+                    communicationProxy.responseFail(message, new NoAuthorizationException());
+                } else {
+                    reservationManager.getReservation(reservationId, ar2 -> {
+                        if (ar2.failed()) {
+                            communicationProxy.responseFail(message, ar2.cause());
+                        } else {
+                            final JsonObject reservationObject = ar2.result();
+                            reservationManager.cancelReservation(reservationId, ar3 -> {
+                                if (ar2.failed()) {
+                                    communicationProxy.responseFail(message, ar3.cause());
+                                } else {
+                                    final String controllerPhysicalId = reservationObject.get("controller_physical_id").asString();
+                                    notifyControllerUpdated(controllerPhysicalId);
+                                    communicationProxy.responseSuccess(message);
+                                }
+                            });
+                        }
+                    });
+                }
             }
         });
     }

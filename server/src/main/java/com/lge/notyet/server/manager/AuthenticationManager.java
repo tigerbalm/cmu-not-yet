@@ -3,6 +3,7 @@ package com.lge.notyet.server.manager;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.server.exception.*;
 import com.lge.notyet.server.proxy.DatabaseProxy;
+import com.lge.notyet.server.security.Session;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -10,6 +11,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,8 +39,8 @@ public class AuthenticationManager {
         return UUID.randomUUID().toString().substring(0, 30);
     }
 
-    public void signUp(String email, String password, String cardNumber, String cardExpiration, int userType, Handler<AsyncResult<String>> handler) {
-        logger.info("signUp: email=" + email + ", password=" + password + ", cardNumber=" + cardNumber + ", cardExpiration=" + cardExpiration + ", userType=" + userType);
+    public void signUp(String email, String password, String cardNumber, String cardExpiration, Handler<AsyncResult<Void>> handler) {
+        logger.info("signUp: email=" + email + ", password=" + password + ", cardNumber=" + cardNumber + ", cardExpiration=" + cardExpiration);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -51,25 +53,13 @@ public class AuthenticationManager {
                     } else {
                         final boolean existentUser = ar2.result().size() > 0;
                         if (existentUser) {
-                            handler.handle(Future.failedFuture(new ExistentUserException()));
-                            databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                            databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(new ExistentUserException())));
                         } else {
-                            databaseProxy.insertUser(sqlConnection, email, password, cardNumber, cardExpiration, userType, ar3 -> {
+                            databaseProxy.insertUser(sqlConnection, email, password, cardNumber, cardExpiration, ar3 -> {
                                 if (ar3.failed()) {
-                                    handler.handle(Future.failedFuture(ar3.cause()));
-                                    databaseProxy.closeConnection(sqlConnection, false, ar -> {});
+                                    databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
                                 } else {
-                                    final String sessionKey = createSessionKey();
-                                    final int userId = ar3.result().get(0).asInt();
-                                    databaseProxy.insertSession(sqlConnection, userId, sessionKey, ar4 -> {
-                                        if (ar4.failed()) {
-                                            handler.handle(Future.failedFuture(ar4.cause()));
-                                            databaseProxy.closeConnection(sqlConnection, false, ar -> {});
-                                        } else {
-                                            handler.handle(Future.succeededFuture(sessionKey));
-                                            databaseProxy.closeConnection(sqlConnection, true, ar -> {});
-                                        }
-                                    });
+                                    databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
                                 }
                             });
                         }
@@ -79,34 +69,8 @@ public class AuthenticationManager {
         });
     }
 
-    public void getSessionUser(String sessionKey, Handler<AsyncResult<JsonObject>> handler) {
-        logger.debug("getSessionUser: sessionKey=" + sessionKey);
-        databaseProxy.openConnection(ar1 -> {
-            if (ar1.failed()) {
-                handler.handle(Future.failedFuture(ar1.cause()));
-            } else {
-                final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.selectUser(sqlConnection, sessionKey, ar2 -> {
-                    if (ar2.failed()) {
-                        handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, ar3 -> {});
-                    } else {
-                        List<JsonObject> userObjects = ar2.result();
-                        if (userObjects.size() != 1) {
-                            handler.handle(Future.failedFuture(new InvalidSessionException()));
-                            databaseProxy.closeConnection(sqlConnection, ar4 -> {});
-                        } else {
-                            handler.handle(Future.succeededFuture(userObjects.get(0)));
-                            databaseProxy.closeConnection(sqlConnection, ar5 -> {});
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    public void getEmailPasswordUser(String email, String password, Handler<AsyncResult<JsonObject>> handler) {
-        logger.debug("getEmailPasswordUser: email=" + email + ", password=" + password);
+    public void getSession(String email, String password, Handler<AsyncResult<Session>> handler) {
+        logger.debug("getSession: email=" + email + ", password=" + password);
         databaseProxy.openConnection(ar1 -> {
             if (ar1.failed()) {
                 handler.handle(Future.failedFuture(ar1.cause()));
@@ -119,11 +83,30 @@ public class AuthenticationManager {
                     } else {
                         List<JsonObject> userObjects = ar2.result();
                         if (userObjects.size() != 1) {
-                            handler.handle(Future.failedFuture(new InvalidEmailPasswordException()));
-                            databaseProxy.closeConnection(sqlConnection, ar4 -> {});
+                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(new InvalidEmailPasswordException())));
                         } else {
-                            handler.handle(Future.succeededFuture(userObjects.get(0)));
-                            databaseProxy.closeConnection(sqlConnection, ar5 -> {});
+                            final JsonObject userObject = userObjects.get(0);
+                            final int userId = userObject.get("id").asInt();
+                            databaseProxy.selectSession(sqlConnection, userId, ar3 -> {
+                                if (ar3.failed()) {
+                                    databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(ar3.cause())));
+                                } else {
+                                    if (ar3.result().size() > 0) {
+                                        databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(new AlreadyLoginException())));
+                                    } else {
+                                        String sessionKey = createSessionKey();
+                                        int issueTs = (int) Instant.now().getEpochSecond();
+                                        databaseProxy.insertSession(sqlConnection, userId, sessionKey, issueTs, ar4 -> {
+                                            if (ar4.failed()) {
+                                                databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(ar4.cause())));
+                                            } else {
+                                                final Session session = new Session(sessionKey, userObject);
+                                                databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(session)));
+                                            }
+                                        });
+                                    }
+                                }
+                            });
                         }
                     }
                 });
@@ -131,18 +114,46 @@ public class AuthenticationManager {
         });
     }
 
-    public void checkUserType(String sessionKey, int userType, Handler<AsyncResult<Void>> handler) {
-        logger.debug("checkUserType: sessionKey=" + sessionKey + ", userType=" + userType);
-        getSessionUser(sessionKey, ar -> {
-            if (ar.failed()) {
-                handler.handle(Future.failedFuture(ar.cause()));
+    public void getSession(String sessionKey, Handler<AsyncResult<Session>> handler) {
+        logger.debug("getSession: sessionKey=" + sessionKey);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
             } else {
-                final JsonObject userObject = ar.result();
-                if (userObject.get("type").asInt() != userType) {
-                    handler.handle(Future.failedFuture(new NoAuthorizationException()));
-                } else {
-                    handler.handle(Future.succeededFuture());
-                }
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectUser(sqlConnection, sessionKey, ar2 -> {
+                    if (ar2.failed()) {
+                        handler.handle(Future.failedFuture(ar2.cause()));
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {});
+                    } else {
+                        List<JsonObject> userObjects = ar2.result();
+                        if (userObjects.size() != 1) {
+                            databaseProxy.closeConnection(sqlConnection, ar4 -> handler.handle(Future.failedFuture(new InvalidSessionException())));
+                        } else {
+                            final JsonObject userObject = userObjects.get(0);
+                            final Session session = new Session(sessionKey, userObject);
+                            databaseProxy.closeConnection(sqlConnection, ar5 -> handler.handle(Future.succeededFuture(session)));
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    public void invalidateSession(String sessionKey, Handler<AsyncResult<Session>> handler) {
+        logger.debug("invalidateSession: sessionKey=" + sessionKey);
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                handler.handle(Future.failedFuture(ar1.cause()));
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.deleteSession(sqlConnection, sessionKey, ar2 -> {
+                    if (ar2.failed()) {
+                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar2.cause())));
+                    } else {
+                        databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                    }
+                });
             }
         });
     }

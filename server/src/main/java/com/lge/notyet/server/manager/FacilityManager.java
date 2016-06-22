@@ -25,7 +25,7 @@ public class FacilityManager {
     }
 
     public static FacilityManager getInstance() {
-        synchronized (AuthenticationManager.class) {
+        synchronized (FacilityManager.class) {
             if (instance == null) {
                 instance = new FacilityManager();
             }
