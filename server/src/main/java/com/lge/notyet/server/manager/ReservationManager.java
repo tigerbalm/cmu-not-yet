@@ -321,7 +321,7 @@ public class ReservationManager {
                         final double fee = reservationObject.get("fee").asDouble();
                         final int feeUnit = reservationObject.get("fee_unit").asInt();
                         final int beginTs = reservationObject.get("begin_ts").asInt();
-                        final double revenue = (endTs - beginTs) / feeUnit * fee; // TODO: need to be more accurate
+                        final double revenue = Math.ceil(((double)endTs - (double)beginTs) / (double)feeUnit) * fee;
 
                         databaseProxy.selectUser(sqlConnection, userId, ar3 -> {
                             if (ar3.failed()) {
