@@ -79,7 +79,8 @@ public class AuthenticationManager {
                 databaseProxy.selectUser(sqlConnection, email, password, ar2 -> {
                     if (ar2.failed()) {
                         handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, ar3 -> {});
+                        databaseProxy.closeConnection(sqlConnection, ar3 -> {
+                        });
                     } else {
                         List<JsonObject> userObjects = ar2.result();
                         if (userObjects.size() != 1) {
@@ -87,24 +88,15 @@ public class AuthenticationManager {
                         } else {
                             final JsonObject userObject = userObjects.get(0);
                             final int userId = userObject.get("id").asInt();
-                            databaseProxy.selectSession(sqlConnection, userId, ar3 -> {
-                                if (ar3.failed()) {
-                                    databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(ar3.cause())));
+
+                            String sessionKey = createSessionKey();
+                            int issueTs = (int) Instant.now().getEpochSecond();
+                            databaseProxy.insertSession(sqlConnection, userId, sessionKey, issueTs, ar4 -> {
+                                if (ar4.failed()) {
+                                    databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(ar4.cause())));
                                 } else {
-                                    if (ar3.result().size() > 0) {
-                                        databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(new AlreadyLoginException())));
-                                    } else {
-                                        String sessionKey = createSessionKey();
-                                        int issueTs = (int) Instant.now().getEpochSecond();
-                                        databaseProxy.insertSession(sqlConnection, userId, sessionKey, issueTs, ar4 -> {
-                                            if (ar4.failed()) {
-                                                databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(ar4.cause())));
-                                            } else {
-                                                final Session session = new Session(sessionKey, userObject);
-                                                databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(session)));
-                                            }
-                                        });
-                                    }
+                                    final Session session = new Session(sessionKey, userObject);
+                                    databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(session)));
                                 }
                             });
                         }
