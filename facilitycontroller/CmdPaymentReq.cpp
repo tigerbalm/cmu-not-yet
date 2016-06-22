@@ -34,3 +34,8 @@ String CmdPaymentReq::getBody()
 
 	return body;
 }
+
+String CmdPaymentReq::getHint()
+{
+	return CMD_HINT_PAYMENT_REQ;
+}

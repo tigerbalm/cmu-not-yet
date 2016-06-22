@@ -19,6 +19,7 @@ public:
 
 	String getTopic();
 	String getBody();
+	String getHint();
 
 	static Command* create() { return new CmdPaymentReq(); }
 };

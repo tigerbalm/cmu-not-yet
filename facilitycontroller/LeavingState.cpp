@@ -60,11 +60,11 @@ void LeavingState::onMessageReceived(Command *command)
 
 	if (mode == MODE_WAITING_PAYMENT_RESP)
 	{		
-		// todo: arduino 에서 dynamic cast 사용이 가능???
-		//if (CmdVerifyReservationRes *resp = dynamic_cast<CmdVerifyReservationRes *>(command))
-		//{
-		//	resp->isSuccess();
-		//}
+		if (command->getHint() != CMD_HINT_PAYMENT_RESP) {
+			Serial.print("ParkingState::casting error - ");
+			Serial.println("CMD_HINT_PAYMENT_RESP");
+			return;
+		}
 		
 		CmdPaymentResp *resp = (CmdPaymentResp *)command;
 		

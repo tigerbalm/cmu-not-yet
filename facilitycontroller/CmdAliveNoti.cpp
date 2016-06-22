@@ -30,3 +30,8 @@ String CmdAliveNoti::getBody()
 
 	return body;
 }
+
+String CmdAliveNoti::getHint()
+{
+	return CMD_HINT_MY_STATUS_NOTIFY;
+}

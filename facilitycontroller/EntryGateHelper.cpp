@@ -34,21 +34,48 @@ void EntryGateHelper::close()
 
 void EntryGateHelper::ledOn()
 {
-	pinMode(EntryGateRedLED, OUTPUT);
-	digitalWrite(EntryGateRedLED, HIGH);
-
-	pinMode(EntryGateGreenLED, OUTPUT);
-	//digitalWrite(EntryGateGreenLED, HIGH);
-
-	digitalWrite(EntryGateGreenLED, LOW);
-	//delay(delayvalue);
+	ledRed(false);
+	ledGreen(true);
 }
 
 void EntryGateHelper::ledOff()
 {
-	pinMode(EntryGateGreenLED, OUTPUT);
-	digitalWrite(EntryGateGreenLED, HIGH);
+	ledGreen(false);
+	ledRed(true);
+}
 
-	pinMode(EntryGateRedLED, OUTPUT);
-	digitalWrite(EntryGateRedLED, LOW);
+void EntryGateHelper::ledGreen(bool lightOn)
+{	
+	if (lightOn)
+	{
+		on(EntryGateGreenLED);
+	}
+	else
+	{
+		off(EntryGateGreenLED);
+	}
+}
+
+void EntryGateHelper::ledRed(bool lightOn)
+{
+	if (lightOn)
+	{
+		on(EntryGateRedLED);
+	}
+	else
+	{
+		off(EntryGateRedLED);
+	}
+}
+
+void EntryGateHelper::on(int pin)
+{
+	pinMode(pin, OUTPUT);
+	digitalWrite(pin, LOW);
+}
+
+void EntryGateHelper::off(int pin)
+{
+	pinMode(pin, OUTPUT);
+	digitalWrite(pin, HIGH);
 }
