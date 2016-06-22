@@ -1,3 +1,4 @@
+#include "GateHelper.h"
 #include "CmdExceptionNoti.h"
 #include "CmdReceiveBookingNumber.h"
 #include "SlotLedController.h"
@@ -131,15 +132,18 @@ void setupDevice()
 	SlotLedController::getInstance()->add(3, PARKING_STALL3_LED);
 	SlotLedController::getInstance()->add(4, PARKING_STALL4_LED);
 
-	entryGateServo.attach(EntryGateServoPin);
-	EntryGateHelper::attach(entryGateServo);
-	EntryGateHelper::close();
-	EntryGateHelper::ledOff();
+	GateHelper::entryGate()->closeDoor();
+	GateHelper::exitGate()->closeDoor();
 
-	exitGateServo.attach(ExitGateServoPin);
-	ExitGateHelper::attach(exitGateServo);
-	ExitGateHelper::close();
-	ExitGateHelper::ledOff();
+	//entryGateServo.attach(EntryGateServoPin);
+	//EntryGateHelper::attach(entryGateServo);
+	//EntryGateHelper::close();
+	//EntryGateHelper::ledOff();
+
+	//exitGateServo.attach(ExitGateServoPin);
+	//ExitGateHelper::attach(exitGateServo);
+	//ExitGateHelper::close();
+	//ExitGateHelper::ledOff();
 
 	Serial.println("setupDevice - end");
 }

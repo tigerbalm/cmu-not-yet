@@ -17,7 +17,7 @@ public:
 	String getTopic();
 	void setBody(String body);
 	String getHint();
-
+	
 	static Command* create() { return new CmdPaymentResp(); }
 };
 

@@ -15,7 +15,7 @@ class CmdExceptionNoti : public Command
 	String message;
 
 public:
-	void setMessage(String &_message);
+	void setMessage(String _message);
 
 	String getTopic();
 	String getBody();
