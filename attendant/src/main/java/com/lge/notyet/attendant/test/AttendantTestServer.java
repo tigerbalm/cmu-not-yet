@@ -91,7 +91,7 @@ public class AttendantTestServer {
 
         // Need to parse
         Log.logd(LOG_TAG, "Login Requested Received=" + message.getMessage());
-        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, 1, "1111-2222-3333-4444", "12/16", "12345678"));
+        MqttNetworkMessage response = new MqttNetworkMessage(LoginResponseChannel.createResponseObject(1, "1111-2222-3333-4444", "12/16", "12345678"));
         response.getMessage().add("success", 1);
         Log.logd(LOG_TAG, "mLoginRequestReceived send Response=" + response.getMessage());
         message.responseFor(response);

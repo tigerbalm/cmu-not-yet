@@ -3,6 +3,8 @@ package com.lge.notyet.server.security;
 import com.eclipsesource.json.JsonObject;
 
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public class Session {
@@ -10,11 +12,12 @@ public class Session {
     private int userId;
     private String cardNumber;
     private String cardExpiration;
-    EnumSet<Privilege> privileges;
+    Set<Privilege> privileges;
 
     public Session(String sessionKey, JsonObject userObject) {
+        this.privileges = new HashSet<>();
         this.sessionKey = sessionKey;
-        this.userId = userObject.get("user").asInt();
+        this.userId = userObject.get("id").asInt();
         this.cardNumber = userObject.get("card_number").isNull() ? null : userObject.get("card_number").asString();
         this.cardExpiration = userObject.get("card_expiration").isNull() ? null : userObject.get("card_expiration").asString();
         if (userObject.get("read_facility").asInt() == 1) addPrivileges(Privilege.READ_FACILITY);
