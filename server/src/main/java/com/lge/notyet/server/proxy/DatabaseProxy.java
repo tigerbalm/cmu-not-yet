@@ -375,6 +375,18 @@ public class DatabaseProxy {
         queryWithParams(connection, sql, parameters, resultHandler);
     }
 
+    public void selectActivatedReservations(SQLConnection connection, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        logger.info("selectActivatedReservations:");
+        String sql = "select ar.id as id, reservation_ts, confirmation_no, user_id, user.email as user_email, slot_id, slot.number as slot_no, controller_id, physical_id as controller_physical_id, facility_id, facility.name as facility_name, ar.fee, ar.fee_unit, ar.expiration_ts, begin_ts, end_ts" +
+                " from (select * from reservation where activated=1) as ar inner join slot on ar.slot_id=slot.id" +
+                " inner join controller on controller.id=slot.controller_id" +
+                " inner join facility on facility.id=controller.facility_id" +
+                " inner join user on user.id=user_id" +
+                " left join transaction on transaction.reservation_id=ar.id" +
+                " order by reservation_ts";
+        query(connection, sql, resultHandler);
+    }
+
     public void updateFacility(SQLConnection connection, int facilityId, String name, double fee, int feeUnit, int gracePeriod, Handler<AsyncResult<JsonArray>> resultHandler) {
         logger.info("updateFacility: facilityId=" + facilityId + ", name=" + name + ", fee=" + fee + ", feeUnit=" + feeUnit + ", gracePeriod=" + gracePeriod);
         String sql = "update facility set name=?, fee=?, fee_unit=?, grace_period=? where id=?";

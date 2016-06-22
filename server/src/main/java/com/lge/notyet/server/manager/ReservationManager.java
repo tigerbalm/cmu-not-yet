@@ -44,6 +44,8 @@ public class ReservationManager {
         this.logger = LoggerFactory.getLogger(ReservationManager.class);
         this.databaseProxy = DatabaseProxy.getInstance(null);
         this.creditCardProxy = CreditCardProxy.getInstance();
+
+        setCheckingExpiredReservationTimers();
     }
 
     public static ReservationManager getInstance(Vertx vertx) {
@@ -53,6 +55,46 @@ public class ReservationManager {
             }
             return instance;
         }
+    }
+
+    private void setCheckingExpiredReservationTimer(int reservationId, int expirationTs) {
+        logger.info("setCheckingExpiredReservationTimer: reservationId=" + reservationId + ", expirationTs=" + expirationTs);
+        int currentTs = (int) Instant.now().getEpochSecond();
+        int timerTs = expirationTs - currentTs;
+        if (timerTs > 1) {
+            logger.info("setCheckingExpiredReservationTimer: expirationTs=" + expirationTs + ", currentTs=" + currentTs + ", timerTs=" + timerTs);
+            long timerId = vertx.setTimer((timerTs + 1) * 1000, id -> {
+                checkExpiredReservations();
+            });
+            timerMap.put(reservationId, timerId);
+        } else {
+            checkExpiredReservations();
+        }
+    }
+
+    private void setCheckingExpiredReservationTimers() {
+        logger.info("setCheckingExpiredReservationTimers:");
+        databaseProxy.openConnection(ar1 -> {
+            if (ar1.failed()) {
+                ar1.cause().printStackTrace();
+            } else {
+                final SQLConnection sqlConnection = ar1.result();
+                databaseProxy.selectActivatedReservations(sqlConnection, ar2 -> {
+                    databaseProxy.closeConnection(sqlConnection, ar -> {});
+                    if (ar2.succeeded()) {
+                        final List<JsonObject> reservationObjects = ar2.result();
+                        logger.info("setCheckingExpiredReservationTimers: " + reservationObjects.size() + " activated reservations found");
+                        for (JsonObject reservationObject : reservationObjects) {
+                            int reservationId = reservationObject.get("id").asInt();
+                            int expiredTs = reservationObject.get("expiration_ts").asInt();
+                            setCheckingExpiredReservationTimer(reservationId, expiredTs);
+                        }
+                    } else {
+                        ar2.cause().printStackTrace();
+                    }
+                });
+            }
+        });
     }
 
     private void checkExpiredReservations() {
@@ -231,17 +273,8 @@ public class ReservationManager {
                                     } else {
                                         JsonObject reservationObject = ar4.result();
                                         handler.handle(Future.succeededFuture(reservationObject));
-
                                         int reservationId = reservationObject.get("id").asInt();
-                                        int currentTs = (int) Instant.now().getEpochSecond();
-                                        long timerTs = expiredTs - currentTs;
-                                        logger.info("makeReservation: expiredTs=" + expiredTs + ", currentTs=" + currentTs + ", timerTs=" + timerTs);
-                                        if (timerTs > 1) {
-                                            long timerId = vertx.setTimer(timerTs * 1000, id -> {
-                                                checkExpiredReservations();
-                                            });
-                                            timerMap.put(reservationId, timerId);
-                                        }
+                                        setCheckingExpiredReservationTimer(reservationId, expiredTs);
                                     }
                                 }));
                             }
