@@ -87,7 +87,10 @@ public class ReservationManager {
                         for (JsonObject reservationObject : reservationObjects) {
                             int reservationId = reservationObject.get("id").asInt();
                             int expiredTs = reservationObject.get("expiration_ts").asInt();
-                            setCheckingExpiredReservationTimer(reservationId, expiredTs);
+                            final boolean hasTransaction = !reservationObject.get("begin_ts").isNull();
+                            if (!hasTransaction) {
+                                setCheckingExpiredReservationTimer(reservationId, expiredTs);
+                            }
                         }
                     } else {
                         ar2.cause().printStackTrace();
