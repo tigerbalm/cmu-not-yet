@@ -89,14 +89,20 @@ public class AuthenticationManager {
                             final JsonObject userObject = userObjects.get(0);
                             final int userId = userObject.get("id").asInt();
 
-                            String sessionKey = createSessionKey();
-                            int issueTs = (int) Instant.now().getEpochSecond();
-                            databaseProxy.insertSession(sqlConnection, userId, sessionKey, issueTs, ar4 -> {
+                            databaseProxy.deleteSession(sqlConnection, userId, ar4 -> {
                                 if (ar4.failed()) {
                                     databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(ar4.cause())));
                                 } else {
-                                    final Session session = new Session(sessionKey, userObject);
-                                    databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(session)));
+                                    String sessionKey = createSessionKey();
+                                    int issueTs = (int) Instant.now().getEpochSecond();
+                                    databaseProxy.insertSession(sqlConnection, userId, sessionKey, issueTs, ar5 -> {
+                                        if (ar5.failed()) {
+                                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.failedFuture(ar5.cause())));
+                                        } else {
+                                            final Session session = new Session(sessionKey, userObject);
+                                            databaseProxy.closeConnection(sqlConnection, ar -> handler.handle(Future.succeededFuture(session)));
+                                        }
+                                    });
                                 }
                             });
                         }

@@ -483,4 +483,11 @@ public class DatabaseProxy {
         parameters.add(sessionKey);
         updateWithParams(connection, sql, parameters, resultHandler);
     }
+
+    public void deleteSession(SQLConnection connection, int userId, Handler<AsyncResult<JsonArray>> resultHandler) {
+        String sql = "delete from session where user_id=?";
+        io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
+        parameters.add(userId);
+        updateWithParams(connection, sql, parameters, resultHandler);
+    }
 }
