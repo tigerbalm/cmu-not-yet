@@ -101,6 +101,7 @@ public class GenericQueryHandler extends Query{
         chooseMoreSettingsPanel.add(new JLabel("End date/time:"));
         endTime.setValue(Calendar.getInstance().getTime());
         chooseMoreSettingsPanel.add(endTime);
+        chooseMoreSettingsPanel.setEnabled(true);
         chooseMoreSettingsPanel.revalidate();
     }
 }
