@@ -1,6 +1,7 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.lib.crypto.SureParkCrypto;
 import com.lge.notyet.server.exception.*;
 import com.lge.notyet.server.proxy.CreditCardProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
@@ -44,7 +45,7 @@ public class AuthenticationManager {
 
     public void signUp(String email, String password, String cardNumber, String cardExpiration, Handler<AsyncResult<Void>> handler) {
         logger.info("signUp: email=" + email + ", password=" + password + ", cardNumber=" + cardNumber + ", cardExpiration=" + cardExpiration);
-        creditCardProxy.verify(cardNumber, cardExpiration, ar0 -> {
+        creditCardProxy.verify(SureParkCrypto.decrypt(cardNumber), SureParkCrypto.decrypt(cardExpiration), ar0 -> {
             if (ar0.failed()) {
                 handler.handle(Future.failedFuture(ar0.cause()));
             } else {

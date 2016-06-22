@@ -1,6 +1,7 @@
 package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
+import com.lge.notyet.lib.crypto.SureParkCrypto;
 import com.lge.notyet.server.exception.InvalidConfirmationNumberException;
 import com.lge.notyet.server.exception.NoReservationExistException;
 import com.lge.notyet.server.proxy.CreditCardProxy;
@@ -329,7 +330,7 @@ public class ReservationManager {
                                 final JsonObject userObject = ar3.result().get(0);
                                 final String cardNumber = userObject.get("card_number").asString();
                                 final String cardExpiration = userObject.get("card_expiration").asString();
-                                creditCardProxy.makePayment(cardNumber, cardExpiration, revenue, ar4 -> {
+                                creditCardProxy.makePayment(SureParkCrypto.decrypt(cardNumber), SureParkCrypto.decrypt(cardExpiration), revenue, ar4 -> {
                                     if (ar4.failed()) {
                                         databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar4.cause())));
                                     } else {

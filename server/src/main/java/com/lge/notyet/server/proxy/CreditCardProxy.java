@@ -28,6 +28,7 @@ public class CreditCardProxy {
 
     // TODO: implement a real thing
     public void verify(String cardNumber, String cardExpiration, Handler<AsyncResult<Boolean>> handler) {
+        logger.info("verify: cardNumber=" + cardNumber + ", cardExpiration=" + cardExpiration);
         if (cardNumber == null || cardExpiration == null || cardNumber.isEmpty() || cardExpiration.isEmpty()) {
             handler.handle(Future.failedFuture(new InvalidCardInformationException()));
         } else {
@@ -38,6 +39,7 @@ public class CreditCardProxy {
 
     // TODO: implement a real thing
     public void makePayment(String cardNumber, String cardExpiration, double amount, Handler<AsyncResult<Long>> handler) {
+        logger.info("makePayment: cardNumber=" + cardNumber + ", cardExpiration=" + cardExpiration + ", amount=" + amount);
         if (amount <= 0) {
             handler.handle(Future.failedFuture(new IllegalArgumentException()));
         } else if (cardNumber == null || cardExpiration == null || cardNumber.isEmpty() || cardExpiration.isEmpty()) {
