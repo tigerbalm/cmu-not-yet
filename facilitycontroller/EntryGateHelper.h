@@ -19,6 +19,10 @@ public:
 	static void close();
 	static void ledOn();
 	static void ledOff();
+	static void ledGreen(bool on);
+	static void ledRed(bool on);
+	static void on(int pin);
+	static void off(int pin);
 };
 #endif
 

@@ -132,6 +132,12 @@
     <ClInclude Include="SlotLedController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CmdReceiveBookingNumber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdExceptionNoti.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CarDetectedListener.cpp">
@@ -214,6 +220,12 @@
     </ClCompile>
     <ClCompile Include="SlotLedController.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdExceptionNoti.cpp">
+      <Filter>Source Files\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdReceiveBookingNumber.cpp">
+      <Filter>Source Files\Command</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -10,6 +10,8 @@
 #include "CmdPaymentResp.h"
 #include "CmdCarParkedNoti.h"
 #include "CmdAliveNoti.h"
+#include "CmdExceptionNoti.h"
+#include "CmdReceiveBookingNumber.h"
 
 void CommandFactory::init()
 {
@@ -21,6 +23,10 @@ void CommandFactory::init()
 
 	add(CMD_HINT_CAR_PARKED_NOTIFY, &CmdCarParkedNoti::create);
 	add(CMD_HINT_MY_STATUS_NOTIFY, &CmdAliveNoti::create);
+
+	add(CMD_HINT_EXCEPTION_NOTIFY, &CmdExceptionNoti::create);
+
+	add(CMD_HINT_RECEIVE_BOOK_NO, &CmdReceiveBookingNumber::create);
 }
 
 CreateCommandFn CommandFactory::find(String topic)
@@ -58,7 +64,7 @@ Command * CommandFactory::createCommand(const String topic)
 
 	if (pCreateFnc == NULL) {
 		Serial.println("pCreateFnc is null");
-		return new Command();
+		return NULL;
 	}
 
 	return (pCreateFnc)();

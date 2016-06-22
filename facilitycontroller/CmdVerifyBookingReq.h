@@ -12,8 +12,9 @@ class CmdVerifyBookingReq : public Request
 public:
 	void setReservationNumber(int number);
 	
-	virtual String getTopic();
-	virtual String getBody();
+	String getTopic();
+	String getBody();
+	String getHint();
 
 	static Command* create() { return new CmdVerifyBookingReq(); }
 };

@@ -11,9 +11,10 @@ class CmdVerifyBookingResp : public Response
 
 public:
 	String getTopic();
+	String getHint();
 	void setBody(String body);
 	int getSlotNumber();
-
+	
 	static Command* create() { return new CmdVerifyBookingResp(); }
 };
 #endif
