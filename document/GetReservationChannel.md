@@ -1,35 +1,37 @@
-# Description
+# Get Reservation Channel
+
+## Description
 
 - Request: Driver
 - Respond: Business Server
 - This channel is used to get reservation information. 
 
-# Request
+## Request
 
-## Topic
+### Topic
 
 ```
 /reservation/get
 ```
 
-## Body
+### Body
 ```
 {
   'session_key' : 'xxxxx' // driver's session_key
 }
 ```
 
-# Response
+## Response
 
-## Topic
+### Topic
 
 ```
 /reservation/get/#
 ```
 
-## Body
+### Body
 
-### Success
+#### Success
 
 ```
 {
@@ -45,46 +47,40 @@
   'controller_physical_id' : "p1",
   'facility_id' : 1,
   'facility_name':"ShadySide",
+  'fee' : 10.75
+  'fee_unit' : 60
   'expiration_ts': 1466640
+  'begin_ts' :'null'
+  'end_ts':'null'
 }
 ```
 
-### Failed
+#### Failed
 
 ```
 {
   'success': 0,
-  'cause': 'INVALID_SESSION' // or other cause, NO_RESERVATION_EXIST
+  'cause': 'INVALID_SESSION'
+}
+```
+
+```
+{
+  "success": 0,
+  "cause": "NO_AUTHORIZATION",
 }
 ```
 
 ```
 {
   'success': 0,
-  'cause': 'INTERNAL_SERVER_ERROR' // internal server error
+  'cause': 'INTERNAL_SERVER_ERROR'
 }
 ```
 
-# Note
-
-If you use MQTT connection, following key/value is added in body automatically while exchanging data.
-But when you received the message from channel, it does not exist.
-Hence, you have to add and remove following pair to communicate with other library or entity. i.e. Arduino MQTT library.
-If there is no this pair, the received element regards it as notification.
-
-
-## Additional body for MQTT
-
-### Notification (Publish/Subscribe) type message
 ```
 {
-  '_msg_type_' : 0 // Notification for publish message
-}
-```
-
-### Request/Response type message
-```
-{
-  '_msg_type_' : 1, or 2 // 1 : Request, 2 : Response.
+  'success': 0,
+  'cause': 'NO_RESERVATION_EXIST'
 }
 ```
