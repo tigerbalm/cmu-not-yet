@@ -105,8 +105,8 @@ void SlotLedController::loop()
 
 			if (pair.blink)
 			{
-				Serial.println(pair.pin);
-				Serial.println(bBlinkOn);
+				//Serial.println(pair.pin);
+				//Serial.println(bBlinkOn);
 
 				led(pair.pin, bBlinkOn ? HIGH : LOW);
 			}

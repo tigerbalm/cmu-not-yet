@@ -3,7 +3,8 @@
 // 
 
 #include "ParkingState.h"
-#include "EntryGateHelper.h"
+//#include "EntryGateHelper.h"
+#include "GateHelper.h"
 #include "CarDetectedListener.h"
 #include "CommandFactory.h"
 #include "CmdVerifyBookingReq.h"
@@ -12,6 +13,7 @@
 #include "Controller.h"
 #include "SlotLedController.h"
 #include "CmdReceiveBookingNumber.h"
+#include "CmdExceptionNoti.h"
 
 #define MODE_WAITING_NUMBER		1
 #define MODE_WAITING_CONFIRM	2
@@ -34,7 +36,8 @@ void ParkingState::exit()
 void ParkingState::enter()
 {
 	setMode(MODE_WAITING_NUMBER);
-	EntryGateHelper::ledGreen(true);
+	//EntryGateHelper::ledGreen(true);
+	GateHelper::entryGate()->ledGreen(true);
 
 	bookingNo = -1;
 	assignedSlot = -1;
@@ -64,8 +67,9 @@ void ParkingState::onMessageReceived(Command *command)
 			//SlotLedController::getInstance()->on(assignedSlot);
 			SlotLedController::getInstance()->blinkOn(assignedSlot);
 
-			EntryGateHelper::open();
-			EntryGateHelper::ledOn();
+			GateHelper::entryGate()->openDoor();
+			//EntryGateHelper::open();
+			//EntryGateHelper::ledOn();
 
 			setMode(MODE_WAITING_PLACING);			
 		}
@@ -73,6 +77,10 @@ void ParkingState::onMessageReceived(Command *command)
 		{
 			Serial.print("confirm_reservation fail : ");
 			Serial.println(response->getFailCause());
+
+			CmdExceptionNoti * exceptionCmd = (CmdExceptionNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_EXCEPTION_NOTIFY);
+			exceptionCmd->setMessage(response->getFailCause());
+			exceptionCmd->send(mqClient);
 
 			String message = "#$error##";
 			message += "Your confirmation no. is incorrect.<br>Pleae try again or<br><b>CALL DAVE!!!</b>";
@@ -162,8 +170,11 @@ void ParkingState::carDetectedOnEntry(int status)
 		return;
 	}
 
-	EntryGateHelper::ledGreen(false);
-
+	if (mode != MODE_WAITING_PLACING)
+	{
+		GateHelper::entryGate()->ledGreen(false);
+	}
+	
 	if (mode == MODE_WAITING_NUMBER || mode == MODE_WAITING_CONFIRM) {
 		Serial.println("Car is disappeared. Change to Waiting state.");
 
@@ -192,8 +203,9 @@ void ParkingState::onSlotOccupied(int slotNum)
 		//SlotLedController::getInstance()->off(assignedSlot);
 		SlotLedController::getInstance()->blinkOff(assignedSlot);
 
-		EntryGateHelper::ledOff();
-		EntryGateHelper::close();
+		GateHelper::entryGate()->closeDoor();
+		//EntryGateHelper::ledOff();
+		//EntryGateHelper::close();
 		
 		controller->setState(controller->getWaitingState());
 	}

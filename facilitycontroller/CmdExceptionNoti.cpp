@@ -4,7 +4,7 @@
 
 #include "CmdExceptionNoti.h"
 
-void CmdExceptionNoti::setMessage(String & _message)
+void CmdExceptionNoti::setMessage(String _message)
 {
 	message = _message;
 }
