@@ -14,7 +14,6 @@ import com.lge.notyet.server.manager.FacilityManager;
 import com.lge.notyet.server.manager.StatisticsManager;
 import com.lge.notyet.server.model.Statistics;
 import com.lge.notyet.server.proxy.CommunicationProxy;
-import com.lge.notyet.server.proxy.CreditCardProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import com.lge.notyet.server.security.CheckPoint;
 import com.lge.notyet.server.security.Privilege;
@@ -28,9 +27,9 @@ import java.util.List;
 import static com.lge.notyet.server.manager.ReservationManager.*;
 
 public class MainVerticle extends AbstractVerticle {
-    private static final String BROKER_HOST = "localhost";
+    private static final String BROKER_HOST = "128.237.220.77";
     private static final boolean REDUNDANCY = false;
-    private static final String DB_HOST = "128.237.207.116";
+    private static final String DB_HOST = "localhost";
     private static final String DB_USERNAME = "dba";
     private static final String DB_PASSWORD = "dba";
 
