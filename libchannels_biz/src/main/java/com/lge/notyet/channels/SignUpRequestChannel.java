@@ -24,19 +24,19 @@ public class SignUpRequestChannel extends ClientChannelRegistry {
         return new MqttUri(TOPIC);
     }
 
-    public static final String getEmail(NetworkMessage networkMessage) {
+    public static String getEmail(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_EMAIL).asString();
     }
 
-    public static final String getPassword(NetworkMessage networkMessage) {
+    public static String getPassword(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_PASSWORD).asString();
     }
 
-    public static final String getCardNumber(NetworkMessage networkMessage) {
+    public static String getCardNumber(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_CARD_NUMBER).asString();
     }
 
-    public static final String getCardExpiration(NetworkMessage networkMessage) {
+    public static String getCardExpiration(NetworkMessage networkMessage) {
         return ((JsonObject) networkMessage.getMessage()).get(KEY_CARD_EXPIRATION).asString();
     }
 

@@ -9,6 +9,7 @@ import com.lge.notyet.lib.comm.mqtt.MqttUri;
 
 import java.util.List;
 
+@SuppressWarnings("SpellCheckingInspection")
 public class GetStatisticsResponseChannel extends ServerChannelRegistry {
     private final static String TOPIC = "/facility/statistics/get/#";
     public final static String KEY_COLUMNNAMES = "columnnames";

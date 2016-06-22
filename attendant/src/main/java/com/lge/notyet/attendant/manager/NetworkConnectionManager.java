@@ -74,6 +74,10 @@ public class NetworkConnectionManager {
         return new LoginRequestChannel(mNc);
     }
 
+    public LogoutRequestChannel createLogoutChannel() {
+        return new LogoutRequestChannel(mNc);
+    }
+
     public GetFacilitiesRequestChannel createGetFacilitiesRequestChannel() {
         return new GetFacilitiesRequestChannel(mNc);
     }

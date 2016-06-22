@@ -166,6 +166,7 @@ public class LoginPanel implements Screen {
 
                 if (transaction) {
                     SessionManager.getInstance().setUnderTransaction(true);
+                    SessionManager.getInstance().setTransactionStartTimeStamp(resMsg.getMessage().get("begin_ts").asLong());
                 }
 
                 SessionManager.getInstance().setReservationInformation(reservationTime, confirmationNumber, facilityId, reservationId, controllerPhysicalId);

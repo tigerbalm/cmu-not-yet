@@ -16,15 +16,13 @@ public class SignUpTask implements Callable<Void> {
     private final String mPassWord;
     private final String mCreditCardNumber;
     private final String mCreditCardExpireDate;
-    private final String mCreditCardCvc;
     private final ITaskDoneCallback mTaskDoneCallback;
 
-    private SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
+    private SignUpTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, ITaskDoneCallback taskDoneCallback) {
         mUserEmailAddress = userEmailAddress;
         mPassWord = passWord;
         mCreditCardNumber = creditCardNumber;
         mCreditCardExpireDate = creditCardExpireDate;
-        mCreditCardCvc = creditCardCvc;
         mTaskDoneCallback = taskDoneCallback;
     }
 
@@ -71,7 +69,7 @@ public class SignUpTask implements Callable<Void> {
         }
     };
 
-    public static FutureTask<Void> getTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, String creditCardCvc, ITaskDoneCallback taskDoneCallback) {
-        return new FutureTask<>(new SignUpTask(userEmailAddress, passWord, creditCardNumber, creditCardExpireDate, creditCardCvc, taskDoneCallback));
+    public static FutureTask<Void> getTask(String userEmailAddress, String passWord, String creditCardNumber, String creditCardExpireDate, ITaskDoneCallback taskDoneCallback) {
+        return new FutureTask<>(new SignUpTask(userEmailAddress, passWord, creditCardNumber, creditCardExpireDate, taskDoneCallback));
     }
 }

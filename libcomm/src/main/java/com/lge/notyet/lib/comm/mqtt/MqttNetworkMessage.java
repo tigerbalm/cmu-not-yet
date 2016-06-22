@@ -20,10 +20,7 @@ public class MqttNetworkMessage extends NetworkMessage <JsonObject> {
 
     void makeResponseInfo(MqttAsyncClient nc, String topic) throws UnsupportedOperationException {
 
-        if (!topic.contains(MqttConstants.REQUEST_MESSAGE_TOPIC)) {
-           // throw new UnsupportedOperationException("this request type message has wrong topic, topic=" + topic);
-        }
-
+        @SuppressWarnings("RedundantStringConstructorCall")
         String responseTopic = new String(topic);
         responseTopic = responseTopic.replace(MqttConstants.REQUEST_MESSAGE_TOPIC, MqttConstants.RESPONSE_MESSAGE_TOPIC);
 

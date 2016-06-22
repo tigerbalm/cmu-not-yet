@@ -3,6 +3,7 @@ package com.lge.notyet.driver.ui;
 import com.lge.notyet.channels.ControllerStatusSubscribeChannel;
 import com.lge.notyet.channels.ReservationStatusSubscribeChannel;
 import com.lge.notyet.driver.business.ITaskDoneCallback;
+import com.lge.notyet.driver.business.LogoutTask;
 import com.lge.notyet.driver.business.ReservationCancelTask;
 import com.lge.notyet.driver.manager.NetworkConnectionManager;
 import com.lge.notyet.driver.manager.ScreenManager;
@@ -16,9 +17,15 @@ import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
 import javax.swing.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class ReservationHistoryPanel implements Screen {
 
@@ -29,9 +36,9 @@ public class ReservationHistoryPanel implements Screen {
     private JLabel mLabelReservationLocation;
     private JLabel mLabelReservationConfirmationNumber;
     private JPanel mForm;
-    private JLabel mLabelModifyAccountInfo;
     private JButton mBtnCancelReservation;
     private JLabel mLabelLogout;
+    private JLabel mLabelYouAre;
 
     private ReservationStatusSubscribeChannel mReservationStatusSubscribeChannel = null;
     private ControllerStatusSubscribeChannel mControllerStatusSubscribeChannel = null;
@@ -39,37 +46,12 @@ public class ReservationHistoryPanel implements Screen {
     @Override
     public void initScreen() {
 
-        SessionManager mSessionManager = SessionManager.getInstance();
-
-        mLabelUserName.setText("Dear " + mSessionManager.getUserEmail());
-
-        Calendar reservedTime = Calendar.getInstance();
-        reservedTime.setTimeInMillis(mSessionManager.getReservationTime()*1000);
-        reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-
-        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm, MM/dd/yyyy z");
-        sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-        String reservedTimeString = sdf.format(reservedTime.getTime());
-
-        mLabelReservationDate.setText(reservedTimeString);
-
-        int reservedFacilityId = mSessionManager.getReservationFacilityId();
-        mLabelReservationLocation.setText(mSessionManager.getFacilityName(reservedFacilityId));
-
-        mLabelReservationConfirmationNumber.setText(mSessionManager.getReservationConfirmationNumber() + "");
-
-        if (SessionManager.getInstance().getUnderTransaction()) {
-            mBtnCancelReservation.setEnabled(false);
-        } else {
-            mBtnCancelReservation.setEnabled(true);
-        }
-
+        updateScreen();
         subscribeEvents();
     }
 
     @Override
     public void disposeScreen() {
-
         unsubscribeEvents();
     }
 
@@ -85,28 +67,52 @@ public class ReservationHistoryPanel implements Screen {
         mBtnCancelReservation.setEnabled(enabled);
     }
 
+    private void updateScreen() {
+
+        SessionManager mSessionManager = SessionManager.getInstance();
+
+        mLabelUserName.setText("Dear " + mSessionManager.getUserEmail());
+
+        if (SessionManager.getInstance().getUnderTransaction()) {
+            mLabelYouAre.setText("You're parked on");
+
+            long parkedDurationMin = (Instant.now().getEpochSecond() - mSessionManager.getTransactionStartTimeStamp())/60;
+            long parkedDurationSec = (Instant.now().getEpochSecond() - mSessionManager.getTransactionStartTimeStamp())%60;
+
+            mLabelReservationDate.setText(parkedDurationMin + " min(s) " + parkedDurationSec + " sec(s)");
+            startParkingTimeUpdateThread();
+
+        } else {
+            mLabelYouAre.setText("You're reserved on");
+
+            Calendar reservedTime = Calendar.getInstance();
+            reservedTime.setTimeInMillis(mSessionManager.getReservationTime()*1000);
+            reservedTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a, MM/dd/yyyy z");
+            sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+            String reservedTimeString = sdf.format(reservedTime.getTime());
+
+            mLabelReservationDate.setText(reservedTimeString);
+            stopParkingTimeUpdateThread();
+        }
+
+        int reservedFacilityId = mSessionManager.getReservationFacilityId();
+        mLabelReservationLocation.setText("at " + mSessionManager.getFacilityName(reservedFacilityId));
+
+        mLabelReservationConfirmationNumber.setText(mSessionManager.getReservationConfirmationNumber() + "");
+
+        if (SessionManager.getInstance().getUnderTransaction()) {
+            mBtnCancelReservation.setEnabled(false);
+        } else {
+            mBtnCancelReservation.setEnabled(true);
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Business Logic
 
     public ReservationHistoryPanel() {
-
-        // Modify Account
-        mLabelModifyAccountInfo.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
-
-        // Modify Account
-        mLabelModifyAccountInfo.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
-                ScreenManager.getInstance().showModifyAccountPanelScreen();
-            }
-        });
 
         // Log-out
         mLabelLogout.addMouseListener(new MouseAdapter() {
@@ -114,8 +120,8 @@ public class ReservationHistoryPanel implements Screen {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 unsubscribeEvents();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear(); // Log-out
-                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });
@@ -126,8 +132,8 @@ public class ReservationHistoryPanel implements Screen {
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
                 unsubscribeEvents();
+                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
                 SessionManager.getInstance().clear(); // Log-out
-                // NetworkConnectionManager.getInstance().close();
                 ScreenManager.getInstance().showLoginScreen();
             }
         });
@@ -204,7 +210,7 @@ public class ReservationHistoryPanel implements Screen {
                         if (SessionManager.getInstance().isControllerAvailable() && !available) {
                             // TODO : If time is enough, we will change it to modeless Dialog later to show only 1 dialog.
                             new Thread(() -> {
-                                JOptionPane.showMessageDialog(ScreenManager.getInstance().getCurrentScreen().getRootPanel(),
+                                JOptionPane.showMessageDialog(getRootPanel(),
                                         Strings.CONTROLLER_ERROR + ":" + Strings.CONTACT_ATTENDANT,
                                         Strings.APPLICATION_NAME,
                                         JOptionPane.ERROR_MESSAGE);
@@ -259,7 +265,7 @@ public class ReservationHistoryPanel implements Screen {
             if (expired) {
 
                 new Thread(() -> {
-                    JOptionPane.showMessageDialog(ScreenManager.getInstance().getCurrentScreen().getRootPanel(),
+                    JOptionPane.showMessageDialog(getRootPanel(),
                             Strings.GRACE_PERIOD_TIMEOUT,
                             Strings.APPLICATION_NAME,
                             JOptionPane.INFORMATION_MESSAGE);
@@ -274,12 +280,22 @@ public class ReservationHistoryPanel implements Screen {
                 SessionManager.getInstance().setUnderTransaction(true);
                 mBtnCancelReservation.setEnabled(false);
 
+                long begin_ts = 0L;
+                if (notificationMessage.getMessage().get("begin_ts") != null &&
+                        !notificationMessage.getMessage().get("begin_ts").isNull()) {
+                    begin_ts = notificationMessage.getMessage().get("begin_ts").asLong();
+                } else {
+                    begin_ts = Instant.now().getEpochSecond();
+                }
+                SessionManager.getInstance().setTransactionStartTimeStamp(begin_ts);
+                startParkingTimeUpdateThread();
+
             } else if (transactionEnded) {
 
                 final double fee = notificationMessage.getMessage().get("revenue").asDouble();
 
                 new Thread(() -> {
-                    JOptionPane.showMessageDialog(ScreenManager.getInstance().getCurrentScreen().getRootPanel(),
+                    JOptionPane.showMessageDialog(getRootPanel(),
                             Strings.BYE_CUSTOMER + ", " + SessionManager.getInstance().getUserEmail() + ", you will be charged $" + fee,
                             Strings.APPLICATION_NAME,
                             JOptionPane.INFORMATION_MESSAGE);
@@ -288,6 +304,7 @@ public class ReservationHistoryPanel implements Screen {
                 mReservationStatusSubscribeChannel.unlisten();
                 SessionManager.getInstance().clearReservationInformation();
                 ScreenManager.getInstance().showReservationRequestScreen();
+                stopParkingTimeUpdateThread();
             }
 
         } catch (Exception e) {
@@ -363,4 +380,30 @@ public class ReservationHistoryPanel implements Screen {
             }).start();
         }
     };
+
+    private ScheduledFuture<?> mParkingTimeUpdateThread = null;
+    private static final int SLOT_STATUS_UPDATE_PERIOD = 1;
+    private static final int SLOT_STATUS_UPDATE_MESSAGE_MAX = 3;
+    private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(SLOT_STATUS_UPDATE_MESSAGE_MAX);
+
+    private class SlotStatusUpdateThread implements Runnable {
+        public void run() {
+            updateScreen();
+        }
+    }
+
+    private void startParkingTimeUpdateThread() {
+        // TODO: Need to check Maximum Pended Requests?
+        if (mParkingTimeUpdateThread == null) {
+            mParkingTimeUpdateThread = mScheduler.scheduleAtFixedRate(new SlotStatusUpdateThread(), SLOT_STATUS_UPDATE_PERIOD, SLOT_STATUS_UPDATE_PERIOD, SECONDS);
+        }
+    }
+
+    private void stopParkingTimeUpdateThread() {
+        // TODO: Need to check Maximum Pended Requests?
+        if (mParkingTimeUpdateThread != null) {
+            mParkingTimeUpdateThread.cancel(true);
+            mParkingTimeUpdateThread = null;
+        }
+    }
 }
