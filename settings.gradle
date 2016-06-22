@@ -5,10 +5,11 @@ if (!JavaVersion.current().java8Compatible) {
                                     |  Refresh. Try again.'''.stripMargin())
 }
 
+include ':libcrypto'
 include ':libcomm'
+include ':libchannels_biz'
 include ':server'
 include ':application'
-include ':libchannels_biz'
 include ':driver'
 include ':owner'
 include ':attendant'

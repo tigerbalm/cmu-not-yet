@@ -11,6 +11,7 @@ dependencies {
     compile 'io.vertx:vertx-core:3.2.1'
     compile 'io.vertx:vertx-sql-common:3.2.1'
     compile 'io.vertx:vertx-mysql-postgresql-client:3.2.1'
+    compile project(':libcrypto')
     compile project(':libcomm')
     compile project(':libchannels_biz')
 }
