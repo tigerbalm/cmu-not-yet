@@ -46,6 +46,15 @@
 }
 ```
 
+
+```
+{
+  'success': 0,
+  'cause': 'INTERNAL_SERVER_ERROR' // internal server error
+}
+```
+
+
 # Note
 
 If you use MQTT connection, following key/value is added in body automatically while exchanging data.

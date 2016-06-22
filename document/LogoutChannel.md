@@ -41,7 +41,15 @@
 
 ```
 {
-  'success': 0
+  'success': 0,
+  'cause': 'INVALID_SESSION' // or other cause
+}
+```
+
+```
+{
+  'success': 0,
+  'cause': 'INTERNAL_SERVER_ERROR' // internal server error
 }
 ```
 
