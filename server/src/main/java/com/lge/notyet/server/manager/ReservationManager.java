@@ -3,6 +3,7 @@ package com.lge.notyet.server.manager;
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.server.exception.InvalidConfirmationNumberException;
 import com.lge.notyet.server.exception.NoReservationExistException;
+import com.lge.notyet.server.proxy.CreditCardProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -22,6 +23,7 @@ public class ReservationManager {
     private final Vertx vertx;
     private final Logger logger;
     private final DatabaseProxy databaseProxy;
+    private final CreditCardProxy creditCardProxy;
 
     private final Map<Integer, Long> timerMap = new HashMap<>(); // reservationId to timerId
     private final Set<Listener> listenerSet = new ConcurrentHashSet<>();
@@ -40,6 +42,7 @@ public class ReservationManager {
         this.vertx = vertx;
         this.logger = LoggerFactory.getLogger(ReservationManager.class);
         this.databaseProxy = DatabaseProxy.getInstance(null);
+        this.creditCardProxy = CreditCardProxy.getInstance();
     }
 
     public static ReservationManager getInstance(Vertx vertx) {

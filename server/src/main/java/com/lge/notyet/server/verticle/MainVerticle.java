@@ -14,6 +14,7 @@ import com.lge.notyet.server.manager.FacilityManager;
 import com.lge.notyet.server.manager.StatisticsManager;
 import com.lge.notyet.server.model.Statistics;
 import com.lge.notyet.server.proxy.CommunicationProxy;
+import com.lge.notyet.server.proxy.CreditCardProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import com.lge.notyet.server.security.CheckPoint;
 import com.lge.notyet.server.security.Privilege;

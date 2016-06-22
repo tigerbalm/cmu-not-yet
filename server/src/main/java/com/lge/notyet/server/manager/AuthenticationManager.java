@@ -2,6 +2,7 @@ package com.lge.notyet.server.manager;
 
 import com.eclipsesource.json.JsonObject;
 import com.lge.notyet.server.exception.*;
+import com.lge.notyet.server.proxy.CreditCardProxy;
 import com.lge.notyet.server.proxy.DatabaseProxy;
 import com.lge.notyet.server.security.Session;
 import io.vertx.core.AsyncResult;
@@ -20,10 +21,12 @@ public class AuthenticationManager {
 
     private final Logger logger;
     private final DatabaseProxy databaseProxy;
+    private final CreditCardProxy creditCardProxy;
 
     private AuthenticationManager() {
         logger = LoggerFactory.getLogger(AuthenticationManager.class);
         databaseProxy = DatabaseProxy.getInstance(null);
+        creditCardProxy = CreditCardProxy.getInstance();
     }
 
     public static AuthenticationManager getInstance() {
@@ -41,30 +44,41 @@ public class AuthenticationManager {
 
     public void signUp(String email, String password, String cardNumber, String cardExpiration, Handler<AsyncResult<Void>> handler) {
         logger.info("signUp: email=" + email + ", password=" + password + ", cardNumber=" + cardNumber + ", cardExpiration=" + cardExpiration);
-        databaseProxy.openConnection(ar1 -> {
-            if (ar1.failed()) {
-                handler.handle(Future.failedFuture(ar1.cause()));
+        creditCardProxy.verify(cardNumber, cardExpiration, ar0 -> {
+            if (ar0.failed()) {
+                handler.handle(Future.failedFuture(ar0.cause()));
             } else {
-                final SQLConnection sqlConnection = ar1.result();
-                databaseProxy.selectUserByEmail(sqlConnection, email, ar2 -> {
-                    if (ar2.failed()) {
-                        handler.handle(Future.failedFuture(ar2.cause()));
-                        databaseProxy.closeConnection(sqlConnection, false, ar -> {});
-                    } else {
-                        final boolean existentUser = ar2.result().size() > 0;
-                        if (existentUser) {
-                            databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(new ExistentUserException())));
+                final boolean verified = ar0.result();
+                if (!verified) {
+                    handler.handle(Future.failedFuture(new InvalidCardInformationException()));
+                } else {
+                    databaseProxy.openConnection(ar1 -> {
+                        if (ar1.failed()) {
+                            handler.handle(Future.failedFuture(ar1.cause()));
                         } else {
-                            databaseProxy.insertUser(sqlConnection, email, password, cardNumber, cardExpiration, ar3 -> {
-                                if (ar3.failed()) {
-                                    databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
+                            final SQLConnection sqlConnection = ar1.result();
+                            databaseProxy.selectUserByEmail(sqlConnection, email, ar2 -> {
+                                if (ar2.failed()) {
+                                    handler.handle(Future.failedFuture(ar2.cause()));
+                                    databaseProxy.closeConnection(sqlConnection, false, ar -> {});
                                 } else {
-                                    databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                                    final boolean existentUser = ar2.result().size() > 0;
+                                    if (existentUser) {
+                                        databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(new ExistentUserException())));
+                                    } else {
+                                        databaseProxy.insertUser(sqlConnection, email, password, cardNumber, cardExpiration, ar3 -> {
+                                            if (ar3.failed()) {
+                                                databaseProxy.closeConnection(sqlConnection, false, ar -> handler.handle(Future.failedFuture(ar3.cause())));
+                                            } else {
+                                                databaseProxy.closeConnection(sqlConnection, true, ar -> handler.handle(Future.succeededFuture()));
+                                            }
+                                        });
+                                    }
                                 }
                             });
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
