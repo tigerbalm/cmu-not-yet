@@ -13,6 +13,7 @@ import com.lge.notyet.driver.manager.TaskManager;
 import com.lge.notyet.driver.resource.Strings;
 import com.lge.notyet.driver.util.Log;
 import com.lge.notyet.lib.comm.mqtt.MqttNetworkMessage;
+import com.lge.notyet.lib.crypto.SureParkCrypto;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -338,8 +339,9 @@ public class LoginPanel implements Screen {
 
                     SessionManager.getInstance().setUserEmail(mTfUserEmailAddress.getText());
                     SessionManager.getInstance().setKey(session);
-                    SessionManager.getInstance().setCreditCardNumber(creditCard);
-                    SessionManager.getInstance().setCreditCardExpireDate(cardExpiration);
+
+                    SessionManager.getInstance().setCreditCardNumber(SureParkCrypto.decrypt(creditCard));
+                    SessionManager.getInstance().setCreditCardExpireDate(SureParkCrypto.decrypt(cardExpiration));
 
                     // Retrieve Facilities
                     TaskManager.getInstance().runTask(UpdateFacilityListTask.getTask(session, mUpdateFacilityListCallback));
