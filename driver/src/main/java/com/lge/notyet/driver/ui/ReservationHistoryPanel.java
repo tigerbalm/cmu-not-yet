@@ -119,10 +119,7 @@ public class ReservationHistoryPanel implements Screen {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                unsubscribeEvents();
-                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
-                SessionManager.getInstance().clear(); // Log-out
-                ScreenManager.getInstance().showLoginScreen();
+                doLogout();
             }
         });
 
@@ -131,10 +128,9 @@ public class ReservationHistoryPanel implements Screen {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
-                unsubscribeEvents();
-                TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
-                SessionManager.getInstance().clear(); // Log-out
-                ScreenManager.getInstance().showLoginScreen();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    doLogout();
+                }
             }
         });
 
@@ -179,6 +175,13 @@ public class ReservationHistoryPanel implements Screen {
             mControllerStatusSubscribeChannel.removeObserver(mControllerStatusChanged);
             mControllerStatusSubscribeChannel = null;
         }
+    }
+
+    private void doLogout() {
+        unsubscribeEvents();
+        TaskManager.getInstance().runTask(LogoutTask.getTask(SessionManager.getInstance().getKey(), null));
+        SessionManager.getInstance().clear(); // Log-out
+        ScreenManager.getInstance().showLoginScreen();
     }
 
     private final IOnNotify mControllerStatusChanged = (networkChannel, uri, message) -> {
@@ -347,14 +350,20 @@ public class ReservationHistoryPanel implements Screen {
 
             } else if (success == 0) {
 
-                Log.logd(LOG_TAG, "Failed to signup, with cause=" + resMsg.getMessage().get("cause").asString());
+                final String failCause = resMsg.getMessage().get("cause").asString();
+                Log.logd(LOG_TAG, "Failed to cancel reservation, with cause=" + failCause);
 
                 new Thread(() -> {
                     JOptionPane.showMessageDialog(getRootPanel(),
-                            Strings.CANCEL_RESERVATION_FAILED + ":" + resMsg.getMessage().get("cause").asString(),
+                            Strings.CANCEL_RESERVATION_FAILED + ":" + failCause,
                             Strings.APPLICATION_NAME,
                             JOptionPane.ERROR_MESSAGE);
                 }).start();
+
+                if (failCause.equals(Strings.FAIL_CAUSE_INVALID_SESSION)) {
+                    doLogout();
+                }
+
             } else {
 
                 Log.logd(LOG_TAG, "Failed to validate response, unexpected result=" + success);
