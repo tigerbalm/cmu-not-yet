@@ -29,7 +29,7 @@ Initial_WBS.xlsx
 [TEAM2_DOC_06] UI Scenario.docx
 [TEAM2_DOC_07] Detail Design - SurePark Process System.docx
 [TEAM2_DOC_09] Detail Design - Driver and Attendant.pdf
-
+[TEAM2_DOC_10] DetailDesign - FacilityController.docx
 
 [Implementation]
 
@@ -52,5 +52,6 @@ Sprint_Plan.xlsx
 
 [misc]
 
+demo scenario.txt
 failure model list.xlsx
 QualityAttributesUtility.docx
