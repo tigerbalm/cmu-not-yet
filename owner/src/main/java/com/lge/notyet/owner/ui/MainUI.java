@@ -70,8 +70,8 @@ public class MainUI extends JDialog {
                 new ConfigurationUI().setVisible(true);
             }
         });
-        graphicalPane.setEnabled(false);
-        graphicalPane.setVisible(false);
+        //graphicalPane.setEnabled(false);
+        //graphicalPane.setVisible(false);
     }
 
     private void onFetchReport() {
@@ -163,6 +163,7 @@ public class MainUI extends JDialog {
                 if (success == 1) { // Success
                     graphicalPane.setEnabled(false);
                     graphicalPane.setVisible(false);
+                    graphicalPane.revalidate();
                     StateMachine.getInstance().getQueryInstance().handleResult(textReportPane1, resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_COLUMNNAMES).asArray(), resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_VALUES).asArray());
 
                     Log.log(LOG_TAG, "Success to query DB, tablename is "+resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_COLUMNNAMES).toString()+"resultSet is " + resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_VALUES).toString());

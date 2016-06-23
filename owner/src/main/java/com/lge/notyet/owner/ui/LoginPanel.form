@@ -73,7 +73,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text value="owner@gmail.com"/>
+                  <text value="dplakosh@sei.cmu.edu"/>
                 </properties>
               </component>
               <grid id="293f4" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
