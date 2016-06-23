@@ -1,0 +1,24 @@
+participant "CommunicationProxy" as cp
+participant ":ReservationResponseChannel" as rrc
+participant ":MainVerticle" as mv
+participant ":Session" as ss
+participant ":AuthenticationManager" as am
+participant "CheckPoint" as chp
+participant ":ReservationManager" as rm
+
+mv->rrc: addObserver()
+mv->rrc: listen()
+cp-->rrc: reservation request message
+rrc-->mv: onNotify(message)
+mv->+am: getSession(sessionKey)
+am->*ss: create session
+am->ss: store user information
+am->ss: store privileges\ndefined in user's role
+am-->-mv: session
+mv->+chp: authorize(session, WRITE_RESERVATION)
+chp->ss: hasPriviliges(WRITE_RESERVATION)
+ss-->chp: true
+chp-->-mv: authorized
+mv->+rm: makeReservation()
+rm-->-mv: reservation
+mv->cp: responseSuccess(message, reservation)
