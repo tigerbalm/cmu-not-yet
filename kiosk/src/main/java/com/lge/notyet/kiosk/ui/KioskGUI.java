@@ -10,10 +10,7 @@ import com.lge.notyet.kiosk.message.MyMessageBuilder;
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,6 +50,7 @@ public class KioskGUI implements StatusListener {
     private JTextField editMessage;
     private JButton btnSend;
     private JTextArea textMessage;
+    private JCheckBox checkBoxScrollToEnd;
 
     ReservationNumber reservationNumber;
     CommApi comm;
@@ -79,11 +77,11 @@ public class KioskGUI implements StatusListener {
         btnSend.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String message = textMessage.getText();
+                String message = textMessage.getText() + String.valueOf('\n');
 
                 comm.send(message);
 
-                textMessage.setText("");
+                //textMessage.setText("");
             }
         });
     }
@@ -93,6 +91,19 @@ public class KioskGUI implements StatusListener {
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
         resetMonitorArea(toReadableDate());
+
+//        checkBoxScrollToEnd.addItemListener(new ItemListener() {
+//            @Override
+//            public void itemStateChanged(ItemEvent e) {
+//                if(e.getStateChange() == ItemEvent.SELECTED) {
+//                    DefaultCaret caret = (DefaultCaret)textSerialMonitor.getCaret();
+//                    caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+//                } else {
+//                    DefaultCaret caret = (DefaultCaret)textSerialMonitor.getCaret();
+//                    caret.setUpdatePolicy(DefaultCaret.UPDATE_WHEN_ON_EDT);
+//                }
+//            }
+//        });
     }
 
     private void resetMonitorArea(String t) {
@@ -238,6 +249,10 @@ public class KioskGUI implements StatusListener {
         }
 
         textSerialMonitor.append(message);
+
+        if (checkBoxScrollToEnd.isSelected()) {
+            textSerialMonitor.setCaretPosition(textSerialMonitor.getDocument().getLength());
+        }
     }
 
     // topic##body
