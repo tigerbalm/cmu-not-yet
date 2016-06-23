@@ -1,42 +1,40 @@
 1. SurePark Syatem Configuration. Tony is our owner today.
 
 
-2. Owner checks statistics.
+2.    Owner checks statistics.
 
 
-3. Owner configure parking fee and grace period timer.
+3.    Owner configure parking fee and grace period timer.
 
 
-4. Two attendants login
+4.    Two attendants login
+ 
+
+5.    Driver1 registration
 
 
-5. A driver logins
+6.    Driver1 login-reserve-cancel
 
 
-6. Reservation on daniel's facility.
+7.    Grace period demo
 
 
-7. Reservation on tony's facility.
+8.    Driver2 reserve-park-leave
 
 
-8. Park a car in assigned slot.
+9.    park in wrong slot
 
 
-9. One more reservation, Park a car in wrong slot.
+10.   Grace period demo
 
 
-10. One more reservation in other application
+11.   Power failure in testbed
 
 
-11. Turn off testbed.
-
-	
-12. Reservation on available slot.
+12.   Reservation on available slot
 
 
-13. Turn on testbed. Car leaves
+13.   Redundancy server demo.
 
 
-14. Turn off master server. Then park again!
-
-
+14 Thanks

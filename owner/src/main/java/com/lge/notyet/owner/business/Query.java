@@ -214,8 +214,13 @@ public class Query {
                 chooseMoreSettingsPanel.add(new JLabel("Start date/time:"));
                 try {
                     //startTime.setValue(Calendar.getInstance().getTime());
-                    startTime.setValue(dateTimeFormat.parse("2016-06-22 4:52:2 PM").getTime());//Demo defaults
-                } catch (ParseException e) {
+
+                    Calendar defaultTime = Calendar.getInstance();
+                    defaultTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+                    defaultTime.set(2016, Calendar.JUNE, 22, 16, 52, 2);
+                    defaultTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+                    startTime.setValue(defaultTime.getTime());//Demo defaults
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 chooseMoreSettingsPanel.add(startTime);

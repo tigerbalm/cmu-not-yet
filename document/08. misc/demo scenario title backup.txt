@@ -1,0 +1,42 @@
+1. SurePark Syatem Configuration. Tony is our owner today.
+
+
+2. Owner checks statistics.
+
+
+3. Owner configure parking fee and grace period timer.
+
+
+4. Two attendants login
+
+
+5. A driver logins
+
+
+6. Reservation on daniel's facility.
+
+
+7. Reservation on tony's facility.
+
+
+8. Park a car in assigned slot.
+
+
+9. One more reservation, Park a car in wrong slot.
+
+
+10. One more reservation in other application
+
+
+11. Turn off testbed.
+
+	
+12. Reservation on available slot.
+
+
+13. Turn on testbed. Car leaves
+
+
+14. Turn off master server. Then park again!
+
+
