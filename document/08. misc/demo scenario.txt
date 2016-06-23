@@ -1,0 +1,50 @@
+1. Describe how system is configured now.
+   We have 2 owners - tony and daniel.
+   Tony has 2 facilities - one has 2 controller and the other has a controller.
+   Daniel has a facility which has a controller.
+   Hence, there are 3 facilties in our database system and 3 attendants does.
+   Real testbed is connected to one of Tony's facility.
+
+2. Show owner statstatic funcationality.
+
+3. Chnage fee and grace period time for demo. Exactly what values?
+
+4. Run two attendant application, one for tony's facility and the other for daniel's facility.
+   Login
+
+5. Run a driver application, login.
+   Show there 3 available facilities.
+
+6. Select tony's facility, make a reservation, cancel the reservation.
+   Select daniel's facility, make a reservation (REAL testbed).
+
+7. Car arrived and parked in the reserved slot and leavs.
+
+8. Make one more reservation and parks in the wrong slot.
+
+9. Run one more driver application and make a reservation. (After 1 hour)
+
+10. Turn off testbed.
+    Show it's notified to attendant and drivers.
+	Also, explain it's possible to pay manually but DO NOT.
+	
+11. Run one more driver application and make reservation then it will be assigned to live controller. (after 2 mins)
+    Keep it, after sometime, grace period will be expried. :)
+
+12. Turn on testbed.
+    Leave parked card.
+
+13. Turn off master server.
+    Show parking scenario.
+
+
+----------------------------------------------------------------------------------------------------------------------------
+
+
+Servers : Sunghoon ann Gunwoo's laptop
+
+Attendant, driver, owner : Beney laptop
+
+Broker and Database : Gladvin
+
+Aarduino and Kiosk : Sangmin
