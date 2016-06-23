@@ -14,7 +14,7 @@
 #include "MsgQueClientStatusListener.h"
 
 #define NETWORK_SSID	"LGArchi" //"lge_archi_16"
-#define MQ_SERVER_OFFICIAL	"192.168.1.21"
+#define MQ_SERVER_OFFICIAL	"192.168.1.22"
 #define MQ_SERVER_MQTT_TEST "test.mosquitto.org"
 #define MQ_SERVER_IP	MQ_SERVER_OFFICIAL
 #define MQ_SERVER_PORT	1883
