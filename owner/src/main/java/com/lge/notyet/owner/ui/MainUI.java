@@ -116,6 +116,7 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
+        //FixMe: UI alignment on the config page.
         //FixMe: Make dummy input values.->
             //  INSERT INTO `sure-park`.`reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`, `fee`, `fee_unit`, `grace_period`) VALUES ('1', '1', '1', '1', '1', '1', '1', '1', '1');
             // INSERT INTO `sure-park`.`transaction` (`id`, `reservation_id`, `begin_ts`, `end_ts`, `revenue`) VALUES ('1', '1', '1466368729', '1466372329', '400');

@@ -39,8 +39,15 @@ public class ConfigurationUI extends JDialog {
     private HashMap<String, FacilityData> facilityControls= new HashMap<String, FacilityData>();
 
     public ConfigurationUI() {
-        facilityList.setLayout(new GridLayout(0, 4));
-        facilityList.add(new JLabel("Name"));
+        facilityList.setLayout(new GridLayout(0, 4, 4, 0));
+        JPanel tempPanel2= new JPanel();
+        tempPanel2.setLayout(new GridLayout(1, 0, 5, 0));
+        tempPanel2.add(new JLabel(""));
+        tempPanel2.add(new JLabel("Name"));
+        tempPanel2.add(new JLabel(""));
+        tempPanel2.add(new JLabel(""));
+        tempPanel2.add(new JLabel(""));
+        facilityList.add(tempPanel2);
         facilityList.add(new JLabel("Parking Fees (in dollars)"));
         facilityList.add(new JLabel("Unit time of parking (in seconds)"));
         facilityList.add(new JLabel("Grace Period (in seconds)"));
@@ -129,6 +136,7 @@ public class ConfigurationUI extends JDialog {
                     for (JsonValue facilityItem:facilityArray) {
                         JsonObject facilityDetails= (JsonObject)facilityItem;
                         tempPanel= new JPanel();
+                        tempPanel.setLayout(new BoxLayout(tempPanel, BoxLayout.X_AXIS));
                         tempRadioButton= new JRadioButton();
                         tempFacilityData= new FacilityData();
                         tempFacilityID= facilityDetails.get("id").toString();
