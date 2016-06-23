@@ -54,7 +54,8 @@ public class NetworkConnectionManager {
                         // InetAddress.getLoopbackAddress(),
                         //InetAddress.getByName("192.168.1.20"),
                         // InetAddress.getByName("192.168.1.21"),
-                        InetAddress.getByName("128.237.220.77"),
+                        InetAddress.getByName("192.168.1.22"),
+                        //InetAddress.getByName("128.237.220.77"),
                         //InetAddress.getByName("128.237.206.5"),
                         //InetAddress.getByName("10.245.148.224"),
                         mNetworkCallback);

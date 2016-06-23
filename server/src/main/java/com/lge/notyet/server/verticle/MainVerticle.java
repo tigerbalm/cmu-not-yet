@@ -26,9 +26,9 @@ import java.util.List;
 import static com.lge.notyet.server.manager.ReservationManager.*;
 
 public class MainVerticle extends AbstractVerticle {
-    private static final String BROKER_HOST = "192.168.1.21";
+    private static final String BROKER_HOST = "192.168.1.22";
     private static final boolean REDUNDANCY = true;
-    private static final String DB_HOST = "localhost";
+    private static final String DB_HOST = "192.168.1.22";
     private static final String DB_USERNAME = "dba";
     private static final String DB_PASSWORD = "dba";
 
