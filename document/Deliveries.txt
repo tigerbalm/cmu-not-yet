@@ -44,33 +44,13 @@ Test case v1.1.xlsx
 [Project Management]
 
 Gantt Chart.png
-Issue Tracking.txt
-Souce Version Control - Github.txt
+Issue Tracking tool - Github.txt
+Souce Version Control tool - Github.txt
 Sprint_Plan.xlsx
-[TEAM2_DOC_00] Final Presentation_v0.6.pptx
+[TEAM2_DOC_00] Final Presentation_v0.7
 
 
 [misc]
 
-MakeReservation.ssd
 failure model list.xlsx
-QualityAttributes.docx
-channles\CancelReservationChannel.md
-channles\ChannelIndex.md
-channles\ConfirmExitChannel.md
-channles\ConfirmReservationChannel.md
-channles\ControllerErrorReportChannel.md
-channles\ControllerStatusChannel.md
-channles\GetFacilitiesChannel.md
-channles\GetReservationChannel.md
-channles\GetSlotsChannel.md
-channles\GetStatisticsChannel.md
-channles\LoginChannel.md
-channles\LogoutChannel.md
-channles\MakeReservationChannel.md
-channles\Note.md
-channles\ReservableFacilitiesChannel.md
-channles\ReservationStatusChannel.md
-channles\SignUpChannel.md
-channles\SlotStatusChannel.md
-channles\UpdateFacilityChannel.md
+QualityAttributesUtility.docx
