@@ -117,11 +117,14 @@ public class ReservationManager {
                         logger.info("checkExpiredReservations: expired reservations=" + reservationObjectList);
                         for (JsonObject reservationObject : reservationObjectList) {
                             final int reservationId = reservationObject.get("id").asInt();
-                            cancelReservation(reservationId, ar -> {
-                                if (ar.succeeded()) {
-                                    listenerSet.forEach(listener -> listener.onReservationExpired(reservationId));
-                                }
-                            });
+                            final boolean hasTransaction = !reservationObject.get("begin_ts").isNull();
+                            if (!hasTransaction) {
+                                cancelReservation(reservationId, ar -> {
+                                    if (ar.succeeded()) {
+                                        listenerSet.forEach(listener -> listener.onReservationExpired(reservationId));
+                                    }
+                                });
+                            }
                         }
                     }
                 });

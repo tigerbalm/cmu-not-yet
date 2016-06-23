@@ -15,6 +15,7 @@
 #define MODE_WAITING_CAR_AT_EXIT		3000
 #define	MODE_WAITING_PAYMENT_RESP		3001
 #define	MODE_OPEN_GATE					3002
+#define MODE_PAYMENT_FAIL				3003
 
 void LeavingState::enter()
 {
@@ -92,6 +93,8 @@ void LeavingState::onMessageReceived(Command *command)
 			// notify to dave			
 			// slot led blink...
 			sendException(resp->getFailCause());
+
+			setMode(MODE_PAYMENT_FAIL);
 		}
 	}
 }
@@ -151,7 +154,7 @@ void LeavingState::onSlotOccupied(int _slotNum)
 	Serial.println(_slotNum);
 		
 	// 취소 시나리오
-	if (mode == MODE_WAITING_CAR_AT_EXIT 
+	if ((mode == MODE_WAITING_CAR_AT_EXIT || mode == MODE_PAYMENT_FAIL)
 				&& slot == _slotNum) {
 		Serial.println("Leaving is canceled...");
 

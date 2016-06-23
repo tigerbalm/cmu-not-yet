@@ -123,6 +123,11 @@ void Controller::onSlotChange(int slotNumber, int status)
 
 void Controller::onMsgQueStatusChange(int status)
 {
+	if (currentState == NULL) 
+	{
+		return;
+	}
+
 	if (status == MSG_QUE_CLIENT_STATUS_CONNECTED)
 	{
 		Serial.println("MsgQueClinet connected!!");

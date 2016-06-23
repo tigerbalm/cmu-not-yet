@@ -339,8 +339,8 @@ public class DatabaseProxy {
 
     public void selectExpiredReservation(SQLConnection connection, int currentTs, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         logger.info("selectReservation: currentTs=" + currentTs);
-        String sql = "select *" +
-                " from reservation" +
+        String sql = "select reservation.id, begin_ts" +
+                " from reservation left join transaction on reservation.id=transaction.reservation_id" +
                 " where activated=1 and expiration_ts<=?";
         io.vertx.core.json.JsonArray parameters = new io.vertx.core.json.JsonArray();
         parameters.add(currentTs);
