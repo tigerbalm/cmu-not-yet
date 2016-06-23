@@ -1,0 +1,48 @@
+Deliverables 
+
+01. Plan
+
+Initial Presentation_v1.0.pptx
+Initial_WBS.xlsx
+
+
+02. Analysis, Design
+
+[TEAM2_DOC_01] Use_Case_v1.0.docx
+[TEAM2_DOC_02] Architecture_Drivers_Specification_v1.3.docx
+[TEAM2_DOC_03] Architecture_Document_v1.1.docx
+[TEAM2_DOC_04] Protocol_Design.pdf
+[TEAM2_DOC_05] Channel_Interface.pdf
+[TEAM2_DOC_06] UI Scenario.docx
+[TEAM2_DOC_07] Database Schema.pptx
+[TEAM2_REFERENCE_01] Sure-Park Parking Garage Management System Project Description - V2.pdf
+[TEAM2_REFERENCE_02] MQTT_v3.1.1.pdf
+[TEAM2_REFERENCE_03] Architectural Patterns for Enabling Application Security.pdf
+[TEAM2_SUPPLEMENT_01] System_Context_Diagram_v1.0.pptx
+[TEAM2_SUPPLEMENT_02] Architecture_Design_v0.6.pptx
+
+
+03. Implementation
+
+cmu-not-yet-160623.zip
+Development Environment.docx
+
+
+04. Test
+
+Test case v1.1.xlsx
+
+
+05. Project Management
+
+Gantt Chart.png
+Issue Tracking.txt
+Souce Version Control - Github.txt
+Sprint_Plan.xlsx
+[TEAM2_DOC_00] Final Presentation_v0.6.pptx
+
+
+06. misc
+
+failure model list.xlsx
+QualityAttributes.docx
