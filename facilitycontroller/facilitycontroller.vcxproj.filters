@@ -132,6 +132,9 @@
     <ClInclude Include="CmdReceiveBookingNumber.h">
       <Filter>Header Files\Command</Filter>
     </ClInclude>
+    <ClInclude Include="NoServerConnectState.h">
+      <Filter>Header Files\Command</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CarDetectedListener.cpp">
@@ -173,9 +176,6 @@
     <ClCompile Include="WatingState.cpp">
       <Filter>Source Files\State</Filter>
     </ClCompile>
-    <ClCompile Include="StateChangeListener.cpp">
-      <Filter>Source Files\State</Filter>
-    </ClCompile>
     <ClCompile Include="ParkingState.cpp">
       <Filter>Source Files\State</Filter>
     </ClCompile>
@@ -214,6 +214,12 @@
     </ClCompile>
     <ClCompile Include="GateHelper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MsgQueClientStatusListener.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NoServerConnectState.cpp">
+      <Filter>Source Files\State</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

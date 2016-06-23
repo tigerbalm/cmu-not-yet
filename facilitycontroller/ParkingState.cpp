@@ -74,9 +74,7 @@ void ParkingState::onMessageReceived(Command *command)
 			Serial.print("confirm_reservation fail : ");
 			Serial.println(response->getFailCause());
 
-			CmdExceptionNoti * exceptionCmd = (CmdExceptionNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_EXCEPTION_NOTIFY);
-			exceptionCmd->setMessage(response->getFailCause());
-			exceptionCmd->send(mqClient);
+			sendException(response->getFailCause());
 
 			String message = "#$error##";
 			message += "Your confirmation no. is incorrect.<br>Pleae try again or<br><b>CALL DAVE!!!</b>";
@@ -102,17 +100,25 @@ void ParkingState::onMessageReceived(Command *command)
 	}
 }
 
+void ParkingState::sendException(String exception)
+{
+	CmdExceptionNoti * exceptionCmd = (CmdExceptionNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_EXCEPTION_NOTIFY);
+	exceptionCmd->setMessage(exception);
+	exceptionCmd->send(mqClient);
+}
+
 void ParkingState::setMode(int _mode)
 {
 	switch (_mode) {
-	case MODE_WAITING_NUMBER:
-		Serial.println("#$control##activate_kiosk$#");
-		break;
-	case MODE_WAITING_CONFIRM:
-		Serial.println("#$control##deactivate_kiosk$#");
-		break;
-	case MODE_WAITING_PLACING:
-		break;
+		case MODE_WAITING_NUMBER:
+			Serial.println("#$control##activate_kiosk$#");
+			break;
+		case MODE_WAITING_CONFIRM:
+			Serial.println("#$control##deactivate_kiosk$#");
+			break;
+		case MODE_WAITING_PLACING:
+			startPlacingMode = millis();
+			break;
 	}
 
 	mode = _mode;
@@ -130,7 +136,15 @@ void ParkingState::loop()
 		case MODE_WAITING_CONFIRM :	
 			//Serial.println("#$control##deactivate_kiosk$#");
 			break;
-		case MODE_WAITING_PLACING :			
+		case MODE_WAITING_PLACING :	
+			{
+				long now = millis();
+				if (now - startPlacingMode > 30*1000)
+				{
+					startPlacingMode = now;
+					sendException("Reserved car is not parked. Please check!!");
+				}
+			}
 			break;
 	}
 }

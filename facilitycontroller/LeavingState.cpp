@@ -18,16 +18,26 @@
 
 void LeavingState::enter()
 {
-	mode = MODE_WAITING_CAR_AT_EXIT;
+	setMode(MODE_WAITING_CAR_AT_EXIT);
 
 	SlotLedController::getInstance()->blinkOn(slot);
 }
 
 void LeavingState::exit()
 {
-	mode = MODE_WAITING_CAR_AT_EXIT;
-
 	SlotLedController::getInstance()->blinkOff(slot);
+}
+
+void LeavingState::setMode(int _mode)
+{
+	switch (_mode)
+	{
+		case MODE_OPEN_GATE:
+			startOpenGateMode = millis();
+			break;
+	}
+
+	mode = _mode;
 }
 
 void LeavingState::loop()
@@ -41,6 +51,14 @@ void LeavingState::loop()
 	case MODE_WAITING_PAYMENT_RESP :		
 		break;
 	case MODE_OPEN_GATE :
+		{
+			long now = millis();
+			if (now - startOpenGateMode > 30 * 1000)
+			{
+				startOpenGateMode = now;
+				sendException("Car is still at exit gate!! Please check!");
+			}
+		}
 		break;
 	}
 }
@@ -67,17 +85,22 @@ void LeavingState::onMessageReceived(Command *command)
 		if (resp->isSuccess())
 		{
 			GateHelper::exitGate()->openDoor();
-			mode = MODE_OPEN_GATE;
+			setMode(MODE_OPEN_GATE);			
 		}
 		else
 		{
 			// notify to dave			
 			// slot led blink...
-			CmdExceptionNoti * exceptionCmd = (CmdExceptionNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_EXCEPTION_NOTIFY);
-			exceptionCmd->setMessage((resp->getFailCause()));
-			exceptionCmd->send(mqClient);
+			sendException(resp->getFailCause());
 		}
 	}
+}
+
+void LeavingState::sendException(String exception)
+{
+	CmdExceptionNoti * exceptionCmd = (CmdExceptionNoti*)CommandFactory::getInstance()->createCommand(CMD_HINT_EXCEPTION_NOTIFY);
+	exceptionCmd->setMessage(exception);
+	exceptionCmd->send(mqClient);
 }
 
 void LeavingState::carDetectedOnEntry(int status)
@@ -104,7 +127,7 @@ void LeavingState::carDetectedOnExit(int status)
 			payRequest->setSlot(slot);
 			payRequest->send(mqClient);
 
-			mode = MODE_WAITING_PAYMENT_RESP;
+			setMode(MODE_WAITING_PAYMENT_RESP);
 		}
 	}
 	else

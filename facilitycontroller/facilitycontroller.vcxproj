@@ -144,6 +144,7 @@
     <ClInclude Include="LeavingState.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="NoServerConnectState.h" />
     <ClInclude Include="SlotLedController.h" />
     <ClInclude Include="MsgQueClient.h" />
     <ClInclude Include="MsgQueClientStatusListener.h" />
@@ -197,6 +198,8 @@
     <ClCompile Include="GateCarDetector.cpp" />
     <ClCompile Include="GateHelper.cpp" />
     <ClCompile Include="LeavingState.cpp" />
+    <ClCompile Include="MsgQueClientStatusListener.cpp" />
+    <ClCompile Include="NoServerConnectState.cpp" />
     <ClCompile Include="SlotLedController.cpp" />
     <ClCompile Include="MsgQueClient.cpp" />
     <ClCompile Include="Pair.cpp" />
@@ -205,7 +208,6 @@
     <ClCompile Include="Slot.cpp" />
     <ClCompile Include="SlotStatusChangeDetector.cpp" />
     <ClCompile Include="SlotStatusChangeListener.cpp" />
-    <ClCompile Include="StateChangeListener.cpp" />
     <ClCompile Include="WatingState.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -19,6 +19,8 @@ private:
 	int bookingNo;
 	int assignedSlot;
 	int mode;
+
+	long startPlacingMode;
 public:
 	void loop();
 	void waitingNumberInput();
@@ -31,6 +33,8 @@ public:
 	void enter();
 
 	void onMessageReceived(Command *command);
+
+	void sendException(String exception);
 
 	void setMode(int mode);
 
