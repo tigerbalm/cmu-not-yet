@@ -21,6 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainUI extends JDialog {
+    public static MainUI getInstance() {
+        return ownInstance;
+    }
+
+    private static MainUI ownInstance;
     private JPanel contentPane;
     private JButton fetchReportButton;
     private JRadioButton customAdditionalDeveloperQueryRadioButton;
@@ -29,6 +34,11 @@ public class MainUI extends JDialog {
     private JTextPane reportTextPane;
     private JPanel chooseMoreSettingsPanel;
     private JTextPane textReportPane1;
+
+    public JPanel getGraphicalPane() {
+        return graphicalPane;
+    }
+
     private JPanel graphicalPane;
     private JTextArea logArea;
     private JPanel logPanel;
@@ -43,6 +53,7 @@ public class MainUI extends JDialog {
     public static final String LOG_TAG= "Owner App";
 
     public MainUI() {
+        ownInstance= this;
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(fetchReportButton);
@@ -59,6 +70,8 @@ public class MainUI extends JDialog {
                 new ConfigurationUI().setVisible(true);
             }
         });
+        graphicalPane.setEnabled(false);
+        graphicalPane.setVisible(false);
     }
 
     private void onFetchReport() {
@@ -116,7 +129,6 @@ public class MainUI extends JDialog {
         chooseReportHandler.actionPerformed(null);
 
         revalidate();
-        //FixMe: UI alignment on the config page.
         //FixMe: Make dummy input values.->
             //  INSERT INTO `sure-park`.`reservation` (`id`, `user_id`, `slot_id`, `confirmation_no`, `reservation_ts`, `activated`, `fee`, `fee_unit`, `grace_period`) VALUES ('1', '1', '1', '1', '1', '1', '1', '1', '1');
             // INSERT INTO `sure-park`.`transaction` (`id`, `reservation_id`, `begin_ts`, `end_ts`, `revenue`) VALUES ('1', '1', '1466368729', '1466372329', '400');
@@ -149,6 +161,8 @@ public class MainUI extends JDialog {
                 int success = resMsg.getMessage().get("success").asInt();
 
                 if (success == 1) { // Success
+                    graphicalPane.setEnabled(false);
+                    graphicalPane.setVisible(false);
                     StateMachine.getInstance().getQueryInstance().handleResult(textReportPane1, resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_COLUMNNAMES).asArray(), resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_VALUES).asArray());
 
                     Log.log(LOG_TAG, "Success to query DB, tablename is "+resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_COLUMNNAMES).toString()+"resultSet is " + resMsg.getMessage().get(GetStatisticsResponseChannel.KEY_VALUES).toString());
