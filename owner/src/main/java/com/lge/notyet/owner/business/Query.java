@@ -76,7 +76,7 @@ public class Query {
             String[] timeInterval = { "Next 24 Hour", "Next 60 Minutes", "Next 60 Seconds"};
             JComboBox timeIntervalCombo = new JComboBox(timeInterval);
             {
-                timeIntervalCombo.setSelectedItem("second");
+                timeIntervalCombo.setSelectedItem("Next 60 Seconds");//Demo defaults
             }
             String dateformat=(implementation2?"yyyy-MM-dd h a":"%d/%m/%Y %H");
             long timeToIncrementInSeconds=3600;//1 hour
@@ -212,7 +212,12 @@ public class Query {
                 chooseMoreSettingsPanel.removeAll();
                 chooseMoreSettingsPanel.setLayout(new GridLayout(0,2));
                 chooseMoreSettingsPanel.add(new JLabel("Start date/time:"));
-                startTime.setValue(Calendar.getInstance().getTime());
+                try {
+                    //startTime.setValue(Calendar.getInstance().getTime());
+                    startTime.setValue(dateTimeFormat.parse("2016-06-22 4:52:2 PM").getTime());//Demo defaults
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 chooseMoreSettingsPanel.add(startTime);
 
                 chooseMoreSettingsPanel.add(new JLabel("Time Interval:"));
