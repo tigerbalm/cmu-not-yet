@@ -3,16 +3,24 @@ package com.lge.notyet.owner.business;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonValue;
 import com.lge.notyet.owner.ui.MainUI;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.paint.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 
 import javax.swing.*;
 import java.awt.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 
 public class Query {
@@ -91,13 +99,13 @@ public class Query {
 //        JFormattedTextField endTime= new JFormattedTextField(dateTimeFormatter);
 //
 //    }
-
+            ArrayList<Map.Entry<String, Integer>> reportData= new ArrayList<Map.Entry<String, Integer>>();
             @Override
             public void handleResult(JTextPane resultArea, JsonArray columnNamesJson, JsonArray resultSetTableJson) {
-                String[] columnNames= new String[columnNamesJson.size()];
                 StringBuilder result= new StringBuilder("");
                 SimpleDateFormat sdf = new SimpleDateFormat(dateformat);
                 HashMap<String, String> timeToResultCount= new HashMap<String, String>();
+                reportData.clear();
 
                 for(JsonValue columnNameJson: columnNamesJson){
                     result.append(columnNameJson.asString()).append("\t\t");
@@ -121,11 +129,16 @@ public class Query {
                     for(int i=0; i< entriesToPrint; i++) {
                         String timeEntry= ""+timeInSeconds;
                         String countEntries= timeToResultCount.get(timeEntry);
-                        result.append(sdf.format(new Date(Long.parseLong(timeEntry)*1000L))).append("\t");
-                        if(countEntries!=null)
+                        String formattedDateString= sdf.format(new Date(Long.parseLong(timeEntry)*1000L));
+                        result.append(formattedDateString).append("\t");
+                        if(countEntries!=null) {
                             result.append(countEntries);
-                        else
+                            reportData.add(new AbstractMap.SimpleEntry<String, Integer>(formattedDateString, new Integer(countEntries)));
+                        }
+                        else {
                             result.append(0).append("\t");
+                            reportData.add(new AbstractMap.SimpleEntry<String, Integer>(formattedDateString, new Integer(0)));
+                        }
                         timeInSeconds+=timeToIncrementInSeconds;
                         result.append("\r\n");
                     }
@@ -133,6 +146,66 @@ public class Query {
                 result.append("------------\r\n");
 
                 resultArea.setText(result.toString());
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        // This method is invoked on the EDT thread
+                        JFXPanel fxPanel = new JFXPanel();
+                        JPanel graphicalPanel= MainUI.getInstance().getGraphicalPane();
+                        graphicalPanel.removeAll();
+                        graphicalPanel.setLayout(new GridLayout(1,0));
+                        graphicalPanel.add(fxPanel);
+                        //graphicalPanel.setSize(300, 200);
+                        //graphicalPanel.setVisible(true);
+
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                //private static void initFX(JFXPanel fxPanel)
+                                // This method is invoked on the JavaFX thread
+                                Scene scene = createScene();
+                                fxPanel.setScene(scene);
+                            }
+                            private Scene createScene() {
+                                Group root  =  new  Group();
+                                Scene  scene  =  new  Scene(root, Color.LIGHTGREY);
+
+                                final CategoryAxis xAxis = new CategoryAxis();
+                                final NumberAxis yAxis = new NumberAxis();
+                                final BarChart<String,Number> bc =
+                                        new BarChart<String,Number>(xAxis,yAxis);
+
+                                bc.getData().clear();
+                                xAxis.setLabel("Time");
+                                yAxis.setLabel("Usages");
+
+                                XYChart.Series series1 = new XYChart.Series();
+                                //series1.setName("Run 1");
+                                for(Map.Entry<String, Integer> reportValue:reportData){
+                                    series1.getData().add(new XYChart.Data(reportValue.getKey(), reportValue.getValue()));
+                                }
+                                reportData.clear();
+
+                                //Scene scene  = new Scene(bc,800,600);
+                                bc.getData().clear();
+                                bc.getData().add(0, series1);
+
+                                root.getChildren().add(bc);
+                                MainUI.getInstance().getGraphicalPane().setEnabled(true);
+                                MainUI.getInstance().getGraphicalPane().setVisible(true);
+                                MainUI.getInstance().getGraphicalPane().revalidate();
+
+                                //root.getChildren().add(text);
+
+                                return (scene);
+                            }
+                        });
+                        //graphicalPanel.setEnabled(true);
+                      //  graphicalPanel.setVisible(true);
+                        //graphicalPanel.revalidate();
+                    }
+                });
             }
 
             public void fillMoreSettingPanel(JPanel chooseMoreSettingsPanel) {
@@ -147,6 +220,7 @@ public class Query {
 
                 chooseMoreSettingsPanel.setEnabled(true);
                 chooseMoreSettingsPanel.revalidate();
+
             }
 
             @Override
@@ -211,6 +285,9 @@ public class Query {
             chooseMoreSettingsPanel.removeAll();
             chooseMoreSettingsPanel.setEnabled(false);
             chooseMoreSettingsPanel.revalidate();
+            MainUI.getInstance().getGraphicalPane().setEnabled(false);
+            MainUI.getInstance().getGraphicalPane().setVisible(false);
+            MainUI.getInstance().getGraphicalPane().revalidate();
         }
 
         });
@@ -225,6 +302,9 @@ public class Query {
                 chooseMoreSettingsPanel.removeAll();
                 chooseMoreSettingsPanel.setEnabled(false);
                 chooseMoreSettingsPanel.revalidate();
+                MainUI.getInstance().getGraphicalPane().setEnabled(false);
+                MainUI.getInstance().getGraphicalPane().setVisible(false);
+                MainUI.getInstance().getGraphicalPane().revalidate();
             }
 
         });
@@ -239,6 +319,9 @@ public class Query {
                 chooseMoreSettingsPanel.removeAll();
                 chooseMoreSettingsPanel.setEnabled(false);
                 chooseMoreSettingsPanel.revalidate();
+                MainUI.getInstance().getGraphicalPane().setEnabled(false);
+                MainUI.getInstance().getGraphicalPane().setVisible(false);
+                MainUI.getInstance().getGraphicalPane().revalidate();
         }
 
         });
@@ -258,6 +341,10 @@ public class Query {
                 chooseMoreSettingsPanel.add(textScrollPane);
                 chooseMoreSettingsPanel.setEnabled(true);
                 chooseMoreSettingsPanel.revalidate();
+                MainUI.getInstance().getGraphicalPane().setEnabled(false);
+                MainUI.getInstance().getGraphicalPane().setVisible(false);
+                MainUI.getInstance().getGraphicalPane().revalidate();
+                MainUI.getInstance().revalidate();
             }
 
             @Override
