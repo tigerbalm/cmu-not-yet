@@ -84,6 +84,7 @@ public class FacilityMonitorPanel implements Screen {
         if (mControllerErrorReportSubscribeChannel == null) {
             mControllerErrorReportSubscribeChannel = NetworkConnectionManager.getInstance().createControllerErrorReportSubscribeChannel();
             mControllerErrorReportSubscribeChannel.listen();
+            Log.logd(LOG_TAG, "listen on " + mControllerErrorReportSubscribeChannel.getChannelDescription());
             mControllerErrorReportSubscribeChannel.addObserver(mControllerErrorReported);
         }
 
@@ -534,7 +535,7 @@ public class FacilityMonitorPanel implements Screen {
             String topic = (String) uri.getLocation();
             StringTokenizer topicTokenizer = new StringTokenizer(topic, "/");
 
-            if (topicTokenizer.countTokens() == 2) {
+            if (topicTokenizer.countTokens() == 3) {
 
                 try {
 
@@ -552,7 +553,6 @@ public class FacilityMonitorPanel implements Screen {
                     }
 
                     if (controller != null) {
-                        if (!controller.isAvailable()) {
                             // TODO : If time is enough, we will change it to modeless Dialog later to show only 1 dialog.
                             new Thread(() -> {
                                 JOptionPane.showMessageDialog(getRootPanel(),
@@ -561,7 +561,7 @@ public class FacilityMonitorPanel implements Screen {
                                         JOptionPane.ERROR_MESSAGE);
                             }).start();
 
-                        }
+
                     } else {
                         Log.logv(LOG_TAG, "No such controller in session, physicalId=" + physicalId);
                     }
