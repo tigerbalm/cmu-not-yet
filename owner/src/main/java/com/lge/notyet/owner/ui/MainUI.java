@@ -12,6 +12,7 @@ import com.lge.notyet.owner.business.StateMachine;
 import com.lge.notyet.owner.business.StatisticsTask;
 import com.lge.notyet.owner.manager.TaskManager;
 import com.lge.notyet.owner.util.Log;
+import sun.awt.AppContext;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class MainUI extends JDialog {
     public static MainUI getInstance() {
@@ -53,6 +55,11 @@ public class MainUI extends JDialog {
     public static final String LOG_TAG= "Owner App";
 
     public MainUI() {
+
+        Locale locale = new Locale("en", "US");
+        Locale.setDefault(locale);
+        AppContext.getAppContext().put("JComponent.defaultLocale", locale);
+
         ownInstance= this;
         setContentPane(contentPane);
         setModal(true);

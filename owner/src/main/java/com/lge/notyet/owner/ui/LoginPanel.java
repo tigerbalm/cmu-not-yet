@@ -5,16 +5,15 @@ import com.lge.notyet.owner.business.LoginTask;
 import com.lge.notyet.owner.manager.SessionManager;
 import com.lge.notyet.owner.manager.TaskManager;
 import com.lge.notyet.owner.util.Log;
+import sun.awt.AppContext;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.util.Locale;
 
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 
-/**
- * Created by beney.kim on 2016-06-16.
- */
-public class LoginPanel {
+    public class LoginPanel {
 
     private static final String LOG_TAG = "LoginPanel";
 
@@ -26,6 +25,12 @@ public class LoginPanel {
 
     public static void main(String[] args){
         JDialog loginDialog = new JDialog();
+
+        Locale locale = new Locale("en", "US");
+        Locale.setDefault(locale);
+        AppContext.getAppContext().put("JComponent.defaultLocale", locale);
+
+
         loginDialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         loginDialog.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
