@@ -57,7 +57,7 @@ void LeavingState::loop()
 			if (now - startOpenGateMode > 30 * 1000)
 			{
 				startOpenGateMode = now;
-				sendException("Car is still at exit gate!! Please check!");
+				sendException("Car is at exit gate!!");
 			}
 		}
 		break;
@@ -159,6 +159,16 @@ void LeavingState::onSlotOccupied(int _slotNum)
 		Serial.println("Leaving is canceled...");
 
 		controller->setState(controller->getWaitingState());
+
+		return;
+	}
+	else if (mode == MODE_WAITING_PAYMENT_RESP && slot == _slotNum)
+	{	
+		String error = "Error: back to slot #";
+		error += slot;
+		sendException(error);
+
+		Serial.println(error);
 
 		return;
 	}

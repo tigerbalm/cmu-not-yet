@@ -124,7 +124,9 @@ bool MsgQueClient::publish(String topic, String body)
 	Serial.println(topic);
 	Serial.println(body);
 
-	pubsubClient->publish(topic.c_str(), body.c_str());
+	boolean success = pubsubClient->publish(topic.c_str(), body.c_str());
+
+	Serial.println(success);
 }
 
 void MsgQueClient::subscribeCacheTopics()

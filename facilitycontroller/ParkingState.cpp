@@ -142,7 +142,7 @@ void ParkingState::loop()
 				if (now - startPlacingMode > 30*1000)
 				{
 					startPlacingMode = now;
-					sendException("Reserved car is not parked. Please check!!");
+					sendException("Reserved car is not parked!!");
 				}
 			}
 			break;
