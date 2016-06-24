@@ -20,9 +20,10 @@ String CmdExceptionNoti::getTopic()
 
 String CmdExceptionNoti::getBody()
 {
-	StaticJsonBuffer<100> jsonBuffer;
+	StaticJsonBuffer<300> jsonBuffer;
 
 	JsonObject& root = jsonBuffer.createObject();
+	
 	root["message"] = message;
 	root["_msg_type_"] = 0;
 
